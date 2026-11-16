@@ -54,6 +54,83 @@ class Test_Blocks extends TestCase {
 	}
 
 	/**
+	 * A link added by its URL alone takes what its provider gives: its title, and its thumbnail as its featured image, an
+	 * image whose URL has no extension.
+	 *
+	 * @return void
+	 */
+	public function test_a_link_added_by_its_url_takes_its_title_and_image(): void {
+		$url   = 'https://www.youtube.com/watch?v=moodboard';
+		$image = 'https://i.ytimg.com/vi/moodboard/thumbnail';
+		// A PNG of one pixel.
+		$png = base64_decode( 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- An image of the test.
+
+		add_filter(
+			'pre_http_request',
+			function ( $response, array $args, string $asked ) use ( $image, $png ) {
+				if ( str_starts_with( $asked, 'https://www.youtube.com/oembed' ) ) {
+					return array(
+						'headers'  => array( 'content-type' => 'application/json' ),
+						'body'     => (string) wp_json_encode(
+							array(
+								'type'          => 'video',
+								'version'       => '1.0',
+								'title'         => 'La mer &amp; le port',
+								'html'          => '<iframe src="https://www.youtube.com/embed/moodboard"></iframe>',
+								'thumbnail_url' => $image,
+							)
+						),
+						'response' => array(
+							'code'    => 200,
+							'message' => 'OK',
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					);
+				}
+
+				if ( $image === $asked ) {
+					file_put_contents( $args['filename'], $png ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- The file download_url() streams to.
+
+					return array(
+						'headers'  => array( 'content-type' => 'image/png' ),
+						'body'     => '',
+						'response' => array(
+							'code'    => 200,
+							'message' => 'OK',
+						),
+						'cookies'  => array(),
+						'filename' => $args['filename'],
+					);
+				}
+
+				return $response;
+			},
+			10,
+			3
+		);
+
+		$response = $this->request(
+			'POST',
+			'/wp/v2/moodboard-links',
+			array(
+				'meta' => array( 'moodboard_source' => $url ),
+			)
+		);
+
+		$this->assertSame( 201, $response->get_status(), (string) wp_json_encode( $response->get_data() ) );
+
+		$link = $response->get_data();
+
+		$this->assertSame( 'La mer & le port', $link['title']['raw'] );
+		$this->assertSame( $url, $link['meta']['moodboard_source'] );
+		$this->assertSame( 'private', $link['status'] );
+		$this->assertNotSame( 0, $link['featured_media'] );
+		$this->assertSame( 'image/png', get_post_mime_type( $link['featured_media'] ) );
+		$this->assertFalse( (bool) get_post_meta( $link['featured_media'], 'moodboard_block', true ), 'The image of a link is no block of its own.' );
+	}
+
+	/**
 	 * A curator takes notes on their media and texts, the notes of core, approved at once; another curator neither reads
 	 * nor writes them.
 	 *

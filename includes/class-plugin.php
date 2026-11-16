@@ -50,6 +50,7 @@ class Plugin {
 
 		new Roles()->hooks();
 		new Posts()->hooks();
+		new Links()->hooks();
 		new Channels()->hooks();
 		new Meta()->hooks();
 		new Media()->hooks();
