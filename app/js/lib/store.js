@@ -214,6 +214,17 @@ class MoodboardStore extends Store {
 
 	/** Loads the channels of the curator, then the blocks of the view. */
 	async loadChannels() {
+		if ( await this.#fetchChannels() ) {
+			this.#loadView();
+		}
+	}
+
+	/**
+	 * Loads the channels of the curator, their counts and their covers.
+	 *
+	 * @return {Promise<boolean>} Whether they loaded.
+	 */
+	async #fetchChannels() {
 		try {
 			const items = await api.fetchChannels( this.#signal( 'channels' ) );
 
@@ -221,7 +232,8 @@ class MoodboardStore extends Store {
 				...state,
 				channels: { loaded: true, error: '', items },
 			} ) );
-			this.#loadView();
+
+			return true;
 		} catch ( error ) {
 			if ( 'AbortError' !== error?.name ) {
 				this.set( ( state ) => ( {
@@ -236,6 +248,8 @@ class MoodboardStore extends Store {
 					},
 				} ) );
 			}
+
+			return false;
 		}
 	}
 
@@ -378,12 +392,49 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Loads again what a change touches: the channels, whose counts change, and the lists loaded, which drop the others,
-	 * to load again as they show.
+	 * Loads again what a change touches: the channels, whose counts and covers change, and the lists the view shows,
+	 * which show what they hold until they have loaded again, a card changing only if its block does; the other lists
+	 * go, to load again as they show.
 	 */
 	async #refresh() {
-		this.set( ( state ) => ( { ...state, lists: {} } ) );
-		await this.loadChannels();
+		const { view, from } = this.get();
+		const shown = [ 'media', 'text', 'link' ].includes( view )
+			? listKey( { view: 'channel', id: from, query: '' } )
+			: listKey( this.get() );
+
+		this.set( ( state ) => ( {
+			...state,
+			lists: state.lists[ shown ]
+				? { [ shown ]: state.lists[ shown ] }
+				: {},
+		} ) );
+		await Promise.all( [ this.#fetchChannels(), this.loadList( shown ) ] );
+	}
+
+	/**
+	 * Puts blocks added first in the lists loaded they belong to, as the latest: the index, and the channel they went
+	 * into. A search goes, which may not find them.
+	 *
+	 * @param {number}  channelId The channel, 0 for the index.
+	 * @param {Block[]} blocks    The blocks added, the latest last.
+	 */
+	#prepend( channelId, blocks ) {
+		const keys = blocks.map( ( block ) => block.key ).reverse();
+		const into = [ 'index', `channel-${ channelId }` ];
+
+		this.set( ( state ) => ( {
+			...state,
+			lists: Object.fromEntries(
+				Object.entries( state.lists )
+					.filter( ( [ key ] ) => ! key.startsWith( 'search-' ) )
+					.map( ( [ key, list ] ) => [
+						key,
+						into.includes( key )
+							? { ...list, keys: [ ...keys, ...list.keys ] }
+							: list,
+					] )
+			),
+		} ) );
 	}
 
 	/**
@@ -412,6 +463,8 @@ class MoodboardStore extends Store {
 		}
 
 		const errors = [];
+		/** @type {Block[]} */
+		const added = [];
 
 		// Said at once, as a file dropped or pasted takes a moment to upload.
 		this.set( ( state ) => ( {
@@ -432,7 +485,10 @@ class MoodboardStore extends Store {
 		// One after the other: a server takes one upload at a time better than many.
 		for ( const request of requests ) {
 			try {
-				this.#setBlock( await request() );
+				const block = await request();
+
+				this.#setBlock( block );
+				added.push( block );
 			} catch ( error ) {
 				errors.push(
 					api.errorMessage(
@@ -457,7 +513,9 @@ class MoodboardStore extends Store {
 					requests.length
 				)
 		);
-		await this.#refresh();
+		// The grid takes the blocks added as they are, without loading again: the channels only change, their counts.
+		this.#prepend( channelId, added );
+		await this.#fetchChannels();
 
 		return ! errors.length;
 	}
