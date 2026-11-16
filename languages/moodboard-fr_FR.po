@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-16T17:34:19+00:00\n"
+"POT-Creation-Date: 2026-11-16T18:34:30+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -512,48 +512,48 @@ msgstr[1] "%d blocs"
 msgid "Select %s"
 msgstr "Sélectionner %s"
 
-#: app/js/lib/store.js:234
+#: app/js/lib/store.js:246
 msgid "The channels could not load."
 msgstr "Les canaux n’ont pas pu se charger."
 
-#: app/js/lib/store.js:296
+#: app/js/lib/store.js:310
 msgid "The blocks could not load."
 msgstr "Les blocs n’ont pas pu se charger."
 
-#: app/js/lib/store.js:342
+#: app/js/lib/store.js:356
 msgid "The block could not load."
 msgstr "Le bloc n’a pas pu se charger."
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:422
+#: app/js/lib/store.js:475
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] "Ajout de %d bloc…"
 msgstr[1] "Ajout de %d blocs…"
 
-#: app/js/lib/store.js:440
+#: app/js/lib/store.js:496
 msgid "A block could not be added."
 msgstr "Un bloc n’a pas pu être ajouté."
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:451
+#: app/js/lib/store.js:507
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] "%d bloc ajouté."
 msgstr[1] "%d blocs ajoutés."
 
-#: app/js/lib/store.js:635
+#: app/js/lib/store.js:693
 msgid "Blocks connected."
 msgstr "Blocs connectés."
 
-#: app/js/lib/store.js:647
+#: app/js/lib/store.js:705
 msgid "Blocks removed from the channel."
 msgstr "Blocs retirés du canal."
 
-#: app/js/lib/store.js:658
+#: app/js/lib/store.js:716
 msgid "Blocks deleted."
 msgstr "Blocs supprimés."
 
-#: app/js/lib/store.js:681
+#: app/js/lib/store.js:739
 msgid "The notes could not load."
 msgstr "Les notes n’ont pas pu se charger."
