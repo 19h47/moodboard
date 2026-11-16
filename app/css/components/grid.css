@@ -7,8 +7,19 @@
 	.moodboard-grid {
 		list-style: none;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(var(--moodboard-card-min), 100%), 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(var(--moodboard-card-min) * var(--moodboard-density), 100%), 1fr));
 		gap: var(--app-space-l) var(--app-space-m);
+	}
+
+	/* Two cards a row, whatever the width of the page; one on a phone, which has two at the usual size */
+	:root[data-density="2"] .moodboard-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	@media (width < 42rem) {
+		:root[data-density="2"] .moodboard-grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
 	}
 
 	/* A grid that loads fades, its cards kept */
@@ -16,9 +27,21 @@
 		opacity: calc(1 / var(--app-phi));
 	}
 
-	/* Off screen, no layout: an index of hundreds of images */
+	/* Off screen, no layout: an index of hundreds of images. Its box of selection over it */
 	.moodboard-grid > li {
+		position: relative;
 		content-visibility: auto;
-		contain-intrinsic-size: auto var(--moodboard-card-min);
+		contain-intrinsic-size: auto calc(var(--moodboard-card-min) * var(--moodboard-density));
+	}
+
+	/* While the blocks are selected, the cards of the channels wait, and a card selected is lined */
+	.moodboard-grid[data-selecting] > li:not(:has([data-part="select"])) {
+		opacity: calc(1 / var(--app-phi) / var(--app-phi));
+	}
+
+	/* Within its frame: an item skips the paint of what goes out of it */
+	.moodboard-grid > li:has(:checked) .moodboard-card__frame {
+		outline: 2px solid var(--app-text);
+		outline-offset: -2px;
 	}
 }

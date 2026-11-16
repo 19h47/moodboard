@@ -7,9 +7,10 @@ import { renderBlock, renderChannel } from 'moodboard-app/render';
 /** @import { Block, Channel } from 'moodboard-app/api' */
 
 /**
- * The grid of what shows: on the index, its channels without parent then every block, or the ones of its tab or of its
- * search; on the page of a channel, its sub-channels then its blocks, after the card that adds some, which stays first.
- * A card stays while its channel or its block does not change, its focus too.
+ * The grid of what shows: on the index, its channels without parent then every block of the curator, in a channel or
+ * none, or the ones of its tab or of its search; on the page of a channel, its sub-channels then its blocks. A card stays
+ * while its channel or its block does not change, its focus too. While the blocks are selected, a box over each card
+ * selects it rather than opening it, and the cards of the channels wait.
  */
 class MoodboardGridElement extends Brick {
 	/**
@@ -19,14 +20,24 @@ class MoodboardGridElement extends Brick {
 	 */
 	#drawn = new Map();
 
-	connect() {
+	connect( signal ) {
 		/** @type {HTMLElement} */
 		const $items = this.querySelector( '[data-list="items"]' );
 		/** @type {HTMLElement} */
 		const $status = this.querySelector( '[data-field="status"]' );
-		/** @type {HTMLElement|null} */
-		const $add = $items.querySelector( '[data-id="add"]' );
 		const isIndex = 'index' === this.getAttribute( 'list' );
+
+		$items.addEventListener(
+			'change',
+			( event ) => {
+				const $box = /** @type {HTMLInputElement} */ ( event.target );
+				/** @type {HTMLElement} */
+				const $item = $box.closest( '[data-id]' );
+
+				store.setSelected( $item.dataset.id, $box.checked );
+			},
+			{ signal }
+		);
 
 		return [
 			store.select(
@@ -52,6 +63,7 @@ class MoodboardGridElement extends Brick {
 					blocks.forEach( ( block ) =>
 						items.set( block.key, block )
 					);
+
 					const from = isIndex ? 0 : state.id;
 
 					// A card whose channel or block changed is drawn again.
@@ -68,24 +80,20 @@ class MoodboardGridElement extends Brick {
 						}
 					);
 
-					renderKeyed(
-						$items,
-						[ ...( $add ? [ 'add' ] : [] ), ...items.keys() ],
-						( key ) => {
-							const item = items.get( key );
+					renderKeyed( $items, [ ...items.keys() ], ( key ) => {
+						const item = items.get( key );
 
-							this.#drawn.set( key, item );
+						this.#drawn.set( key, item );
 
-							return key.startsWith( 'channel-' )
-								? renderChannel(
-										/** @type {Channel} */ ( item )
-								  )
-								: renderBlock(
-										/** @type {Block} */ ( item ),
-										from
-								  );
-						}
-					);
+						return key.startsWith( 'channel-' )
+							? renderChannel( /** @type {Channel} */ ( item ) )
+							: renderBlock(
+									/** @type {Block} */ ( item ),
+									from
+							  );
+					} );
+
+					this.#select( $items, state );
 
 					const error = state.channels.error || list?.error;
 					const isLoading = ! list?.loaded && ! error;
@@ -99,6 +107,33 @@ class MoodboardGridElement extends Brick {
 				}
 			),
 		];
+	}
+
+	/**
+	 * Shows the boxes of the cards while the blocks are selected, ticked for those selected; the links of the cards
+	 * wait meanwhile, out of reach, as the cards of the channels, faded.
+	 *
+	 * @param {HTMLElement}                         $items The list of the cards.
+	 * @param {import('moodboard-app/store').State} state  The state.
+	 */
+	#select( $items, { selecting, selection } ) {
+		$items.toggleAttribute( 'data-selecting', selecting );
+		[ ...$items.children ].forEach(
+			( /** @type {HTMLElement} */ $item ) => {
+				/** @type {HTMLElement|null} */
+				const $select = $item.querySelector( '[data-part="select"]' );
+				/** @type {HTMLElement} */
+				const $link = $item.querySelector( '[data-part="link"]' );
+
+				$link.inert = selecting;
+
+				if ( $select ) {
+					$select.hidden = ! selecting;
+					$select.querySelector( 'input' ).checked =
+						selection.includes( $item.dataset.id );
+				}
+			}
+		);
 	}
 
 	/**
@@ -154,8 +189,14 @@ class MoodboardGridElement extends Brick {
 		}
 
 		return 'channel' === view
-			? ''
-			: __( 'No channel yet: add one to begin.', 'moodboard' );
+			? __(
+					'Nothing yet: drop images here, or add some with +.',
+					'moodboard'
+			  )
+			: __(
+					'Nothing yet: drop images here, or add a channel with +.',
+					'moodboard'
+			  );
 	}
 }
 customElements.define( 'moodboard-grid', MoodboardGridElement );

@@ -28,3 +28,6 @@ Thumbs.db
 .vscode/
 *.sublime-*
 .phpunit.result.cache
+
+# The shortcut of an iPhone, attached to each release.
+/Moodboard.shortcut

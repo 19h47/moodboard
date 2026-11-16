@@ -1,25 +1,44 @@
 /**
- * The card of a channel: its name in the middle of its square, its number of blocks under it, on the fill of the page.
+ * The card of a channel: a square of its latest images, a mosaic of one to four, on the fill of the page, then its name
+ * and its number of blocks under it.
  */
 
 @layer app.components {
 	/* With the class of the frame, which it sets over: the sheets come in the order of their names */
 	.moodboard-card__frame.moodboard-channel-card {
-		grid-template: auto auto / minmax(0, 1fr);
-		align-content: center;
-		gap: var(--app-space-xs);
-		padding: var(--app-space-m);
+		position: relative;
 		background: var(--app-fill);
-		text-align: center;
 	}
 
-	/* Its name over its number of blocks, rather than in the one cell of a frame */
-	.moodboard-card__frame.moodboard-channel-card > * {
-		grid-area: auto;
+	/* The mosaic over the whole of the square, its cells as its number of images lays them out */
+	.moodboard-channel-card__covers {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+		gap: 2px;
+	}
+
+	.moodboard-channel-card__covers[data-count="2"] {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.moodboard-channel-card__covers:is([data-count="3"], [data-count="4"]) {
+		grid-template: repeat(2, minmax(0, 1fr)) / repeat(2, minmax(0, 1fr));
+	}
+
+	/* Of three, the latest one is as high as the square */
+	.moodboard-channel-card__covers[data-count="3"] > :first-child {
+		grid-row: span 2;
+	}
+
+	.moodboard-channel-card__covers > img {
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: cover;
 	}
 
 	.moodboard-channel-card__name {
-		font-size: var(--app-text-m);
 		overflow-wrap: anywhere;
 	}
 }

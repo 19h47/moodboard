@@ -3,7 +3,7 @@ import { Brick } from 'moodboard-app/brick';
 import { focusTitle } from 'moodboard-app/behaviors';
 
 /**
- * A view, shown when it is the current one, its names in `name`, such as "media text" for the page of a block. Opened,
+ * A view, shown when it is the current one, its names in `name`, such as "media text link" for the page of a block. Opened,
  * it gives the focus to its title; gone back to, to what had it when it hid, such as the card of the block opened.
  */
 class MoodboardViewElement extends Brick {

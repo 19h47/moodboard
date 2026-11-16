@@ -18,3 +18,4 @@ eslint.config.js export-ignore
 bin export-ignore
 pnpm-lock.yaml export-ignore
 TESTING.md export-ignore
+RELEASING.md export-ignore

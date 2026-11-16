@@ -1,0 +1,22 @@
+/**
+ * The box that selects a block, over the whole of its card while the blocks are selected: a box at its corner, the card
+ * lined once selected.
+ */
+
+@layer app.components {
+	.moodboard-select {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: start;
+		justify-content: start;
+		padding: var(--app-space-s);
+		cursor: pointer;
+	}
+
+	.moodboard-select__box {
+		inline-size: 1.25em; /* Exception, an atom of a size of its own: a box as large as an icon */
+		block-size: 1.25em;
+		accent-color: var(--app-text);
+	}
+}

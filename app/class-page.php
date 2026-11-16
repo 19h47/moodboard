@@ -12,9 +12,10 @@
 namespace Moodboard\App;
 
 use Moodboard\Channels;
+use Moodboard\Meta;
 use Moodboard\Plugin;
 use Moodboard\Roles;
-use Moodboard\Texts;
+use Moodboard\Posts;
 
 /**
  * Adds the app page under Media and renders it full screen, instead of the admin interface.
@@ -42,14 +43,14 @@ class Page {
 	 *
 	 * @var list<string>
 	 */
-	public const array PAGE_VIEWS = array( 'channel', 'media', 'text' );
+	public const array PAGE_VIEWS = array( 'channel', 'media', 'text', 'link' );
 
 	/**
 	 * Fields of a channel the app reads.
 	 *
 	 * @var string
 	 */
-	public const string CHANNEL_FIELDS = 'id,name,description,parent,count';
+	public const string CHANNEL_FIELDS = 'id,name,description,parent,count,moodboard_covers';
 
 	/**
 	 * Fields of a media the app reads, in the context of its edition, which gives its title, caption and description as
@@ -67,6 +68,21 @@ class Page {
 	public const string TEXT_FIELDS = 'id,date,title,content,moodboard-channels,meta';
 
 	/**
+	 * Fields of a link the app reads, in the context of its edition, its image embedded: the image of its page. Its page
+	 * reads its player besides, `moodboard_embed`, which a list leaves out, as core may ask the provider of each URL.
+	 *
+	 * @var string
+	 */
+	public const string LINK_FIELDS = 'id,date,title,content,moodboard-channels,meta,featured_media,_links,_embedded';
+
+	/**
+	 * The image of a link, embedded in its response.
+	 *
+	 * @var string
+	 */
+	public const string LINK_EMBED = 'wp:featuredmedia';
+
+	/**
 	 * Most items a page of the REST API gives: the app asks for them all, page after page.
 	 *
 	 * @var int
@@ -81,12 +97,25 @@ class Page {
 	public const string STORAGE_KEY = 'moodboard-app';
 
 	/**
+	 * Arguments of the URL of the app that hold what is shared to it, by what they hold, as the share target of its
+	 * manifest names them: the title, the text and the URL of a page shared from another app, or from a shortcut.
+	 *
+	 * @var array<string,string>
+	 */
+	public const array SHARE_PARAMS = array(
+		'title' => 'moodboard-title',
+		'text'  => 'moodboard-text',
+		'url'   => 'moodboard-url',
+	);
+
+	/**
 	 * Register hooks.
 	 *
 	 * @return void
 	 */
 	public function hooks(): void {
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
+		add_action( 'load-upload.php', array( $this, 'redirect_share' ) );
 	}
 
 	/**
@@ -96,6 +125,30 @@ class Page {
 	 */
 	public static function get_url(): string {
 		return admin_url( 'upload.php?page=' . self::SLUG );
+	}
+
+	/**
+	 * Send what is shared to the app, from the Media page: the share target of the manifest opens its action without
+	 * the arguments of its URL, the page of the app among them, but with what is shared.
+	 *
+	 * @return void
+	 */
+	public function redirect_share(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Changes nothing: the app shows it, to add.
+		$shared = array_filter(
+			array_map(
+				fn( string $param ): string => rawurlencode( sanitize_textarea_field( wp_unslash( $_GET[ $param ] ?? '' ) ) ),
+				array_combine( self::SHARE_PARAMS, self::SHARE_PARAMS )
+			)
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $shared ) {
+			return;
+		}
+
+		wp_safe_redirect( add_query_arg( $shared, self::get_url() ) );
+		exit;
 	}
 
 	/**
@@ -139,8 +192,9 @@ class Page {
 		$this->register_assets();
 		$this->preload( $view, $id );
 
-		$manifest_url  = add_query_arg( 'manifest', '1', self::get_url() );
-		[$favicon_url] = Plugin::get_asset( 'app/favicon.svg' );
+		$manifest_url       = add_query_arg( 'manifest', '1', self::get_url() );
+		[ $favicon_url ]    = Plugin::get_asset( 'app/favicon.svg' );
+		[ $touch_icon_url ] = Plugin::get_asset( 'app/apple-touch-icon.png' );
 
 		require MOODBOARD_DIR_PATH . 'app/partials/moodboard-app.php';
 		exit;
@@ -156,64 +210,53 @@ class Page {
 	 * @return void
 	 */
 	private function preload( string $view, int $id ): void {
-		$path        = fn( string $route, array $args ) => "/wp/v2/$route?" . http_build_query( $args, '', '&', PHP_QUERY_RFC3986 );
-		$page        = array(
+		$path   = fn( string $route, array $args ) => "/wp/v2/$route?" . http_build_query( $args, '', '&', PHP_QUERY_RFC3986 );
+		$page   = array(
 			'per_page' => self::PER_PAGE,
 			'page'     => 1,
 		);
-		$channel_ids = get_terms(
-			array(
-				'taxonomy'   => Channels::TAXONOMY,
-				'hide_empty' => false,
-				'fields'     => 'ids',
-				'meta_key'   => Channels::AUTHOR, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- The channels of a curator, a few dozen.
-				'meta_value' => (string) get_current_user_id(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Idem.
-			)
+		$paths  = array( $path( 'moodboard-channels', array( '_fields' => self::CHANNEL_FIELDS ) + $page ) );
+		$kinds  = array(
+			'media' => array(
+				'route' => 'media',
+				'args'  => array( '_fields' => self::MEDIA_FIELDS ),
+			),
+			'text'  => array(
+				'route' => 'moodboard-texts',
+				'args'  => array( '_fields' => self::TEXT_FIELDS ),
+			),
+			'link'  => array(
+				'route' => 'moodboard-links',
+				'args'  => array(
+					'_fields' => self::LINK_FIELDS,
+					'_embed'  => self::LINK_EMBED,
+				),
+			),
 		);
-		$channel_ids = is_array( $channel_ids ) ? $channel_ids : array();
-		$paths       = array( $path( 'moodboard-channels', array( '_fields' => self::CHANNEL_FIELDS ) + $page ) );
-		$blocks      = fn( string $channels ) => array(
-			$path(
-				'media',
-				array(
-					'_fields'            => self::MEDIA_FIELDS,
-					'context'            => 'edit',
-					'moodboard-channels' => $channels,
-				) + $page
-			),
-			$path(
-				'moodboard-texts',
-				array(
-					'_fields'            => self::TEXT_FIELDS,
-					'context'            => 'edit',
-					'moodboard-channels' => $channels,
-				) + $page
-			),
+		$blocks = fn( array $args ) => array_map(
+			fn( string $kind ) => $path( $kinds[ $kind ]['route'], $kinds[ $kind ]['args'] + array( 'context' => 'edit' ) + ( $args[ $kind ] ?? array() ) + $page ),
+			array_keys( $kinds )
 		);
 
-		if ( 'index' === $view && $channel_ids ) {
-			sort( $channel_ids );
-			$paths = array( ...$paths, ...$blocks( implode( ',', $channel_ids ) ) );
+		// The index, the blocks of the curator, in a channel or none: their media marked as blocks, their texts and links.
+		if ( 'index' === $view ) {
+			$paths = array( ...$paths, ...$blocks( array( 'media' => array( Meta::BLOCK => 1 ) ) ) );
 		}
 
 		if ( 'channel' === $view ) {
-			$paths = array( ...$paths, ...$blocks( (string) $id ) );
+			$channel = array( 'moodboard-channels' => $id );
+			$paths   = array( ...$paths, ...$blocks( array_fill_keys( array_keys( $kinds ), $channel ) ) );
 		}
 
-		$routes = array(
-			'media' => 'media',
-			'text'  => 'moodboard-texts',
-		);
+		// A block shown, its player besides for a link.
+		if ( isset( $kinds[ $view ] ) ) {
+			$args = $kinds[ $view ]['args'] + array( 'context' => 'edit' );
 
-		if ( isset( $routes[ $view ] ) ) {
-			$fields  = 'media' === $view ? self::MEDIA_FIELDS : self::TEXT_FIELDS;
-			$paths[] = $path(
-				"{$routes[ $view ]}/$id",
-				array(
-					'_fields' => $fields,
-					'context' => 'edit',
-				)
-			);
+			if ( 'link' === $view ) {
+				$args['_fields'] .= ',moodboard_embed';
+			}
+
+			$paths[] = $path( "{$kinds[ $view ]['route']}/$id", $args );
 		}
 
 		$data = array_reduce( $paths, 'rest_preload_api_request', array() );
@@ -237,12 +280,15 @@ JS;
 
 	/**
 	 * Render the web app manifest, which makes the app installable. The page links it with crossorigin="use-credentials":
-	 * it is behind the login, like the app.
+	 * it is behind the login, like the app. Its icons are the dark ones: the home screen icon of a web app does not follow
+	 * the system theme. Its share target, where a browser has one, puts the app in the share sheet of the system: what
+	 * is shared opens the Media page, which sends it to the app.
 	 *
 	 * @return void
 	 */
 	private function render_manifest(): void {
-		[ $icon_url ] = Plugin::get_asset( 'app/favicon.svg' );
+		[ $icon_url ]       = Plugin::get_asset( 'app/favicon-dark.svg' );
+		[ $touch_icon_url ] = Plugin::get_asset( 'app/apple-touch-icon.png' );
 
 		$manifest = array(
 			'name'             => __( 'Moodboard', 'moodboard' ),
@@ -258,6 +304,16 @@ JS;
 					'sizes' => 'any',
 					'type'  => 'image/svg+xml',
 				),
+				array(
+					'src'   => $touch_icon_url,
+					'sizes' => '180x180',
+					'type'  => 'image/png',
+				),
+			),
+			'share_target'     => array(
+				'action' => admin_url( 'upload.php' ),
+				'method' => 'GET',
+				'params' => self::SHARE_PARAMS,
 			),
 		);
 
@@ -292,9 +348,10 @@ JS;
 		// No file of its own: printed, it prints its sheets, the components then the views, as their layers follow one another.
 		wp_register_style( 'moodboard-app-sheets', false, $sheets ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- No URL to version.
 
-		// What the modules take from WordPress, wp.apiFetch, wp.i18n and wp.url, and the config, before them.
-		wp_register_script( 'moodboard-app-config', false, array( 'wp-api-fetch', 'wp-i18n', 'wp-url' ), false, false ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters -- No URL to version.
-		wp_localize_script( 'moodboard-app-config', 'moodboardApp', $this->get_config() );
+		// The theme before the first paint, with what the modules take from WordPress: wp.apiFetch, wp.i18n, wp.url and the config.
+		[ $theme_url, $theme_version ] = Plugin::get_asset( 'app/js/moodboard-app-theme.js' );
+		wp_register_script( 'moodboard-app-theme', $theme_url, array( 'wp-api-fetch', 'wp-i18n', 'wp-url' ), $theme_version, false );
+		wp_localize_script( 'moodboard-app-theme', 'moodboardApp', $this->get_config() );
 
 		$shared    = array();
 		$lib_files = glob( MOODBOARD_DIR_PATH . 'app/js/lib/*.js' );
@@ -342,19 +399,32 @@ JS;
 	}
 
 	/**
-	 * What the scripts need from the server: the fields they read, the routes of the REST API and the URL of the app.
+	 * What the scripts need from the server: the fields they read, the routes of the REST API, the URL of the app, its
+	 * icons, by theme, and the arguments of its URL that hold what is shared to it.
 	 *
 	 * @return array<string,mixed>
 	 */
 	private function get_config(): array {
+		[ $favicon_url ]      = Plugin::get_asset( 'app/favicon.svg' );
+		[ $favicon_dark_url ] = Plugin::get_asset( 'app/favicon-dark.svg' );
+
 		return array(
 			'appUrl'        => self::get_url(),
+			'storageKey'    => self::STORAGE_KEY,
 			'channelFields' => self::CHANNEL_FIELDS,
 			'mediaFields'   => self::MEDIA_FIELDS,
 			'textFields'    => self::TEXT_FIELDS,
+			'linkFields'    => self::LINK_FIELDS,
+			'linkEmbed'     => self::LINK_EMBED,
 			'perPage'       => self::PER_PAGE,
 			'channelsBase'  => (string) get_taxonomy( Channels::TAXONOMY )->rest_base,
-			'textsBase'     => (string) get_post_type_object( Texts::POST_TYPE )?->rest_base,
+			'textsBase'     => (string) get_post_type_object( Posts::TEXT )?->rest_base,
+			'linksBase'     => (string) get_post_type_object( Posts::LINK )?->rest_base,
+			'icons'         => array(
+				'light' => $favicon_url,
+				'dark'  => $favicon_dark_url,
+			),
+			'shareParams'   => self::SHARE_PARAMS,
 		);
 	}
 }

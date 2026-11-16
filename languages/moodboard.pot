@@ -9,20 +9,20 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-16T09:12:55+00:00\n"
+"POT-Creation-Date: 2026-11-16T14:07:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: moodboard\n"
 
 #. Plugin Name of the plugin
 #: moodboard.php:11
-#: app/class-login.php:200
-#: app/class-page.php:109
-#: app/class-page.php:110
-#: app/class-page.php:248
-#: app/class-page.php:249
-#: app/partials/moodboard-app.php:36
-#: app/partials/moodboard-app.php:53
+#: app/class-login.php:207
+#: app/class-page.php:162
+#: app/class-page.php:163
+#: app/class-page.php:294
+#: app/class-page.php:295
+#: app/partials/moodboard-app.php:38
+#: app/partials/moodboard-app.php:56
 msgid "Moodboard"
 msgstr ""
 
@@ -47,24 +47,21 @@ msgid "https://www.19h47.fr"
 msgstr ""
 
 #. translators: 1: what the page shows, such as a channel or a view, 2: name of the app.
-#: app/class-login.php:191
+#: app/class-login.php:198
 #, php-format
 msgid "%1$s – %2$s"
 msgstr ""
 
-#: app/components/add-block.php:14
-msgid "A text, or the URL of an image"
+#: app/components/add-block.php:15
+msgid "A text, or a URL"
 msgstr ""
 
-#: app/components/add-block.php:19
-msgid "A text, the URL of an image, or files dropped here"
+#: app/components/add-block.php:21
+msgid "Pick files"
 msgstr ""
 
-#: app/components/add-block.php:24
-msgid "Files"
-msgstr ""
-
-#: app/components/add-block.php:26
+#: app/components/add-block.php:23
+#: app/partials/moodboard-app.php:84
 msgid "Add"
 msgstr ""
 
@@ -90,7 +87,7 @@ msgid "What the image shows, for those who do not see it."
 msgstr ""
 
 #: app/components/block-form.php:28
-#: app/partials/moodboard-app.php:128
+#: app/partials/moodboard-app.php:140
 msgid "Source"
 msgstr ""
 
@@ -119,175 +116,278 @@ msgstr ""
 msgid "Delete the channel"
 msgstr ""
 
-#: app/components/connect.php:12
+#: app/components/connect.php:19
 msgid "Find or add a channel"
 msgstr ""
 
-#: app/components/connect.php:17
-msgid "Channels of the block"
+#: app/components/connect.php:24
+#: app/partials/moodboard-app.php:26
+#: app/partials/moodboard-app.php:148
+msgid "Channels"
 msgstr ""
 
 #: app/components/dialog-close.php:14
+#: app/partials/moodboard-app.php:216
 msgid "Close"
 msgstr ""
 
-#: app/components/search.php:15
+#: app/components/note.php:13
+#: app/partials/moodboard-app.php:153
+#: app/partials/moodboard-app.php:174
+msgid "Delete"
+msgstr ""
+
+#: app/components/notes.php:10
+msgid "Notes"
+msgstr ""
+
+#: app/components/notes.php:15
+msgid "A note"
+msgstr ""
+
+#: app/components/notes.php:16
+msgid "A note, for yourself…"
+msgstr ""
+
+#: app/components/notes.php:19
+msgid "Add the note"
+msgstr ""
+
+#: app/components/search.php:13
 msgid "Search the moodboard"
 msgstr ""
 
-#: app/components/search.php:19
+#: app/components/search.php:17
 msgid "Search channels and blocks…"
 msgstr ""
 
-#: app/components/search.php:23
+#: app/partials/moodboard-app.php:25
+msgid "All"
+msgstr ""
+
+#: app/partials/moodboard-app.php:27
+msgid "Blocks"
+msgstr ""
+
+#: app/partials/moodboard-app.php:58
+msgid "What the index shows"
+msgstr ""
+
+#: app/partials/moodboard-app.php:68
+msgid "Size of the cards"
+msgstr ""
+
+#: app/partials/moodboard-app.php:71
 msgctxt "verb"
 msgid "Search"
 msgstr ""
 
-#: app/partials/moodboard-app.php:24
-msgid "All"
+#: app/partials/moodboard-app.php:72
+#: app/partials/moodboard-app.php:122
+msgid "Present"
 msgstr ""
 
-#: app/partials/moodboard-app.php:25
-#: app/partials/moodboard-app.php:137
-msgid "Channels"
+#: app/partials/moodboard-app.php:74
+#: app/js/bricks/moodboard-selection.js:64
+msgid "Select blocks"
 msgstr ""
 
-#: app/partials/moodboard-app.php:26
-msgid "Blocks"
+#: app/partials/moodboard-app.php:77
+msgid "Dark theme"
 msgstr ""
 
-#: app/partials/moodboard-app.php:57
+#: app/partials/moodboard-app.php:77
+msgid "Light or dark theme"
+msgstr ""
+
+#: app/partials/moodboard-app.php:89
 #: app/js/bricks/moodboard-channel-header.js:59
 msgid "Index"
 msgstr ""
 
-#: app/partials/moodboard-app.php:63
-msgid "What the index shows"
-msgstr ""
-
-#: app/partials/moodboard-app.php:73
-msgid "Channel"
-msgstr ""
-
-#: app/partials/moodboard-app.php:84
+#: app/partials/moodboard-app.php:101
 msgid "Channels it is under"
 msgstr ""
 
-#: app/partials/moodboard-app.php:93
-msgid "Sub-channel"
-msgstr ""
-
-#: app/partials/moodboard-app.php:95
-#: app/partials/moodboard-app.php:142
+#: app/partials/moodboard-app.php:107
+#: app/partials/moodboard-app.php:151
 msgid "Edit"
 msgstr ""
 
-#: app/partials/moodboard-app.php:112
+#: app/partials/moodboard-app.php:119
 msgid "Blocks of the channel"
 msgstr ""
 
-#: app/partials/moodboard-app.php:114
+#: app/partials/moodboard-app.php:123
+#: app/partials/moodboard-app.php:208
 msgid "Previous"
 msgstr ""
 
-#: app/partials/moodboard-app.php:115
+#: app/partials/moodboard-app.php:124
+#: app/partials/moodboard-app.php:215
 msgid "Next"
 msgstr ""
 
-#: app/partials/moodboard-app.php:120
+#: app/partials/moodboard-app.php:131
 msgid "Open the file"
 msgstr ""
 
 #: app/partials/moodboard-app.php:132
-msgid "Added"
-msgstr ""
-
-#: app/partials/moodboard-app.php:141
-msgid "Connect"
+msgid "Open the page"
 msgstr ""
 
 #: app/partials/moodboard-app.php:144
-msgid "Delete"
+msgid "Added"
 msgstr ""
 
-#: app/partials/moodboard-app.php:158
+#: app/partials/moodboard-app.php:150
+#: app/partials/moodboard-app.php:172
+#: app/partials/moodboard-app.php:279
+msgid "Connect"
+msgstr ""
+
+#: app/partials/moodboard-app.php:165
+msgid "Add blocks"
+msgstr ""
+
+#: app/partials/moodboard-app.php:166
+#: app/partials/moodboard-app.php:224
 msgid "New channel"
 msgstr ""
 
-#: app/partials/moodboard-app.php:174
+#: app/partials/moodboard-app.php:175
+msgid "Done"
+msgstr ""
+
+#: app/partials/moodboard-app.php:195
+msgid "Presentation"
+msgstr ""
+
+#: app/partials/moodboard-app.php:209
+msgid "Play on their own"
+msgstr ""
+
+#: app/partials/moodboard-app.php:240
 msgid "Edit the channel"
 msgstr ""
 
-#: app/partials/moodboard-app.php:190
+#: app/partials/moodboard-app.php:256
 msgid "Edit the block"
 msgstr ""
 
-#: app/partials/moodboard-app.php:198
+#: app/partials/moodboard-app.php:264
 msgid "Connect to channels"
 msgstr ""
 
-#: includes/class-channels.php:67
+#: app/partials/moodboard-app.php:272
+msgid "Connect the blocks selected"
+msgstr ""
+
+#: includes/class-channels.php:81
+msgid "The latest images of the channel and of its sub-channels, at the size of a card."
+msgstr ""
+
+#: includes/class-channels.php:148
 msgctxt "moodboard channels general name"
 msgid "Channels"
 msgstr ""
 
-#: includes/class-channels.php:68
+#: includes/class-channels.php:149
 msgctxt "moodboard channels singular name"
 msgid "Channel"
 msgstr ""
 
-#: includes/class-channels.php:96
+#: includes/class-channels.php:177
 msgid "The curator of the channel."
 msgstr ""
 
-#: includes/class-channels.php:138
+#: includes/class-channels.php:219
 msgid "A channel goes under one of your channels only."
 msgstr ""
 
-#: includes/class-meta.php:53
+#: includes/class-media.php:50
+msgid "Limit the result to the blocks of the moodboard of the current user."
+msgstr ""
+
+#: includes/class-meta.php:62
 msgid "The URL the block comes from."
 msgstr ""
 
-#: includes/class-roles.php:176
-msgctxt "User role"
-msgid "Curator"
+#: includes/class-meta.php:77
+msgid "Whether the media is a block of the moodboard of its author."
 msgstr ""
 
-#: includes/class-texts.php:51
+#: includes/class-posts.php:76
 msgctxt "moodboard texts general name"
 msgid "Texts"
 msgstr ""
 
-#: includes/class-texts.php:52
+#: includes/class-posts.php:77
 msgctxt "moodboard texts singular name"
 msgid "Text"
+msgstr ""
+
+#: includes/class-posts.php:80
+msgctxt "moodboard links general name"
+msgid "Links"
+msgstr ""
+
+#: includes/class-posts.php:81
+msgctxt "moodboard links singular name"
+msgid "Link"
+msgstr ""
+
+#: includes/class-posts.php:139
+msgid "The player of the URL of the link, as core embeds it, empty for none."
+msgstr ""
+
+#: includes/class-roles.php:152
+msgctxt "User role"
+msgid "Curator"
 msgstr ""
 
 #: includes/class-updater.php:181
 msgid "Could not rename the update folder."
 msgstr ""
 
-#: app/js/bricks/moodboard-block-form.js:80
+#. translators: %s: name of a channel.
+#: app/js/bricks/moodboard-add.js:80
+#, js-format
+msgid "Add to %s"
+msgstr ""
+
+#: app/js/bricks/moodboard-add.js:83
+msgid "Add to the index"
+msgstr ""
+
+#: app/js/bricks/moodboard-block-form.js:82
 msgid "The block could not be saved."
 msgstr ""
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-block.js:166
+#: app/js/bricks/moodboard-block.js:235
+#: app/js/bricks/moodboard-selection.js:76
 #, js-format
 msgid "Remove from %s"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:238
+#: app/js/bricks/moodboard-block.js:307
 msgid "Delete this media and its file?"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:239
+#: app/js/bricks/moodboard-block.js:308
 msgid "Delete this text?"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:249
+#: app/js/bricks/moodboard-block.js:318
 msgid "Block deleted."
+msgstr ""
+
+#. translators: %s: name of a channel.
+#: app/js/bricks/moodboard-bulk.js:34
+#: app/js/bricks/moodboard-connect.js:34
+#, js-format
+msgid "Add the channel “%s”"
 msgstr ""
 
 #: app/js/bricks/moodboard-channel-form.js:82
@@ -299,30 +399,84 @@ msgid "Delete this channel? Its sub-channels and the blocks in no other channel 
 msgstr ""
 
 #: app/js/bricks/moodboard-channel-form.js:171
-msgid "Delete this channel? Its sub-channels go to the index; the blocks in no other channel stay in the media library only."
+msgid "Delete this channel? Its sub-channels and its blocks stay in the index."
 msgstr ""
 
 #: app/js/bricks/moodboard-channel-form.js:183
 msgid "Channel deleted."
 msgstr ""
 
-#. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-connect.js:140
-#, js-format
-msgid "Add the channel “%s”"
+#: app/js/bricks/moodboard-density.js:29
+msgid "Small"
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:96
+#: app/js/bricks/moodboard-density.js:30
+msgid "Medium"
+msgstr ""
+
+#: app/js/bricks/moodboard-density.js:31
+msgid "Large"
+msgstr ""
+
+#: app/js/bricks/moodboard-density.js:32
+msgid "Two a row"
+msgstr ""
+
+#. translators: %s: name of a channel.
+#: app/js/bricks/moodboard-drop.js:175
+#, js-format
+msgid "Drop into %s"
+msgstr ""
+
+#: app/js/bricks/moodboard-drop.js:178
+msgid "Drop into the index"
+msgstr ""
+
+#: app/js/bricks/moodboard-grid.js:104
 msgid "Loading…"
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:153
+#: app/js/bricks/moodboard-grid.js:188
 msgid "Nothing found."
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:158
-msgid "No channel yet: add one to begin."
+#: app/js/bricks/moodboard-grid.js:192
+msgid "Nothing yet: drop images here, or add some with +."
 msgstr ""
+
+#: app/js/bricks/moodboard-grid.js:196
+msgid "Nothing yet: drop images here, or add a channel with +."
+msgstr ""
+
+#: app/js/bricks/moodboard-notes.js:43
+msgid "The note could not be saved."
+msgstr ""
+
+#: app/js/bricks/moodboard-present.js:46
+msgid "No block to present."
+msgstr ""
+
+#. translators: 1: position of the block, 2: number of blocks.
+#: app/js/bricks/moodboard-present.js:239
+#, js-format
+msgid "%1$d of %2$d"
+msgstr ""
+
+#. translators: %d: number of blocks selected.
+#: app/js/bricks/moodboard-selection.js:56
+#, js-format
+msgid "%d block selected"
+msgid_plural "%d blocks selected"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of blocks selected.
+#: app/js/bricks/moodboard-selection.js:104
+#, js-format
+msgid "Delete %d block, and its file?"
+msgid_plural "Delete %d blocks, and their files?"
+msgstr[0] ""
+msgstr[1] ""
 
 #. translators: %d: number of blocks.
 #: app/js/lib/render.js:21
@@ -332,26 +486,48 @@ msgid_plural "%d blocks"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/js/lib/store.js:134
+#. translators: %s: name of a block.
+#: app/js/lib/render.js:140
+#, js-format
+msgid "Select %s"
+msgstr ""
+
+#: app/js/lib/store.js:234
 msgid "The channels could not load."
 msgstr ""
 
-#: app/js/lib/store.js:199
+#: app/js/lib/store.js:296
 msgid "The blocks could not load."
 msgstr ""
 
-#: app/js/lib/store.js:242
+#: app/js/lib/store.js:342
 msgid "The block could not load."
 msgstr ""
 
-#: app/js/lib/store.js:320
+#: app/js/lib/store.js:426
 msgid "A block could not be added."
 msgstr ""
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:331
+#: app/js/lib/store.js:437
 #, js-format
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] ""
 msgstr[1] ""
+
+#: app/js/lib/store.js:621
+msgid "Blocks connected."
+msgstr ""
+
+#: app/js/lib/store.js:633
+msgid "Blocks removed from the channel."
+msgstr ""
+
+#: app/js/lib/store.js:644
+msgid "Blocks deleted."
+msgstr ""
+
+#: app/js/lib/store.js:667
+msgid "The notes could not load."
+msgstr ""

@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="#f4f3ef"/><g fill="#1c1c1a"><rect x="40" y="40" width="48" height="48"/><rect x="104" y="40" width="48" height="48"/><rect x="168" y="104" width="48" height="48"/><rect x="40" y="168" width="48" height="48"/><rect x="104" y="168" width="48" height="48"/><rect x="168" y="168" width="48" height="48"/></g><g fill="none" stroke="#1c1c1a" stroke-width="4"><rect x="170" y="42" width="44" height="44"/><rect x="42" y="106" width="44" height="44"/><rect x="106" y="106" width="44" height="44"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- bookmark, from Material Symbols, by Google, under the Apache License 2.0: https://github.com/google/material-design-icons -->
+  <rect width="256" height="256" fill="#1a1a1a" />
+  <path transform="translate(128 128) scale(0.155555) translate(-480 480)" fill="#bababa" d="M200-120v-640q0-33 23.5-56.5T280-840h400q33 0 56.5 23.5T760-760v640L480-240 200-120Z" />
+</svg>

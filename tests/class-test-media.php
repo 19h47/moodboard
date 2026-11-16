@@ -68,6 +68,7 @@ class Test_Media extends TestCase {
 			array(
 				'url'                => $url,
 				'moodboard-channels' => array( $places ),
+				'meta'               => array( 'moodboard_block' => true ),
 			)
 		);
 
@@ -77,6 +78,30 @@ class Test_Media extends TestCase {
 
 		$this->assertSame( array( $places ), wp_get_object_terms( $media_id, 'moodboard_channel', array( 'fields' => 'ids' ) ) );
 		$this->assertSame( $url, get_post_meta( $media_id, 'moodboard_source', true ) );
+		$this->assertContains( $media_id, $this->list_media( array( 'moodboard_block' => true ) ) );
+	}
+
+	/**
+	 * The blocks of the index are the media of the curator marked as blocks, in a channel or none: neither another media
+	 * of theirs, nor a block of another curator.
+	 *
+	 * @return void
+	 */
+	public function test_the_index_lists_the_blocks_of_the_curator(): void {
+		$other = $this->add_media();
+
+		$this->as_user( 'moodboard_curator' );
+
+		$places  = $this->add_channel( 'Lieux' );
+		$loose   = $this->add_media();
+		$placed  = $this->add_media( array( $places ) );
+		$library = $this->add_media( array(), false );
+
+		$blocks = $this->list_media( array( 'moodboard_block' => true ) );
+
+		$this->assertEqualSets( array( $loose, $placed ), $blocks );
+		$this->assertNotContains( $other, $blocks );
+		$this->assertNotContains( $library, $blocks );
 	}
 
 	/**

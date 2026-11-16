@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><style>path{fill:#1c1c1a}@media (prefers-color-scheme:dark){path{fill:#f4f3ef}}</style><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- bookmark, from Material Symbols, by Google, under the Apache License 2.0: https://github.com/google/material-design-icons -->
+  <rect width="180" height="180" fill="#ffffff" />
+  <path transform="translate(90 90) scale(0.109375) translate(-480 480)" fill="#454545" d="M200-120v-640q0-33 23.5-56.5T280-840h400q33 0 56.5 23.5T760-760v640L480-240 200-120Z" />
+</svg>

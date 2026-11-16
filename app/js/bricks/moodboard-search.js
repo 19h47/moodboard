@@ -5,14 +5,43 @@ import { Brick } from 'moodboard-app/brick';
 const SEARCH_DELAY_MS = 300;
 
 /**
- * The search of the index: its field follows the search of the URL, and searches as it is typed.
+ * The search of the index, folded under its control of the header, `command="--toggle"`, which unfolds it: it follows
+ * the search of the URL, unfolded while it has one, and searches as it is typed. Folded, it searches no more.
  */
 class MoodboardSearchElement extends Brick {
 	connect( signal ) {
 		/** @type {HTMLInputElement} */
 		const $input = this.querySelector( 'input[type="search"]' );
+		const $toggles = [
+			...document.querySelectorAll( `[commandfor="${ this.id }"]` ),
+		];
+		const show = ( /** @type {boolean} */ isShown ) => {
+			this.hidden = ! isShown;
+			$toggles.forEach( ( $toggle ) =>
+				$toggle.setAttribute( 'aria-expanded', isShown.toString() )
+			);
+		};
 		/** @type {number} */
 		let timer;
+
+		this.addEventListener(
+			'command',
+			( /** @type {CommandEvent} */ event ) => {
+				if ( '--toggle' !== event.command ) {
+					return;
+				}
+
+				show( this.hidden );
+
+				if ( this.hidden ) {
+					clearTimeout( timer );
+					store.setQuery( '' );
+				} else {
+					$input.focus();
+				}
+			},
+			{ signal }
+		);
 
 		this.querySelector( 'form' ).addEventListener(
 			'submit',
@@ -42,6 +71,10 @@ class MoodboardSearchElement extends Brick {
 				( query ) => {
 					if ( $input.value !== query ) {
 						$input.value = query;
+					}
+
+					if ( query ) {
+						show( true );
 					}
 				}
 			),

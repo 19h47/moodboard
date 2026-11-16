@@ -43,6 +43,13 @@ class Channels {
 	public const string AUTHOR = 'moodboard_author';
 
 	/**
+	 * Most images a channel shows on its card.
+	 *
+	 * @var int
+	 */
+	public const int COVERS = 4;
+
+	/**
 	 * Register hooks.
 	 *
 	 * @return void
@@ -55,6 +62,80 @@ class Channels {
 		add_filter( 'rest_pre_insert_' . self::TAXONOMY, array( $this, 'set_slug' ), 10, 2 );
 		add_filter( 'rest_' . self::TAXONOMY . '_query', array( $this, 'list_own' ) );
 		add_action( 'pre_delete_term', array( $this, 'keep_blocks' ), 10, 2 );
+		add_action( 'rest_api_init', array( $this, 'register_covers' ) );
+	}
+
+	/**
+	 * Give the channels of the REST API their covers, the latest images in them or in their sub-channels, which their
+	 * card shows: a field computed, never stored.
+	 *
+	 * @return void
+	 */
+	public function register_covers(): void {
+		register_rest_field(
+			self::TAXONOMY,
+			'moodboard_covers',
+			array(
+				'get_callback' => fn( array $channel ) => self::get_covers( (int) $channel['id'] ),
+				'schema'       => array(
+					'description' => __( 'The latest images of the channel and of its sub-channels, at the size of a card.', 'moodboard' ),
+					'type'        => 'array',
+					'context'     => array( 'view', 'edit' ),
+					'readonly'    => true,
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'url'    => array(
+								'type'   => 'string',
+								'format' => 'uri',
+							),
+							'width'  => array( 'type' => 'integer' ),
+							'height' => array( 'type' => 'integer' ),
+						),
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * The latest images of a channel and of its sub-channels, at their medium large size, sharp on a card two a row, up to
+	 * COVERS.
+	 *
+	 * @param int $term_id Term ID of the channel.
+	 * @return list<array{url:string,width:int,height:int}>
+	 */
+	public static function get_covers( int $term_id ): array {
+		$image_ids = get_posts(
+			array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'post_mime_type' => 'image',
+				'numberposts'    => self::COVERS,
+				'fields'         => 'ids',
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- The images of a channel.
+					array(
+						'taxonomy' => self::TAXONOMY,
+						'terms'    => $term_id,
+					),
+				),
+			)
+		);
+		$covers    = array();
+
+		foreach ( $image_ids as $image_id ) {
+			$image = wp_get_attachment_image_src( (int) $image_id, 'medium_large' );
+
+			if ( $image ) {
+				$covers[] = array(
+					'url'    => $image[0],
+					'width'  => (int) $image[1],
+					'height' => (int) $image[2],
+				);
+			}
+		}
+
+		return $covers;
 	}
 
 	/**
@@ -70,7 +151,7 @@ class Channels {
 
 		register_taxonomy(
 			self::TAXONOMY,
-			array( 'attachment', Texts::POST_TYPE ),
+			array( 'attachment', Posts::TEXT, Posts::LINK ),
 			array(
 				'labels'                => $labels,
 				'hierarchical'          => true,
@@ -194,9 +275,8 @@ class Channels {
 	}
 
 	/**
-	 * Before a channel is deleted, give its parent the blocks that are in no other channel, so they stay in the
-	 * moodboard; core gives it its sub-channels already. A channel without parent leaves them in the media library, and
-	 * the texts without a channel.
+	 * Before a channel is deleted, give its parent the blocks that are in no other channel; core gives it its
+	 * sub-channels already. A channel without parent leaves them in the index, as every block of the curator.
 	 *
 	 * @param int    $term_id  Term ID.
 	 * @param string $taxonomy Taxonomy slug.

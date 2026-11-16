@@ -18,12 +18,18 @@ declare global {
 		};
 		moodboardApp: {
 			appUrl: string;
+			storageKey: string;
 			channelFields: string;
 			mediaFields: string;
 			textFields: string;
 			perPage: number;
 			channelsBase: string;
 			textsBase: string;
+			linkFields: string;
+			linkEmbed: string;
+			linksBase: string;
+			icons: { light: string; dark: string };
+			shareParams: { title: string; text: string; url: string };
 		};
 	}
 

@@ -1,7 +1,7 @@
 import { __, sprintf } from 'moodboard-app/app';
 import { store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
-import { clone, fill } from 'moodboard-app/dom';
+import { isNewName, renderChannelOptions } from 'moodboard-app/render';
 
 /** @import { Block } from 'moodboard-app/api' */
 
@@ -18,23 +18,36 @@ class MoodboardConnectElement extends Brick {
 		const $list = this.querySelector( '[data-list="channels"]' );
 		/** @type {HTMLButtonElement} */
 		const $create = this.querySelector( '[data-action="create"]' );
+		const fill = () => {
+			const { items } = store.get().channels;
+
+			$list.replaceChildren(
+				...renderChannelOptions(
+					items,
+					$filter.value,
+					this.#block()?.channels ?? []
+				)
+			);
+			$create.hidden = ! isNewName( items, $filter.value );
+			$create.textContent = sprintf(
+				/* translators: %s: name of a channel. */
+				__( 'Add the channel “%s”', 'moodboard' ),
+				$filter.value.trim()
+			);
+		};
 
 		$dialog.addEventListener(
 			'command',
 			( /** @type {CommandEvent} */ event ) => {
 				if ( 'show-modal' === event.command ) {
 					$filter.value = '';
-					this.#fill( $list, $create, '' );
+					fill();
 				}
 			},
 			{ signal }
 		);
 
-		$filter.addEventListener(
-			'input',
-			() => this.#fill( $list, $create, $filter.value ),
-			{ signal }
-		);
+		$filter.addEventListener( 'input', fill, { signal } );
 
 		$list.addEventListener(
 			'change',
@@ -73,7 +86,7 @@ class MoodboardConnectElement extends Brick {
 
 					await store.connect( this.#block(), channel.id, true );
 					$filter.value = '';
-					this.#fill( $list, $create, '' );
+					fill();
 				} catch ( error ) {
 					store.notify( error?.message ?? '' );
 				} finally {
@@ -89,57 +102,12 @@ class MoodboardConnectElement extends Brick {
 	/**
 	 * The block shown.
 	 *
-	 * @return {Block} The block.
+	 * @return {Block|undefined} The block.
 	 */
 	#block() {
 		const { view, id, blocks } = store.get();
 
 		return blocks[ `${ view }-${ id }` ];
-	}
-
-	/**
-	 * Lists the channels whose name has the filter, ticked for those of the block, and offers a new channel of the name
-	 * typed when none has it.
-	 *
-	 * @param {HTMLElement}       $list   The list.
-	 * @param {HTMLButtonElement} $create The button that adds a channel.
-	 * @param {string}            filter  The filter.
-	 */
-	#fill( $list, $create, filter ) {
-		const name = filter.trim();
-		const search = name.toLocaleLowerCase();
-		const block = this.#block();
-		const channels = store
-			.get()
-			.channels.items.filter( ( channel ) =>
-				channel.name.toLocaleLowerCase().includes( search )
-			)
-			.toSorted( ( a, b ) => a.name.localeCompare( b.name ) );
-
-		$list.replaceChildren(
-			...channels.map( ( channel ) => {
-				const $item = clone( 'moodboard-connect-option' );
-				/** @type {HTMLInputElement} */
-				const $box = $item.querySelector( 'input' );
-
-				$box.value = channel.id.toString();
-				$box.checked = block?.channels.includes( channel.id ) ?? false;
-				fill( $item, { name: channel.name } );
-
-				return $item;
-			} )
-		);
-
-		$create.hidden =
-			! name ||
-			channels.some(
-				( channel ) => channel.name.toLocaleLowerCase() === search
-			);
-		$create.textContent = sprintf(
-			/* translators: %s: name of a channel. */
-			__( 'Add the channel “%s”', 'moodboard' ),
-			name
-		);
 	}
 }
 customElements.define( 'moodboard-connect', MoodboardConnectElement );

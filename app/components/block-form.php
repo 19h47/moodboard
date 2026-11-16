@@ -14,7 +14,7 @@
 	</p>
 	<p class="moodboard-field">
 		<label for="moodboard-block-body">
-			<span data-kind="media"><?php esc_html_e( 'Description', 'moodboard' ); ?></span>
+			<span data-kind="media link"><?php esc_html_e( 'Description', 'moodboard' ); ?></span>
 			<span data-kind="text"><?php esc_html_e( 'Text', 'moodboard' ); ?></span>
 		</label>
 		<textarea class="moodboard-input" id="moodboard-block-body" name="body" rows="6"></textarea>

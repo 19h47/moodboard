@@ -3,14 +3,17 @@ import { listKey, store } from 'moodboard-app/store';
 import { back, urlOf } from 'moodboard-app/router';
 import { Brick } from 'moodboard-app/brick';
 import { clone, fill, fillImage } from 'moodboard-app/dom';
-import { formatDate, formatKind } from 'moodboard-app/render';
+import { formatDate, formatKind, nameOf } from 'moodboard-app/render';
 
 /** @import { Block } from 'moodboard-app/api' */
 
+// How far a finger goes across the media for a swipe, rather than a tap.
+const SWIPE_PX = 60;
+
 /**
- * The page of a block: a media, its image, its video or a link to its file, or a text; its title, its description, its
- * source and its date, the channels it is in, and what changes it. ← and → open its neighbours in the channel it was
- * opened from, Escape goes back to it.
+ * The page of a block: a media, its image, its video or a link to its file; a text; or a link, its player, else the image
+ * of its page, and a link to it. Then its title, its description, its source and its date, the channels it is in, and
+ * what changes it. ← and → open its neighbours in the channel it was opened from, Escape goes back to it.
  */
 class MoodboardBlockElement extends Brick {
 	/** @type {Block|null} */
@@ -20,7 +23,7 @@ class MoodboardBlockElement extends Brick {
 		return [
 			store.select(
 				( state ) =>
-					'media' === state.view || 'text' === state.view
+					[ 'media', 'text', 'link' ].includes( state.view )
 						? state.blocks[ `${ state.view }-${ state.id }` ] ??
 						  null
 						: null,
@@ -48,6 +51,7 @@ class MoodboardBlockElement extends Brick {
 	 * @return {() => void} Nothing to unsubscribe.
 	 */
 	#listen( signal ) {
+		this.#swipe( signal );
 		this.addEventListener(
 			'click',
 			( event ) => {
@@ -104,6 +108,50 @@ class MoodboardBlockElement extends Brick {
 	}
 
 	/**
+	 * On a screen of touch, a swipe across the media opens the block after it, to the left, or before it, to the right;
+	 * a swipe up or down scrolls the page, as the media leaves it to the browser.
+	 *
+	 * @param {AbortSignal} signal Stops listening.
+	 */
+	#swipe( signal ) {
+		/** @type {HTMLElement} */
+		const $media = this.querySelector( '[data-part="media"]' );
+		/** @type {PointerEvent|null} */
+		let start = null;
+
+		$media.addEventListener(
+			'pointerdown',
+			( event ) => {
+				start = 'mouse' === event.pointerType ? null : event;
+			},
+			{ signal }
+		);
+
+		$media.addEventListener(
+			'pointerup',
+			( event ) => {
+				const dx = start ? event.clientX - start.clientX : 0;
+				const dy = start ? event.clientY - start.clientY : 0;
+				/** @type {HTMLAnchorElement|null} */
+				const $link = this.querySelector(
+					`[data-part="${ dx < 0 ? 'next' : 'previous' }"]`
+				);
+
+				start = null;
+
+				if (
+					Math.abs( dx ) > SWIPE_PX &&
+					Math.abs( dx ) > 2 * Math.abs( dy ) &&
+					! $link?.hidden
+				) {
+					navigation.navigate( $link.href );
+				}
+			},
+			{ signal }
+		);
+	}
+
+	/**
 	 * Fills the page with a block, or empties it until it has loaded.
 	 *
 	 * @param {Block|null} block The block.
@@ -119,6 +167,11 @@ class MoodboardBlockElement extends Brick {
 		const $video = this.querySelector( '[data-field="video"]' );
 		/** @type {HTMLAnchorElement} */
 		const $file = this.querySelector( '[data-field="file"]' );
+		/** @type {HTMLElement} */
+		const $embed = this.querySelector( '[data-field="embed"]' );
+		/** @type {HTMLAnchorElement} */
+		const $open = this.querySelector( '[data-field="open"]' );
+		const embed = 'link' === block?.kind ? block.embed ?? '' : '';
 		/** @type {HTMLAnchorElement} */
 		const $source = this.querySelector( '[data-field="source"]' );
 		/** @type {HTMLAnchorElement} */
@@ -129,8 +182,9 @@ class MoodboardBlockElement extends Brick {
 		const $disconnect = this.querySelector( '[data-action="disconnect"]' );
 		const isVideo = block?.mime.startsWith( 'video/' ) ?? false;
 
+		// Its title written, else what names it, for assistive technologies only: an image named after its file shows none.
 		fill( this, {
-			title: block?.title ?? '',
+			title: block ? nameOf( block ) : '',
 			description: block?.description ?? '',
 			text: block?.text ?? '',
 			source: block?.source ?? '',
@@ -138,8 +192,23 @@ class MoodboardBlockElement extends Brick {
 			channel: fromChannel?.name ?? '',
 		} );
 
-		fillImage( $image, block?.image ?? null );
+		this.querySelector( '[data-field="title"]' ).toggleAttribute(
+			'data-untitled',
+			! block?.label
+		);
+		// A link plays its URL where core embeds it, else shows the image of its page.
+		fillImage( $image, embed ? null : block?.image ?? null );
 		$image.alt = block?.alt ?? '';
+
+		if ( $embed.dataset.embed !== embed ) {
+			// The player of a provider of core, its HTML filtered by core as it embeds it in a post.
+			$embed.innerHTML = embed;
+			$embed.dataset.embed = embed;
+		}
+
+		$embed.hidden = ! embed;
+		$open.hidden = 'link' !== block?.kind;
+		$open.href = 'link' === block?.kind ? block.url : '';
 
 		$video.hidden = ! isVideo;
 

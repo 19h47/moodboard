@@ -1,11 +1,20 @@
 /**
- * The card of a media: its image whole in its square, never cut, or the kind of its file.
+ * The card of a media: its image whole in its square, never cut, on the page itself, its frame showing as it is pointed
+ * at or focused; or the kind of its file, framed.
  */
 
 @layer app.components {
 	/* With the class of the frame, which it sets over: the sheets come in the order of their names */
 	.moodboard-card__frame.moodboard-media-card {
 		position: relative;
+	}
+
+	.moodboard-card__frame.moodboard-media-card:has(> img:not([hidden])) {
+		border-color: transparent;
+	}
+
+	.moodboard-card:is(:hover, :focus-visible) .moodboard-card__frame.moodboard-media-card {
+		border-color: var(--app-line);
 	}
 
 	/*

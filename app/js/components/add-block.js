@@ -2,12 +2,26 @@ import { Component } from 'moodboard-app/component';
 
 /**
  * The card that adds blocks: files picked, dropped on it or pasted, or a text written, which may be the URL of an
- * image. It adds nothing itself: it says what is added, the event `add` with `{ files, text }`, and its place adds it.
- * While its place adds, its attribute `busy` holds it.
+ * image or a page. It adds nothing itself: it says what is added, the event `add` with `{ files, text }`, and its place
+ * adds it. While its place adds, its attribute `busy` holds it.
+ *
+ * Its API: `text`, the text written, which a place sets to what is shared, to add as it is or once changed.
  */
-class AddBlockElement extends Component {
+export class AddBlockElement extends Component {
+	static properties = [ 'text' ];
+
 	static get observedAttributes() {
 		return [ 'busy' ];
+	}
+
+	/** @return {string} The text written. */
+	get text() {
+		return this.querySelector( 'textarea' ).value;
+	}
+
+	/** @param {string} text A text, or the URL of an image or a page. */
+	set text( text ) {
+		this.querySelector( 'textarea' ).value = text;
 	}
 
 	attributeChangedCallback() {

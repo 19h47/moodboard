@@ -11,4 +11,23 @@
 		fill: currentColor;
 		vertical-align: middle;
 	}
+
+	/*
+	 * The control of the theme shows the theme it switches to, as its state says: the moon in light, the sun in dark; none
+	 * until the app has read the theme
+	 */
+	.moodboard-icon:is([data-icon="dark_mode"], [data-icon="light_mode"]) {
+		display: none;
+	}
+
+	[aria-pressed="false"] > .moodboard-icon[data-icon="dark_mode"],
+	[aria-pressed="true"] > .moodboard-icon[data-icon="light_mode"] {
+		display: inline;
+	}
+
+	/* The control that plays the blocks presented shows what it does: play, then pause while they play */
+	[aria-pressed="false"] > .moodboard-icon[data-icon="pause"],
+	[aria-pressed="true"] > .moodboard-icon[data-icon="play_arrow"] {
+		display: none;
+	}
 }
