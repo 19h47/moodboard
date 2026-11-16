@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Moodboard 0.1.2\n"
+"Project-Id-Version: Moodboard 0.1.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-16T17:38:38+00:00\n"
+"POT-Creation-Date: 2026-11-16T18:34:30+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: moodboard\n"
@@ -528,50 +528,50 @@ msgstr[1] ""
 msgid "Select %s"
 msgstr ""
 
-#: app/js/lib/store.js:234
+#: app/js/lib/store.js:246
 msgid "The channels could not load."
 msgstr ""
 
-#: app/js/lib/store.js:296
+#: app/js/lib/store.js:310
 msgid "The blocks could not load."
 msgstr ""
 
-#: app/js/lib/store.js:342
+#: app/js/lib/store.js:356
 msgid "The block could not load."
 msgstr ""
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:422
+#: app/js/lib/store.js:475
 #, js-format
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/js/lib/store.js:440
+#: app/js/lib/store.js:496
 msgid "A block could not be added."
 msgstr ""
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:451
+#: app/js/lib/store.js:507
 #, js-format
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/js/lib/store.js:635
+#: app/js/lib/store.js:693
 msgid "Blocks connected."
 msgstr ""
 
-#: app/js/lib/store.js:647
+#: app/js/lib/store.js:705
 msgid "Blocks removed from the channel."
 msgstr ""
 
-#: app/js/lib/store.js:658
+#: app/js/lib/store.js:716
 msgid "Blocks deleted."
 msgstr ""
 
-#: app/js/lib/store.js:681
+#: app/js/lib/store.js:739
 msgid "The notes could not load."
 msgstr ""

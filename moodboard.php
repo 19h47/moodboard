@@ -11,7 +11,7 @@
  * Plugin Name:       Moodboard
  * Plugin URI:        https://www.github.com/19h47/moodboard
  * Description:       Collect images, files and texts in channels, as a moodboard, from a private app.
- * Version:           0.1.2
+ * Version:           0.1.3
  * Requires at least: 7.1
  * Requires PHP:      8.5
  * Author:            Jérémy Levron

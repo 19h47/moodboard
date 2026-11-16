@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.1.2
+Stable tag: 0.1.3
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -66,6 +66,11 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.1.3 =
+
+* Changed: blocks added take their place first in the grid at once, without loading it again: the cards shown stay as they are.
+* Changed: after a change, such as a block deleted, the grid shows what it holds while it loads again, a card changing only if its block does.
 
 = 0.1.2 =
 
