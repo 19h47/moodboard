@@ -1,0 +1,14 @@
+/**
+ * The search of the index: its field, then the control that sends it.
+ */
+
+@layer app.components {
+	.moodboard-search {
+		display: flex;
+		gap: var(--app-control-gap);
+	}
+
+	.moodboard-search input[type="search"] {
+		flex: 1;
+	}
+}

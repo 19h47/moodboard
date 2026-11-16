@@ -1,0 +1,19 @@
+/**
+ * Rows of pills, on as many lines as they need: the tabs of the index, the actions of a channel or of a block, the
+ * channels of a block.
+ */
+
+@layer app.components {
+	.moodboard-pills {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--app-space-s);
+	}
+
+	/* A pill longer than the line, such as the name of a long channel on a phone, goes on as many lines as it needs */
+	.moodboard-pills .app-pill {
+		white-space: normal;
+	}
+}

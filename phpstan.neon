@@ -1,0 +1,16 @@
+# Static analysis of the plugin, with the stubs and the rules of WordPress.
+parameters:
+	level: 8
+	phpVersion: 80500
+	paths:
+		- moodboard.php
+		- uninstall.php
+		- includes
+		- app
+	excludePaths:
+		# Templates, included by the methods that give them their variables.
+		- app/partials
+		- app/components
+	stubFiles:
+		# What the plugin knows of WordPress: its taxonomy is registered.
+		- types/wordpress.stub

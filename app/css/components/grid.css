@@ -1,0 +1,24 @@
+/**
+ * The grid of cards, the index or a channel: as many columns as the cards fit, each as wide as the others, two on a
+ * phone.
+ */
+
+@layer app.components {
+	.moodboard-grid {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(var(--moodboard-card-min), 100%), 1fr));
+		gap: var(--app-space-l) var(--app-space-m);
+	}
+
+	/* A grid that loads fades, its cards kept */
+	.moodboard-grid[aria-busy="true"] {
+		opacity: calc(1 / var(--app-phi));
+	}
+
+	/* Off screen, no layout: an index of hundreds of images */
+	.moodboard-grid > li {
+		content-visibility: auto;
+		contain-intrinsic-size: auto var(--moodboard-card-min);
+	}
+}

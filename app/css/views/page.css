@@ -1,0 +1,19 @@
+/**
+ * The page of the app, wider than the column of text, as its grid of cards needs; its parts of text keep the column.
+ */
+
+@layer app.views {
+	.moodboard-page {
+		max-width: var(--moodboard-page-width);
+	}
+
+	moodboard-view {
+		display: grid;
+		gap: var(--app-space-l);
+	}
+
+	moodboard-grid {
+		display: grid;
+		gap: var(--app-space-m);
+	}
+}

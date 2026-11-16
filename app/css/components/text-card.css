@@ -1,0 +1,20 @@
+/**
+ * The card of a text: its first lines, from the top of its square, faded out at its bottom.
+ */
+
+@layer app.components {
+	/* With the class of the frame, which it sets over: the sheets come in the order of their names */
+	.moodboard-card__frame.moodboard-text-card {
+		place-items: start;
+		padding: var(--app-space-m);
+	}
+
+	.moodboard-text-card__text {
+		max-block-size: 100%;
+		overflow: hidden;
+		font-size: var(--app-text-s);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		mask-image: linear-gradient(to bottom, black 60%, transparent);
+	}
+}

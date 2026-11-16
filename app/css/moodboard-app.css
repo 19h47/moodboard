@@ -1,0 +1,24 @@
+/**
+ * The app: what it adds to app-style.css, the base shared by 19h47's small apps.
+ *
+ * The order of its layers, in the layer app that the base gives the styles of an app, between its own and its utilities,
+ * then its tokens. The pieces several views share are in components, a file each, in the layer app.components; each view
+ * is in views, in the layer app.views, after them: what a view sets wins over a component, whatever their specificity.
+ */
+
+@layer app.base, app.components, app.views;
+
+@layer app.base {
+	:root {
+		/* The narrowest a card of the grid goes: two cards side by side on a phone */
+		--moodboard-card-min: calc(var(--app-u3) * var(--app-phi) * var(--app-phi));
+		/* The page of a moodboard, wider than the column of text: a grid of cards */
+		--moodboard-page-width: calc(var(--app-max-width) * var(--app-phi) * var(--app-phi));
+	}
+
+	@media (width >= 42rem) {
+		:root {
+			--moodboard-card-min: calc(var(--app-u3) * var(--app-phi) * var(--app-phi) * var(--app-phi));
+		}
+	}
+}

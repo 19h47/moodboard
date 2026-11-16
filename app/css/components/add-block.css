@@ -1,0 +1,57 @@
+/**
+ * The card that adds blocks: a text to write in its square, its buttons under it; a file dragged over it lines it.
+ */
+
+@layer app.components {
+	add-block {
+		display: grid;
+	}
+
+	/* With the class of the frame, which it sets over: the sheets come in the order of their names */
+	.moodboard-card__frame.moodboard-add-block {
+		grid-template: minmax(0, 1fr) auto / minmax(0, 1fr);
+		place-items: stretch;
+		gap: var(--app-space-s);
+		padding: var(--app-space-s);
+		border-style: dashed;
+	}
+
+	add-block[dragging] .moodboard-add-block {
+		border-color: var(--app-text);
+		background: var(--app-fill);
+	}
+
+	add-block[aria-busy="true"] .moodboard-add-block {
+		opacity: calc(1 / var(--app-phi));
+	}
+
+	.moodboard-card__frame.moodboard-add-block > * {
+		grid-area: auto;
+	}
+
+	.moodboard-add-block__text {
+		resize: none;
+		padding: var(--app-space-xs);
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		font-size: var(--app-text-s);
+	}
+
+	.moodboard-add-block__text::placeholder {
+		color: var(--app-text-muted);
+	}
+
+	.moodboard-add-block__actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--app-space-xs);
+	}
+
+	/* The field of the files is hidden in its pill: the pill shows the focus it takes */
+	.moodboard-add-block__actions label.app-pill {
+		cursor: pointer;
+	}
+}

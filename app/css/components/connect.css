@@ -1,0 +1,33 @@
+/**
+ * The channels of a block in its dialog: a box each, one per line, the list scrolling past a few.
+ */
+
+@layer app.components {
+	.moodboard-connect {
+		min-inline-size: 0;
+		border: 0;
+	}
+
+	.moodboard-connect__list {
+		list-style: none;
+		display: grid;
+		gap: var(--app-space-xs);
+		max-block-size: 50dvh;
+		overflow-y: auto;
+	}
+
+	.moodboard-connect__option {
+		display: flex;
+		align-items: center;
+		gap: var(--app-space-s);
+		padding: var(--app-space-xs) 0;
+		cursor: pointer;
+	}
+
+	.moodboard-connect__option > input {
+		flex: none;
+		inline-size: 1.25em; /* Exception, an atom of a size of its own: a box as large as an icon */
+		block-size: 1.25em;
+		accent-color: var(--app-text);
+	}
+}

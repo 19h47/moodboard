@@ -1,0 +1,256 @@
+import { __, sprintf } from 'moodboard-app/app';
+import { listKey, store } from 'moodboard-app/store';
+import { back, urlOf } from 'moodboard-app/router';
+import { Brick } from 'moodboard-app/brick';
+import { clone, fill, fillImage } from 'moodboard-app/dom';
+import { formatDate, formatKind } from 'moodboard-app/render';
+
+/** @import { Block } from 'moodboard-app/api' */
+
+/**
+ * The page of a block: a media, its image, its video or a link to its file, or a text; its title, its description, its
+ * source and its date, the channels it is in, and what changes it. ← and → open its neighbours in the channel it was
+ * opened from, Escape goes back to it.
+ */
+class MoodboardBlockElement extends Brick {
+	/** @type {Block|null} */
+	#block = null;
+
+	connect( signal ) {
+		return [
+			store.select(
+				( state ) =>
+					'media' === state.view || 'text' === state.view
+						? state.blocks[ `${ state.view }-${ state.id }` ] ??
+						  null
+						: null,
+				( block ) => {
+					this.#block = block;
+					this.#fill( block );
+				}
+			),
+			store.select(
+				( state ) => state.channels.items,
+				() => this.#fill( this.#block )
+			),
+			store.select(
+				( state ) => state.lists,
+				() => this.#fillNeighbours()
+			),
+			this.#listen( signal ),
+		];
+	}
+
+	/**
+	 * Listens to the actions of the page and to the keys that move between blocks.
+	 *
+	 * @param {AbortSignal} signal Stops listening.
+	 * @return {() => void} Nothing to unsubscribe.
+	 */
+	#listen( signal ) {
+		this.addEventListener(
+			'click',
+			( event ) => {
+				/** @type {HTMLElement|null} */
+				const $action = /** @type {HTMLElement} */ (
+					event.target
+				).closest( '[data-action]' );
+
+				if ( 'disconnect' === $action?.dataset.action ) {
+					this.#disconnect();
+				}
+
+				if ( 'delete' === $action?.dataset.action ) {
+					this.#delete();
+				}
+			},
+			{ signal }
+		);
+
+		document.addEventListener(
+			'keydown',
+			( event ) => {
+				const $target = /** @type {HTMLElement} */ ( event.target );
+
+				if (
+					this.closest( '[hidden]' ) ||
+					event.altKey ||
+					event.ctrlKey ||
+					event.metaKey ||
+					document.querySelector( 'dialog:modal' ) ||
+					$target.closest(
+						'input, textarea, select, [contenteditable]'
+					)
+				) {
+					return;
+				}
+
+				/** @type {HTMLAnchorElement|null} */
+				const $link = {
+					ArrowLeft: this.querySelector( '[data-part="previous"]' ),
+					ArrowRight: this.querySelector( '[data-part="next"]' ),
+					Escape: this.querySelector( '[data-part="channel"]' ),
+				}[ event.key ];
+
+				if ( $link && ! $link.hidden ) {
+					event.preventDefault();
+					navigation.navigate( $link.href );
+				}
+			},
+			{ signal }
+		);
+
+		return () => {};
+	}
+
+	/**
+	 * Fills the page with a block, or empties it until it has loaded.
+	 *
+	 * @param {Block|null} block The block.
+	 */
+	#fill( block ) {
+		const { from, channels } = store.get();
+		const fromChannel = channels.items.find(
+			( channel ) => channel.id === from
+		);
+		/** @type {HTMLImageElement} */
+		const $image = this.querySelector( '[data-field="image"]' );
+		/** @type {HTMLVideoElement} */
+		const $video = this.querySelector( '[data-field="video"]' );
+		/** @type {HTMLAnchorElement} */
+		const $file = this.querySelector( '[data-field="file"]' );
+		/** @type {HTMLAnchorElement} */
+		const $source = this.querySelector( '[data-field="source"]' );
+		/** @type {HTMLAnchorElement} */
+		const $channel = this.querySelector( '[data-part="channel"]' );
+		/** @type {HTMLElement} */
+		const $channels = this.querySelector( '[data-list="channels"]' );
+		/** @type {HTMLButtonElement} */
+		const $disconnect = this.querySelector( '[data-action="disconnect"]' );
+		const isVideo = block?.mime.startsWith( 'video/' ) ?? false;
+
+		fill( this, {
+			title: block?.title ?? '',
+			description: block?.description ?? '',
+			text: block?.text ?? '',
+			source: block?.source ?? '',
+			date: block ? formatDate( block.date ) : '',
+			channel: fromChannel?.name ?? '',
+		} );
+
+		fillImage( $image, block?.image ?? null );
+		$image.alt = block?.alt ?? '';
+
+		$video.hidden = ! isVideo;
+
+		if ( isVideo && $video.src !== block.url ) {
+			$video.src = block.url;
+		}
+
+		$file.hidden =
+			! block || 'media' !== block.kind || !! block.image || isVideo;
+		$file.href = block?.url ?? '';
+		fill( $file, { kind: block ? formatKind( block.mime ) : '' } );
+
+		$source.href = block?.source ?? '';
+
+		$channel.href = from
+			? urlOf( { view: 'channel', id: from } )
+			: urlOf( {} );
+		$channel.hidden = ! fromChannel;
+		$disconnect.hidden =
+			! fromChannel || ! block?.channels.includes( from );
+		$disconnect.textContent = fromChannel
+			? sprintf(
+					/* translators: %s: name of a channel. */
+					__( 'Remove from %s', 'moodboard' ),
+					fromChannel.name
+			  )
+			: '';
+
+		$channels.replaceChildren(
+			...channels.items
+				.filter( ( channel ) => block?.channels.includes( channel.id ) )
+				.map( ( channel ) => {
+					const $item = clone( 'moodboard-channel-pill' );
+					/** @type {HTMLAnchorElement} */
+					const $link = $item.querySelector( 'a' );
+
+					$link.href = urlOf( { view: 'channel', id: channel.id } );
+					$link.textContent = channel.name;
+
+					return $item;
+				} )
+		);
+		this.#fillNeighbours();
+	}
+
+	/** Links the blocks before and after the one shown, in the channel it was opened from, or in the index. */
+	#fillNeighbours() {
+		const state = store.get();
+		const keys =
+			state.lists[
+				listKey( { view: 'channel', id: state.from, query: '' } )
+			]?.keys ?? [];
+		const index = this.#block ? keys.indexOf( this.#block.key ) : -1;
+
+		[
+			[ 'previous', keys[ index - 1 ] ],
+			[ 'next', keys[ index + 1 ] ],
+		].forEach( ( [ part, key ] ) => {
+			/** @type {HTMLAnchorElement} */
+			const $link = this.querySelector( `[data-part="${ part }"]` );
+			const block = -1 !== index && key ? state.blocks[ key ] : null;
+
+			$link.hidden = ! block;
+
+			if ( block ) {
+				$link.href = urlOf( {
+					view: block.kind,
+					id: block.id,
+					from: state.from,
+				} );
+			}
+		} );
+	}
+
+	/** Takes the block out of the channel it was opened from, which it leaves for. */
+	async #disconnect() {
+		const { from } = store.get();
+
+		try {
+			await store.connect( this.#block, from, false );
+			navigation.navigate( urlOf( { view: 'channel', id: from } ) );
+		} catch ( error ) {
+			store.notify( error?.message ?? '' );
+		}
+	}
+
+	/** Deletes the block, once asked, then goes back to where it was opened from. */
+	async #delete() {
+		const block = this.#block;
+
+		if (
+			! block ||
+			// eslint-disable-next-line no-alert -- A confirmation the browser gives, accessible as it is.
+			! confirm(
+				'media' === block.kind
+					? __( 'Delete this media and its file?', 'moodboard' )
+					: __( 'Delete this text?', 'moodboard' )
+			)
+		) {
+			return;
+		}
+
+		const { from } = store.get();
+
+		try {
+			await store.deleteBlock( block );
+			store.notify( __( 'Block deleted.', 'moodboard' ) );
+			back( from ? urlOf( { view: 'channel', id: from } ) : urlOf( {} ) );
+		} catch ( error ) {
+			store.notify( error?.message ?? '' );
+		}
+	}
+}
+customElements.define( 'moodboard-block', MoodboardBlockElement );

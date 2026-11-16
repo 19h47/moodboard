@@ -1,0 +1,64 @@
+name: Coding standards
+
+on: pull_request
+
+# One run per pull request: a push cancels the one still running for the push before.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  phpcs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer
+
+      # The dependencies of composer.lock, from the cache of Composer once downloaded.
+      - uses: ramsey/composer-install@v3
+
+      - run: vendor/bin/phpcs
+
+  phpstan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer
+
+      # The dependencies of composer.lock, from the cache of Composer once downloaded.
+      - uses: ramsey/composer-install@v3
+
+      - run: composer analyse
+
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint:js
+
+      - run: pnpm lint:css
+
+      - run: pnpm check:js

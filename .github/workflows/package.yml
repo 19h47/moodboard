@@ -1,0 +1,39 @@
+name: Package
+
+# The package WordPress installs, attached to each release: the archive of the repository, as .gitattributes leaves it,
+# with the dependencies of Composer, which it has not.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer
+
+      - uses: ramsey/composer-install@v3
+        with:
+          composer-options: --no-dev --classmap-authoritative
+
+      # The folder of the plugin, moodboard, as WordPress extracts it.
+      - run: |
+          mkdir -p build/moodboard
+          git archive HEAD | tar -x -C build/moodboard
+          cp -R vendor build/moodboard/
+          cd build && zip -qr ../moodboard.zip moodboard
+
+      - run: gh release upload "${{ github.event.release.tag_name }}" moodboard.zip --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

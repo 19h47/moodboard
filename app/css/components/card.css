@@ -1,0 +1,46 @@
+/**
+ * A card of the grid, the base of the cards of a channel, a media, a text and of the card that adds: a square framed, whose
+ * content each card sets, then its title under it, as a link to its page.
+ */
+
+@layer app.components {
+	.moodboard-card {
+		display: grid;
+		gap: var(--app-space-xs);
+		align-content: start;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	/* Its content in one cell, as high as the square, never higher */
+	.moodboard-card__frame {
+		aspect-ratio: 1;
+		display: grid;
+		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+		place-items: center;
+		overflow: hidden;
+		border: 1px solid var(--app-line-soft);
+		border-radius: var(--app-radius-s);
+		transition: border-color var(--app-transition-1);
+	}
+
+	.moodboard-card__frame > * {
+		grid-area: 1 / 1;
+	}
+
+	.moodboard-card:is(:hover, :focus-visible) .moodboard-card__frame {
+		border-color: var(--app-line);
+	}
+
+	/* The title of a card, on two lines at most, in the text of the interface */
+	.moodboard-card__title {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
+		color: var(--app-text-muted);
+		font-family: var(--app-font-ui);
+		font-size: var(--app-text-s);
+		overflow-wrap: anywhere;
+	}
+}

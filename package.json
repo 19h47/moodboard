@@ -1,0 +1,25 @@
+{
+	"name": "moodboard",
+	"private": true,
+	"description": "Tools of the plugin: the checks of the scripts and of the stylesheets of the app. The plugin itself needs no build.",
+	"type": "module",
+	"packageManager": "pnpm@12.8.1",
+	"engines": {
+		"node": ">=22.13"
+	},
+	"scripts": {
+		"lint:js": "eslint .",
+		"lint:css": "node bin/check-css.mjs",
+		"check:js": "tsc --project jsconfig.json"
+	},
+	"devDependencies": {
+		"@wordpress/api-fetch": "8.1.0",
+		"@wordpress/eslint-plugin": "28.1.0",
+		"@wordpress/i18n": "7.1.0",
+		"@wordpress/url": "5.1.0",
+		"eslint": "10.14.0",
+		"globals": "17.14.0",
+		"prettier": "npm:wp-prettier@3.0.3",
+		"typescript": "5.9.3"
+	}
+}

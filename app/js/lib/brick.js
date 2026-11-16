@@ -1,0 +1,37 @@
+/**
+ * The base of the bricks: custom elements that read the store with select() and change it through its actions.
+ *
+ * No brick knows another, so removing one leaves the others working. Text from the API is set with
+ * textContent, in clones of the templates of the page, which hold the translated labels.
+ */
+
+/** A brick: `connect()` returns what to subscribe, all unsubscribed when the brick leaves the page. */
+export class Brick extends HTMLElement {
+	/** @type {AbortController|null} */
+	#controller = null;
+
+	connectedCallback() {
+		this.#controller = new AbortController();
+
+		const { signal } = this.#controller;
+
+		// select() returns the unsubscribe function: abort() calls it.
+		this.connect( signal ).forEach( ( unsubscribe ) =>
+			signal.addEventListener( 'abort', unsubscribe )
+		);
+	}
+
+	disconnectedCallback() {
+		this.#controller?.abort();
+	}
+
+	/**
+	 * What the brick does as it joins the page, its listeners added with `signal`, which aborts as it leaves; each brick
+	 * has its own. Returns the unsubscribe functions of what it selects of the store.
+	 *
+	 * @type {( signal: AbortSignal ) => Array<() => void>}
+	 */
+	connect() {
+		return [];
+	}
+}

@@ -1,0 +1,50 @@
+/**
+ * Forms: a field per line, its label above it, then the buttons that send it.
+ */
+
+@layer app.components {
+	.moodboard-form {
+		display: grid;
+		gap: var(--app-space-m);
+	}
+
+	.moodboard-field {
+		display: grid;
+		gap: var(--app-space-xs);
+	}
+
+	.moodboard-field > label {
+		color: var(--app-text-muted);
+		font-family: var(--app-font-ui);
+		font-size: var(--app-text-s);
+		text-transform: uppercase;
+	}
+
+	/* A field, as the search of the base: its line, its corners, its text on each side */
+	.moodboard-input {
+		inline-size: 100%;
+		min-block-size: var(--app-control-size);
+		padding: calc(1em / sqrt(var(--app-phi))) 1em;
+		border: 1px solid var(--app-line-soft);
+		border-radius: var(--app-radius-m);
+		background: transparent;
+		color: inherit;
+		font: inherit;
+	}
+
+	textarea.moodboard-input {
+		resize: vertical;
+	}
+
+	.moodboard-form__actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--app-space-s);
+	}
+
+	.moodboard-form[aria-busy="true"] {
+		opacity: calc(1 / var(--app-phi));
+		pointer-events: none;
+	}
+}

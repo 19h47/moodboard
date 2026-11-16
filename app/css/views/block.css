@@ -1,0 +1,82 @@
+/**
+ * The page of a block: its media large, its image whole within the screen, then what it says beside it on a wide screen,
+ * under it on a phone.
+ */
+
+@layer app.views {
+	.moodboard-block {
+		display: grid;
+		gap: var(--app-space-l);
+		align-items: start;
+	}
+
+	.moodboard-block > nav {
+		grid-column: 1 / -1;
+	}
+
+	@media (width >= 42rem) {
+		.moodboard-block {
+			grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--app-max-width) / var(--app-phi)));
+			gap: var(--app-space-xl);
+		}
+	}
+
+	.moodboard-block__media {
+		display: grid;
+		justify-items: center;
+		gap: var(--app-space-m);
+	}
+
+	/* An image or a video whole, as high as the screen leaves it */
+	.moodboard-block__image {
+		max-inline-size: 100%;
+		max-block-size: calc(100dvh - 2 * var(--app-space-xl));
+		inline-size: auto;
+		block-size: auto;
+		object-fit: contain;
+	}
+
+	.moodboard-block__text {
+		justify-self: stretch;
+		padding: var(--app-space-l);
+		border: 1px solid var(--app-line-soft);
+		border-radius: var(--app-radius-s);
+		font-size: var(--app-text-l);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.moodboard-block__info {
+		display: grid;
+		gap: var(--app-space-m);
+	}
+
+	.moodboard-block__title {
+		font-size: var(--app-text-l);
+		overflow-wrap: anywhere;
+	}
+
+	.moodboard-block__description {
+		white-space: pre-wrap;
+	}
+
+	.moodboard-block__meta {
+		display: grid;
+		gap: var(--app-space-xs);
+	}
+
+	.moodboard-block__meta > div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--app-space-s);
+	}
+
+	.moodboard-block__meta a {
+		overflow-wrap: anywhere;
+	}
+
+	.moodboard-block__channels {
+		display: grid;
+		gap: var(--app-space-s);
+	}
+}

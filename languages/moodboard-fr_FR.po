@@ -1,0 +1,357 @@
+# Copyright (C) 2026 Jérémy Levron
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Moodboard 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
+"POT-Creation-Date: 2026-11-16T09:12:55+00:00\n"
+"PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: moodboard\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. Plugin Name of the plugin
+#: moodboard.php:11 app/class-login.php:200 app/class-page.php:109
+#: app/class-page.php:110 app/class-page.php:248 app/class-page.php:249
+#: app/partials/moodboard-app.php:36 app/partials/moodboard-app.php:53
+msgid "Moodboard"
+msgstr "Moodboard"
+
+#. Plugin URI of the plugin
+#: moodboard.php:12
+msgid "https://www.github.com/19h47/moodboard"
+msgstr "https://www.github.com/19h47/moodboard"
+
+#. Description of the plugin
+#: moodboard.php:13
+msgid ""
+"Collect images, files and texts in channels, as a moodboard, from a private "
+"app."
+msgstr ""
+"Rassemblez images, fichiers et textes dans des canaux, comme un moodboard, "
+"depuis une app privée."
+
+#. Author of the plugin
+#: moodboard.php:17
+msgid "Jérémy Levron"
+msgstr "Jérémy Levron"
+
+#. Author URI of the plugin
+#: moodboard.php:18
+msgid "https://www.19h47.fr"
+msgstr "https://www.19h47.fr"
+
+#. translators: 1: what the page shows, such as a channel or a view, 2: name of the app.
+#: app/class-login.php:191
+#, php-format
+msgid "%1$s – %2$s"
+msgstr "%1$s – %2$s"
+
+#: app/components/add-block.php:14
+msgid "A text, or the URL of an image"
+msgstr "Un texte, ou l’URL d’une image"
+
+#: app/components/add-block.php:19
+msgid "A text, the URL of an image, or files dropped here"
+msgstr "Un texte, l’URL d’une image, ou des fichiers déposés ici"
+
+#: app/components/add-block.php:24
+msgid "Files"
+msgstr "Fichiers"
+
+#: app/components/add-block.php:26
+msgid "Add"
+msgstr "Ajouter"
+
+#: app/components/block-form.php:12
+msgid "Title"
+msgstr "Titre"
+
+#: app/components/block-form.php:17 app/components/channel-form.php:20
+msgid "Description"
+msgstr "Description"
+
+#: app/components/block-form.php:18
+msgid "Text"
+msgstr "Texte"
+
+#: app/components/block-form.php:23
+msgid "Alternative text"
+msgstr "Texte alternatif"
+
+#: app/components/block-form.php:25
+msgid "What the image shows, for those who do not see it."
+msgstr "Ce que montre l’image, pour qui ne la voit pas."
+
+#: app/components/block-form.php:28 app/partials/moodboard-app.php:128
+msgid "Source"
+msgstr "Source"
+
+#: app/components/block-form.php:32 app/components/channel-form.php:31
+msgid "Save"
+msgstr "Enregistrer"
+
+#: app/components/channel-form.php:16
+msgid "Name"
+msgstr "Nom"
+
+#: app/components/channel-form.php:24
+msgid "Under"
+msgstr "Dans"
+
+#: app/components/channel-form.php:26
+msgid "The index"
+msgstr "L’index"
+
+#: app/components/channel-form.php:31
+msgid "Add the channel"
+msgstr "Ajouter le canal"
+
+#: app/components/channel-form.php:34
+msgid "Delete the channel"
+msgstr "Supprimer le canal"
+
+#: app/components/connect.php:12
+msgid "Find or add a channel"
+msgstr "Trouver ou ajouter un canal"
+
+#: app/components/connect.php:17
+msgid "Channels of the block"
+msgstr "Canaux du bloc"
+
+#: app/components/dialog-close.php:14
+msgid "Close"
+msgstr "Fermer"
+
+#: app/components/search.php:15
+msgid "Search the moodboard"
+msgstr "Rechercher dans le moodboard"
+
+#: app/components/search.php:19
+msgid "Search channels and blocks…"
+msgstr "Rechercher canaux et blocs…"
+
+#: app/components/search.php:23
+msgctxt "verb"
+msgid "Search"
+msgstr "Rechercher"
+
+#: app/partials/moodboard-app.php:24
+msgid "All"
+msgstr "Tout"
+
+#: app/partials/moodboard-app.php:25 app/partials/moodboard-app.php:137
+msgid "Channels"
+msgstr "Canaux"
+
+#: app/partials/moodboard-app.php:26
+msgid "Blocks"
+msgstr "Blocs"
+
+#: app/partials/moodboard-app.php:57
+#: app/js/bricks/moodboard-channel-header.js:59
+msgid "Index"
+msgstr "Index"
+
+#: app/partials/moodboard-app.php:63
+msgid "What the index shows"
+msgstr "Ce que montre l’index"
+
+#: app/partials/moodboard-app.php:73
+msgid "Channel"
+msgstr "Canal"
+
+#: app/partials/moodboard-app.php:84
+msgid "Channels it is under"
+msgstr "Canaux parents"
+
+#: app/partials/moodboard-app.php:93
+msgid "Sub-channel"
+msgstr "Sous-canal"
+
+#: app/partials/moodboard-app.php:95 app/partials/moodboard-app.php:142
+msgid "Edit"
+msgstr "Modifier"
+
+#: app/partials/moodboard-app.php:112
+msgid "Blocks of the channel"
+msgstr "Blocs du canal"
+
+#: app/partials/moodboard-app.php:114
+msgid "Previous"
+msgstr "Précédent"
+
+#: app/partials/moodboard-app.php:115
+msgid "Next"
+msgstr "Suivant"
+
+#: app/partials/moodboard-app.php:120
+msgid "Open the file"
+msgstr "Ouvrir le fichier"
+
+#: app/partials/moodboard-app.php:132
+msgid "Added"
+msgstr "Ajouté le"
+
+#: app/partials/moodboard-app.php:141
+msgid "Connect"
+msgstr "Connecter"
+
+#: app/partials/moodboard-app.php:144
+msgid "Delete"
+msgstr "Supprimer"
+
+#: app/partials/moodboard-app.php:158
+msgid "New channel"
+msgstr "Nouveau canal"
+
+#: app/partials/moodboard-app.php:174
+msgid "Edit the channel"
+msgstr "Modifier le canal"
+
+#: app/partials/moodboard-app.php:190
+msgid "Edit the block"
+msgstr "Modifier le bloc"
+
+#: app/partials/moodboard-app.php:198
+msgid "Connect to channels"
+msgstr "Connecter à des canaux"
+
+#: includes/class-channels.php:67
+msgctxt "moodboard channels general name"
+msgid "Channels"
+msgstr "Canaux"
+
+#: includes/class-channels.php:68
+msgctxt "moodboard channels singular name"
+msgid "Channel"
+msgstr "Canal"
+
+#: includes/class-channels.php:96
+msgid "The curator of the channel."
+msgstr "La personne qui cure le canal."
+
+#: includes/class-channels.php:138
+msgid "A channel goes under one of your channels only."
+msgstr "Un canal ne va que dans l’un de vos canaux."
+
+#: includes/class-meta.php:53
+msgid "The URL the block comes from."
+msgstr "L’URL d’où vient le bloc."
+
+#: includes/class-roles.php:176
+msgctxt "User role"
+msgid "Curator"
+msgstr "Curateur"
+
+#: includes/class-texts.php:51
+msgctxt "moodboard texts general name"
+msgid "Texts"
+msgstr "Textes"
+
+#: includes/class-texts.php:52
+msgctxt "moodboard texts singular name"
+msgid "Text"
+msgstr "Texte"
+
+#: includes/class-updater.php:181
+msgid "Could not rename the update folder."
+msgstr "Impossible de renommer le dossier de la mise à jour."
+
+#: app/js/bricks/moodboard-block-form.js:80
+msgid "The block could not be saved."
+msgstr "Le bloc n’a pas pu être enregistré."
+
+#. translators: %s: name of a channel.
+#: app/js/bricks/moodboard-block.js:166
+msgid "Remove from %s"
+msgstr "Retirer de %s"
+
+#: app/js/bricks/moodboard-block.js:238
+msgid "Delete this media and its file?"
+msgstr "Supprimer ce média et son fichier ?"
+
+#: app/js/bricks/moodboard-block.js:239
+msgid "Delete this text?"
+msgstr "Supprimer ce texte ?"
+
+#: app/js/bricks/moodboard-block.js:249
+msgid "Block deleted."
+msgstr "Bloc supprimé."
+
+#: app/js/bricks/moodboard-channel-form.js:82
+msgid "The channel could not be saved."
+msgstr "Le canal n’a pas pu être enregistré."
+
+#: app/js/bricks/moodboard-channel-form.js:167
+msgid ""
+"Delete this channel? Its sub-channels and the blocks in no other channel go "
+"to its parent."
+msgstr ""
+"Supprimer ce canal ? Ses sous-canaux et les blocs qui ne sont dans aucun "
+"autre canal vont dans son parent."
+
+#: app/js/bricks/moodboard-channel-form.js:171
+msgid ""
+"Delete this channel? Its sub-channels go to the index; the blocks in no "
+"other channel stay in the media library only."
+msgstr ""
+"Supprimer ce canal ? Ses sous-canaux vont dans l’index ; les blocs qui ne "
+"sont dans aucun autre canal ne restent que dans la médiathèque."
+
+#: app/js/bricks/moodboard-channel-form.js:183
+msgid "Channel deleted."
+msgstr "Canal supprimé."
+
+#. translators: %s: name of a channel.
+#: app/js/bricks/moodboard-connect.js:140
+msgid "Add the channel “%s”"
+msgstr "Ajouter le canal « %s »"
+
+#: app/js/bricks/moodboard-grid.js:96
+msgid "Loading…"
+msgstr "Chargement…"
+
+#: app/js/bricks/moodboard-grid.js:153
+msgid "Nothing found."
+msgstr "Rien trouvé."
+
+#: app/js/bricks/moodboard-grid.js:158
+msgid "No channel yet: add one to begin."
+msgstr "Aucun canal pour l’instant : ajoutez-en un pour commencer."
+
+#. translators: %d: number of blocks.
+#: app/js/lib/render.js:21
+msgid "%d block"
+msgid_plural "%d blocks"
+msgstr[0] "%d bloc"
+msgstr[1] "%d blocs"
+
+#: app/js/lib/store.js:134
+msgid "The channels could not load."
+msgstr "Les canaux n’ont pas pu se charger."
+
+#: app/js/lib/store.js:199
+msgid "The blocks could not load."
+msgstr "Les blocs n’ont pas pu se charger."
+
+#: app/js/lib/store.js:242
+msgid "The block could not load."
+msgstr "Le bloc n’a pas pu se charger."
+
+#: app/js/lib/store.js:320
+msgid "A block could not be added."
+msgstr "Un bloc n’a pas pu être ajouté."
+
+#. translators: %d: number of blocks added.
+#: app/js/lib/store.js:331
+msgid "%d block added."
+msgid_plural "%d blocks added."
+msgstr[0] "%d bloc ajouté."
+msgstr[1] "%d blocs ajoutés."

@@ -1,0 +1,21 @@
+/**
+ * What the app says last, such as blocks added: a layer at the bottom of the screen, over the page.
+ */
+
+@layer app.components {
+	.moodboard-notice {
+		position: fixed;
+		inset: auto var(--app-space-l) calc(var(--app-space-l) + env(safe-area-inset-bottom));
+		z-index: 1;
+		display: grid;
+		justify-items: center;
+		pointer-events: none;
+	}
+
+	.moodboard-notice > .app-status {
+		padding: var(--app-space-s) var(--app-space-m);
+		background: var(--app-bg);
+		color: var(--app-text);
+		pointer-events: auto;
+	}
+}

@@ -1,0 +1,38 @@
+name: Tests
+
+on: pull_request
+
+# One run per pull request: a push cancels the one still running for the push before.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # The PHP and the database of the site.
+  phpunit:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: moodboard_tests
+        ports:
+          - 3306:3306
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer
+
+      # The dependencies of composer.lock, from the cache of Composer once downloaded.
+      - uses: ramsey/composer-install@v3
+
+      - run: composer test

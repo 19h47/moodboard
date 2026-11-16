@@ -1,0 +1,28 @@
+<?php
+/**
+ * Return types of WordPress functions, narrower than the stubs of WordPress give them, for what the plugin knows: its
+ * taxonomy is registered on init, before any route reads it. PHPStan reads them over the stubs: see phpstan.neon.
+ *
+ * @package Moodboard
+ */
+
+/**
+ * Declared for PHPStan, which checks a stub file without the stubs of WordPress; the class keeps what they give it.
+ */
+final class WP_Taxonomy {}
+
+/**
+ * @param string $taxonomy Name of taxonomy object to return.
+ * @return WP_Taxonomy|false
+ * @phpstan-return ($taxonomy is 'moodboard_channel' ? WP_Taxonomy : WP_Taxonomy|false)
+ */
+function get_taxonomy( $taxonomy ) {}
+
+/**
+ * The URL of the plugins folder comes first, whatever the path.
+ *
+ * @param string $path   Path appended to the URL.
+ * @param string $plugin A full path to a file inside a plugin.
+ * @return non-empty-string
+ */
+function plugins_url( $path = '', $plugin = '' ) {}
