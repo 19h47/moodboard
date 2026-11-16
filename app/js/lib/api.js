@@ -581,58 +581,21 @@ export async function createText( content, channelId ) {
 }
 
 /**
- * Adds a link, into a channel or the index: its title and its image those core gets of its provider, such as the title
- * and the thumbnail of a video, `oembed/1.0/proxy`, else those of its page, as core reads them for the previews of the
- * editor, `wp-block-editor/v1/url-details`, with its description; its image downloaded as a media of the library,
- * which is no block. A page core cannot read is added all the same, named after its URL.
+ * Adds a link, into a channel or the index, by its URL alone: WordPress gives it its title and its image, those of its
+ * provider, such as the title and the thumbnail of a video, else those of its page, the image copied to the library as
+ * a media that is no block. A page WordPress cannot read is added all the same, named after its URL.
  *
  * @param {string} url       The URL of the page.
  * @param {number} channelId The channel, 0 for the index.
  * @return {Promise<Block>} Its block.
  */
 export async function createLink( url, channelId ) {
-	/** @type {{title?: string, description?: string, image?: string}} */
-	let details = {};
-	let featured = 0;
-
-	try {
-		/** @type {{title?: string, thumbnail_url?: string}} */
-		const embed = await apiFetch( {
-			path: addQueryArgs( '/oembed/1.0/proxy', { url } ),
-		} );
-
-		details = { title: embed.title, image: embed.thumbnail_url };
-	} catch {
-		try {
-			details = await apiFetch( {
-				path: addQueryArgs( '/wp-block-editor/v1/url-details', {
-					url,
-				} ),
-			} );
-		} catch {}
-	}
-
-	if ( details.image ) {
-		try {
-			featured = (
-				await apiFetch( {
-					path: '/wp/v2/media',
-					method: 'POST',
-					data: { url: details.image },
-				} )
-			).id;
-		} catch {}
-	}
-
 	return toLink(
 		await apiFetch( {
 			path: addQueryArgs( routeOf( 'link' ), argsOf( 'link' ) ),
 			method: 'POST',
 			data: {
-				title: text( details.title ?? '' ) || url,
-				content: text( details.description ?? '' ),
 				status: 'private',
-				featured_media: featured,
 				meta: { moodboard_source: url },
 				[ channelsBase ]: channelsOf( channelId ),
 			},

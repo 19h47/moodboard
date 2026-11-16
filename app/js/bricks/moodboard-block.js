@@ -295,7 +295,10 @@ class MoodboardBlockElement extends Brick {
 		}
 	}
 
-	/** Deletes the block, once asked, then goes back to where it was opened from. */
+	/**
+	 * Deletes the block, once asked, from where it was opened from: its page left first, so that the view loads no
+	 * longer a block that is gone.
+	 */
 	async #delete() {
 		const block = this.#block;
 
@@ -303,9 +306,11 @@ class MoodboardBlockElement extends Brick {
 			! block ||
 			// eslint-disable-next-line no-alert -- A confirmation the browser gives, accessible as it is.
 			! confirm(
-				'media' === block.kind
-					? __( 'Delete this media and its file?', 'moodboard' )
-					: __( 'Delete this text?', 'moodboard' )
+				{
+					media: __( 'Delete this media and its file?', 'moodboard' ),
+					text: __( 'Delete this text?', 'moodboard' ),
+					link: __( 'Delete this link?', 'moodboard' ),
+				}[ block.kind ]
 			)
 		) {
 			return;
@@ -313,10 +318,13 @@ class MoodboardBlockElement extends Brick {
 
 		const { from } = store.get();
 
+		await back(
+			from ? urlOf( { view: 'channel', id: from } ) : urlOf( {} )
+		);
+
 		try {
 			await store.deleteBlock( block );
 			store.notify( __( 'Block deleted.', 'moodboard' ) );
-			back( from ? urlOf( { view: 'channel', id: from } ) : urlOf( {} ) );
 		} catch ( error ) {
 			store.notify( error?.message ?? '' );
 		}

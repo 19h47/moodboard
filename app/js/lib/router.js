@@ -267,15 +267,15 @@ function sharedOf( url ) {
  * once reloaded, goes to `url`.
  *
  * @param {string} url Where to go without a view before.
+ * @return {Promise<NavigationHistoryEntry>} Once the view gone to shows.
  */
 export function back( url ) {
 	const previous = navigation.entries()[ navigation.currentEntry.index - 1 ];
+	const { finished } = previous?.sameDocument
+		? navigation.back()
+		: navigation.navigate( url );
 
-	if ( previous?.sameDocument ) {
-		navigation.back();
-	} else {
-		navigation.navigate( url );
-	}
+	return finished;
 }
 
 store.show( routeOf( location.href ) );
