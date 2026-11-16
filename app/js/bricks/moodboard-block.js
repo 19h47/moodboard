@@ -3,7 +3,7 @@ import { listKey, store } from 'moodboard-app/store';
 import { back, urlOf } from 'moodboard-app/router';
 import { Brick } from 'moodboard-app/brick';
 import { clone, fill, fillImage } from 'moodboard-app/dom';
-import { formatDate, formatKind, nameOf } from 'moodboard-app/render';
+import { formatDate, formatKind, hostOf, nameOf } from 'moodboard-app/render';
 
 /** @import { Block } from 'moodboard-app/api' */
 
@@ -12,8 +12,9 @@ const SWIPE_PX = 60;
 
 /**
  * The page of a block: a media, its image, its video or a link to its file; a text; or a link, its player, else the image
- * of its page, and a link to it. Then its title, its description, its source and its date, the channels it is in, and
- * what changes it. ← and → open its neighbours in the channel it was opened from, Escape goes back to it.
+ * of its page, else a link to it. Beside it, as Are.na has it: its title, its description, its date, its dimensions and
+ * its source, what changes it, and the channels it is in and its notes, a tab each. ← and → open its neighbours in the
+ * channel it was opened from, Escape goes back to it.
  */
 class MoodboardBlockElement extends Brick {
 	/** @type {Block|null} */
@@ -40,6 +41,16 @@ class MoodboardBlockElement extends Brick {
 				( state ) => state.lists,
 				() => this.#fillNeighbours()
 			),
+			store.select(
+				( state ) =>
+					this.#block
+						? state.notes[ this.#block.key ]?.items.length ?? 0
+						: 0,
+				( count ) =>
+					fill( this, {
+						'notes-count': count ? count.toString() : '',
+					} )
+			),
 			this.#listen( signal ),
 		];
 	}
@@ -60,6 +71,11 @@ class MoodboardBlockElement extends Brick {
 					event.target
 				).closest( '[data-action]' );
 
+				// An action of the menu closes it.
+				/** @type {HTMLElement|null} */ (
+					$action?.closest( '[popover]' )
+				)?.hidePopover();
+
 				if ( 'disconnect' === $action?.dataset.action ) {
 					this.#disconnect();
 				}
@@ -76,7 +92,10 @@ class MoodboardBlockElement extends Brick {
 			( event ) => {
 				const $target = /** @type {HTMLElement} */ ( event.target );
 
+				// A key a tab or a menu took is theirs, as Escape for an open menu.
 				if (
+					event.defaultPrevented ||
+					this.querySelector( ':popover-open' ) ||
 					this.closest( '[hidden]' ) ||
 					event.altKey ||
 					event.ctrlKey ||
@@ -178,6 +197,18 @@ class MoodboardBlockElement extends Brick {
 		const $channel = this.querySelector( '[data-part="channel"]' );
 		/** @type {HTMLElement} */
 		const $channels = this.querySelector( '[data-list="channels"]' );
+		const inChannels = channels.items.filter( ( channel ) =>
+			block?.channels.includes( channel.id )
+		);
+		const backLabel = fromChannel
+			? sprintf(
+					/* translators: %s: name of a channel. */
+					__( 'Back to %s', 'moodboard' ),
+					fromChannel.name
+			  )
+			: __( 'Back to the index', 'moodboard' );
+		// The dimensions of an image of the library, not those of the image of a page.
+		const image = 'media' === block?.kind ? block.image : null;
 		/** @type {HTMLButtonElement} */
 		const $disconnect = this.querySelector( '[data-action="disconnect"]' );
 		const isVideo = block?.mime.startsWith( 'video/' ) ?? false;
@@ -187,9 +218,19 @@ class MoodboardBlockElement extends Brick {
 			title: block ? nameOf( block ) : '',
 			description: block?.description ?? '',
 			text: block?.text ?? '',
-			source: block?.source ?? '',
+			source: block?.source ? hostOf( block.source ) : '',
 			date: block ? formatDate( block.date ) : '',
-			channel: fromChannel?.name ?? '',
+			dimensions: image
+				? sprintf(
+						/* translators: 1: width of an image, 2: its height, in pixels. */
+						__( '%1$d × %2$d', 'moodboard' ),
+						image.width,
+						image.height
+				  )
+				: '',
+			'channels-count': inChannels.length
+				? inChannels.length.toString()
+				: '',
 		} );
 
 		this.querySelector( '[data-field="title"]' ).toggleAttribute(
@@ -207,7 +248,8 @@ class MoodboardBlockElement extends Brick {
 		}
 
 		$embed.hidden = ! embed;
-		$open.hidden = 'link' !== block?.kind;
+		// A link without a player or an image shows a link to its page; else its source links to it, beside.
+		$open.hidden = 'link' !== block?.kind || !! embed || !! block.image;
 		$open.href = 'link' === block?.kind ? block.url : '';
 
 		$video.hidden = ! isVideo;
@@ -222,11 +264,19 @@ class MoodboardBlockElement extends Brick {
 		fill( $file, { kind: block ? formatKind( block.mime ) : '' } );
 
 		$source.href = block?.source ?? '';
+		$source.title = block?.source ?? '';
+		/** @type {HTMLElement} */ (
+			this.querySelector( '[data-row="source"]' )
+		).hidden = ! block?.source;
+		/** @type {HTMLElement} */ (
+			this.querySelector( '[data-row="dimensions"]' )
+		).hidden = ! image;
 
 		$channel.href = from
 			? urlOf( { view: 'channel', id: from } )
 			: urlOf( {} );
-		$channel.hidden = ! fromChannel;
+		$channel.ariaLabel = backLabel;
+		$channel.title = backLabel;
 		$disconnect.hidden =
 			! fromChannel || ! block?.channels.includes( from );
 		$disconnect.textContent = fromChannel
@@ -238,19 +288,23 @@ class MoodboardBlockElement extends Brick {
 			: '';
 
 		$channels.replaceChildren(
-			...channels.items
-				.filter( ( channel ) => block?.channels.includes( channel.id ) )
-				.map( ( channel ) => {
-					const $item = clone( 'moodboard-channel-pill' );
-					/** @type {HTMLAnchorElement} */
-					const $link = $item.querySelector( 'a' );
+			...inChannels.map( ( channel ) => {
+				const $item = clone( 'moodboard-block-channel' );
+				/** @type {HTMLAnchorElement} */
+				const $link = $item.querySelector( 'a' );
 
-					$link.href = urlOf( { view: 'channel', id: channel.id } );
-					$link.textContent = channel.name;
+				$link.href = urlOf( { view: 'channel', id: channel.id } );
+				fill( $link, {
+					name: channel.name,
+					count: channel.count.toString(),
+				} );
 
-					return $item;
-				} )
+				return $item;
+			} )
 		);
+		/** @type {HTMLElement} */ (
+			this.querySelector( '[data-field="no-channel"]' )
+		).hidden = !! inChannels.length;
 		this.#fillNeighbours();
 	}
 

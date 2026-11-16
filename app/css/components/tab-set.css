@@ -1,0 +1,45 @@
+/**
+ * Tabs: their list on a line, as wide as their place, shared alike, the one selected underlined in the color of the
+ * text; its panel under them.
+ */
+
+@layer app.components {
+	.moodboard-tab-set {
+		display: grid;
+		gap: var(--app-space-s);
+	}
+
+	.moodboard-tab-set > [role="tablist"] {
+		display: grid;
+		grid-auto-columns: minmax(0, 1fr);
+		grid-auto-flow: column;
+		border-block-end: 1px solid var(--app-line-soft);
+	}
+
+	.moodboard-tab-set [role="tab"] {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--app-space-xs);
+		padding: var(--app-space-s);
+		border: 0;
+		border-block-end: 2px solid transparent;
+		background: none;
+		color: var(--app-text-muted);
+		font-family: var(--app-font-ui);
+		font-size: var(--app-text-s);
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.moodboard-tab-set [role="tab"][aria-selected="true"] {
+		border-block-end-color: currentColor;
+		color: var(--app-text);
+	}
+
+	.moodboard-tab-set__count:not(:empty) {
+		padding-inline: var(--app-space-xs);
+		border-radius: var(--app-radius-xs);
+		background: var(--app-fill);
+	}
+}

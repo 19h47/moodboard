@@ -1,13 +1,12 @@
 <?php
 /**
- * The notes of a block, the oldest first, then the form that writes one. Its place fills them.
+ * The notes of a block, the oldest first, then the form that writes one. Its place fills them, and names them.
  *
  * @package Moodboard
  */
 
 ?>
-<section class="moodboard-notes" aria-labelledby="moodboard-notes-title">
-	<h3 class="app-text-s app-text-muted app-font-ui app-uppercase app-font-normal" id="moodboard-notes-title"><?php esc_html_e( 'Notes', 'moodboard' ); ?></h3>
+<div class="moodboard-notes">
 	<ol class="moodboard-notes__list" data-list="notes"></ol>
 	<p class="app-status" data-field="error" hidden></p>
 	<form class="moodboard-form">
@@ -19,4 +18,4 @@
 			<button class="app-pill app-pill--small" type="submit"><?php esc_html_e( 'Add the note', 'moodboard' ); ?></button>
 		</p>
 	</form>
-</section>
+</div>
