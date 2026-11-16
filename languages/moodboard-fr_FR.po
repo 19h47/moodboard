@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-16T14:07:01+00:00\n"
+"POT-Creation-Date: 2026-11-16T15:51:39+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -359,15 +359,19 @@ msgstr "Le bloc n’a pas pu être enregistré."
 msgid "Remove from %s"
 msgstr "Retirer de %s"
 
-#: app/js/bricks/moodboard-block.js:307
+#: app/js/bricks/moodboard-block.js:310
 msgid "Delete this media and its file?"
 msgstr "Supprimer ce média et son fichier ?"
 
-#: app/js/bricks/moodboard-block.js:308
+#: app/js/bricks/moodboard-block.js:311
 msgid "Delete this text?"
 msgstr "Supprimer ce texte ?"
 
-#: app/js/bricks/moodboard-block.js:318
+#: app/js/bricks/moodboard-block.js:312
+msgid "Delete this link?"
+msgstr "Supprimer ce lien ?"
+
+#: app/js/bricks/moodboard-block.js:327
 msgid "Block deleted."
 msgstr "Bloc supprimé."
 
