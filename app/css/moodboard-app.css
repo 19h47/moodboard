@@ -2,13 +2,29 @@
  * The app: what it adds to app-style.css, the base shared by 19h47's small apps.
  *
  * The order of its layers, in the layer app that the base gives the styles of an app, between its own and its utilities,
- * then its tokens. The pieces several views share are in components, a file each, in the layer app.components; each view
+ * then its tokens: its colors, black and white, over those of the base, and its sizes. The pieces several views share are in components, a file each, in the layer app.components; each view
  * is in views, in the layer app.views, after them: what a view sets wins over a component, whatever their specificity.
  */
 
 @layer app.base, app.components, app.views;
 
 @layer app.base {
+	/*
+	 * Black and white, the images the only color: the colors of the base, without its warm grey, the page white by day
+	 * and black by night, as the system says. The text is black or white; the muted text and the controls at rest, a
+	 * neutral grey, at least 4.5:1 on the page in both themes (5.3:1 and 6.9:1); the lines, a grey of their own.
+	 */
+	:root {
+		--app-bg: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));
+		--app-text: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));
+		--app-text-muted: light-dark(rgb(107, 107, 107), rgb(148, 148, 148));
+		--app-line: light-dark(rgb(204, 204, 204), rgb(64, 64, 64));
+		/* The blocks presented: black whatever the theme, as the dark theme has it */
+		--moodboard-present-bg: rgb(0, 0, 0);
+		--moodboard-present-text: rgb(255, 255, 255);
+		--moodboard-present-line: rgb(64, 64, 64);
+	}
+
 	:root {
 		/* The narrowest a card of the grid goes: two cards side by side on a phone */
 		--moodboard-card-min: calc(var(--app-u3) * var(--app-phi) * var(--app-phi));
@@ -20,5 +36,23 @@
 		:root {
 			--moodboard-card-min: calc(var(--app-u3) * var(--app-phi) * var(--app-phi) * var(--app-phi));
 		}
+	}
+
+	/* The size of the cards chosen, a step of the scale from the usual one */
+	:root {
+		--moodboard-density: 1;
+	}
+
+	:root[data-density="-1"] {
+		--moodboard-density: calc(1 / var(--app-phi));
+	}
+
+	:root[data-density="1"] {
+		--moodboard-density: var(--app-phi);
+	}
+
+	/* Two cards a row, as large as the page leaves them: the size of a card until it renders, a step larger again */
+	:root[data-density="2"] {
+		--moodboard-density: calc(var(--app-phi) * var(--app-phi));
 	}
 }

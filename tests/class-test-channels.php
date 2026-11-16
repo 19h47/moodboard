@@ -75,6 +75,36 @@ class Test_Channels extends TestCase {
 	}
 
 	/**
+	 * A channel gives its card its latest images, those of its sub-channels too, four at most, and none of its texts.
+	 *
+	 * @return void
+	 */
+	public function test_a_channel_has_its_latest_images_as_covers(): void {
+		$places = $this->add_channel( 'Lieux' );
+		$house  = $this->add_channel( 'La maison', $places );
+		$empty  = $this->add_channel( 'Vide' );
+		$images = array();
+
+		foreach ( range( 1, 5 ) as $day ) {
+			$image_id = self::factory()->attachment->create_upload_object( DIR_TESTDATA . '/images/33772.jpg' );
+
+			wp_update_post(
+				array(
+					'ID'        => $image_id,
+					'post_date' => "2026-11-0$day 12:00:00",
+				)
+			);
+			wp_set_object_terms( $image_id, array( 1 === $day ? $places : $house ), 'moodboard_channel' );
+			$images[ $day ] = wp_get_attachment_image_src( $image_id, 'medium_large' )[0];
+		}
+
+		$channels = array_column( $this->request( 'GET', '/wp/v2/moodboard-channels' )->get_data(), 'moodboard_covers', 'id' );
+
+		$this->assertSame( array( $images[5], $images[4], $images[3], $images[2] ), array_column( $channels[ $places ], 'url' ) );
+		$this->assertSame( array(), $channels[ $empty ] );
+	}
+
+	/**
 	 * A text is private, whatever status it is sent with, and in its channels.
 	 *
 	 * @return void

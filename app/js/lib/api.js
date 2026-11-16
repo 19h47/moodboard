@@ -1,7 +1,7 @@
 /**
- * The REST API of core, as the app reads it: the channels of the curator, a taxonomy, and their blocks, the media and
- * the texts, each turned into what the bricks show, in plain text. The routes are those of WordPress; only the fields
- * the app reads are asked for.
+ * The REST API of core, as the app reads it: the channels of the curator, a taxonomy, and their blocks, the media, the
+ * texts and the links, each turned into what the bricks show, in plain text, and the notes of a block. The routes are
+ * those of WordPress; only the fields the app reads are asked for.
  */
 
 import {
@@ -9,6 +9,9 @@ import {
 	apiFetch,
 	channelFields,
 	channelsBase,
+	linkEmbed,
+	linkFields,
+	linksBase,
 	mediaFields,
 	perPage,
 	textFields,
@@ -19,11 +22,21 @@ import {
  * A channel.
  *
  * @typedef {Object} Channel
- * @property {number} id          Its term ID.
- * @property {string} name        Its name.
- * @property {string} description Its description.
- * @property {number} parent      The channel it is under, 0 for none.
- * @property {number} count       How many blocks it holds.
+ * @property {number}  id          Its term ID.
+ * @property {string}  name        Its name.
+ * @property {string}  description Its description.
+ * @property {number}  parent      The channel it is under, 0 for none.
+ * @property {number}  count       How many blocks it holds.
+ * @property {Cover[]} covers      Its latest images, and those of its sub-channels, for its card.
+ */
+
+/**
+ * An image of the card of a channel, at a size of its own.
+ *
+ * @typedef {Object} Cover
+ * @property {string} url    Its URL.
+ * @property {number} width  Its width.
+ * @property {number} height Its height.
  */
 
 /**
@@ -37,33 +50,45 @@ import {
  */
 
 /**
- * A block: a media, an image or another file, or a text.
+ * A block: a media, an image or another file, a text, or a link.
  *
  * @typedef {Object} Block
- * @property {string}         key         Its kind and its ID, as the lists hold it: media-12, text-7.
- * @property {'media'|'text'} kind        Its kind, the view of its page.
- * @property {number}         id          Its post ID.
- * @property {string}         date        When it was added, as the API gives it.
- * @property {string}         title       Its title.
- * @property {string}         description The description of a media, as written.
- * @property {string}         text        The text of a text, as written.
- * @property {string}         alt         The alternative text of an image.
- * @property {string}         source      The URL it comes from.
- * @property {number[]}       channels    The channels it is in.
- * @property {string}         url         The file of a media.
- * @property {string}         mime        The type of the file of a media.
- * @property {Image|null}     image       The image of a media that is one.
+ * @property {string}                key         Its kind and its ID, as the lists hold it: media-12, text-7, link-3.
+ * @property {'media'|'text'|'link'} kind        Its kind, the view of its page.
+ * @property {number}                id          Its post ID.
+ * @property {string}                date        When it was added, as the API gives it.
+ * @property {string}                title       Its title, as WordPress has it: the name of its file unless written.
+ * @property {string}                label       Its title written, as the app shows it: none for a media named after its file.
+ * @property {string}                description The description of a media or of a link, as written.
+ * @property {string}                text        The text of a text, as written.
+ * @property {string}                alt         The alternative text of an image.
+ * @property {string}                source      The URL it comes from.
+ * @property {number[]}              channels    The channels it is in.
+ * @property {string}                url         The file of a media.
+ * @property {string}                mime        The type of the file of a media.
+ * @property {Image|null}            image       The image of a media that is one, or the one of the page of a link.
+ * @property {string|null}           embed       The player of a link, as core embeds its URL, empty for none; null until its page loads it.
+ */
+
+/**
+ * A note on a block, as written.
+ *
+ * @typedef {Object} Note
+ * @property {number} id      Its comment ID.
+ * @property {string} date    When it was written, as the API gives it.
+ * @property {string} content What it says.
  */
 
 /**
  * A channel, as the API gives it.
  *
  * @typedef {Object} ApiChannel
- * @property {number} id          Its term ID.
- * @property {string} name        Its name, its entities encoded.
- * @property {string} description Its description.
- * @property {number} parent      The channel it is under.
- * @property {number} count       How many blocks it holds.
+ * @property {number}  id               Its term ID.
+ * @property {string}  name             Its name, its entities encoded.
+ * @property {string}  description      Its description.
+ * @property {number}  parent           The channel it is under.
+ * @property {number}  count            How many blocks it holds.
+ * @property {Cover[]} moodboard_covers Its latest images.
  */
 
 /**
@@ -92,6 +117,12 @@ import {
  * A text, as the API gives it.
  *
  * @typedef {ApiBlock & {content: Raw}} ApiText
+ */
+
+/**
+ * A link, as the API gives it, the image of its page embedded, and its player for its page.
+ *
+ * @typedef {ApiBlock & {content: Raw, moodboard_embed?: string, _embedded?: {'wp:featuredmedia'?: Array<ApiMedia & {code?: string}>}}} ApiLink
  */
 
 /**
@@ -144,6 +175,7 @@ function toChannel( item ) {
 		description: item.description,
 		parent: item.parent,
 		count: item.count,
+		covers: item.moodboard_covers ?? [],
 	};
 }
 
@@ -182,6 +214,37 @@ function toImage( item ) {
 }
 
 /**
+ * A name to compare, its separators alike, in lower case.
+ *
+ * @param {string} name A title, or the name of a file.
+ * @return {string} The name to compare.
+ */
+function nameKey( name ) {
+	return name.toLocaleLowerCase().replace( /[\s_.-]+/g, '-' );
+}
+
+/**
+ * The title of a media written, empty when WordPress named it after its file, as it does a media uploaded: the name of
+ * its file without its extension, and without the suffixes WordPress may have added, of a large image, `-scaled`, or of
+ * a name taken, such as `-2`; the title keeps its own, such as the volume of `t-1`.
+ *
+ * @param {ApiMedia} item The media.
+ * @return {string} Its title written.
+ */
+function labelOf( item ) {
+	const file = decodeURIComponent( item.source_url.split( '/' ).pop() ?? '' );
+	const names = [ file.replace( /\.[a-z0-9]+$/i, '' ) ];
+
+	for ( let i = 0; i < 2; i++ ) {
+		names.push( names.at( -1 ).replace( /-(scaled|\d+)$/, '' ) );
+	}
+
+	return names.map( nameKey ).includes( nameKey( item.title.raw ) )
+		? ''
+		: item.title.raw;
+}
+
+/**
  * A block of a media.
  *
  * @param {ApiMedia} item The media, in the context of its edition.
@@ -194,6 +257,7 @@ export function toMedia( item ) {
 		id: item.id,
 		date: item.date,
 		title: item.title.raw,
+		label: labelOf( item ),
 		description: item.description.raw,
 		text: '',
 		alt: item.alt_text,
@@ -202,6 +266,7 @@ export function toMedia( item ) {
 		url: item.source_url,
 		mime: item.mime_type,
 		image: toImage( item ),
+		embed: '',
 	};
 }
 
@@ -218,6 +283,7 @@ export function toText( item ) {
 		id: item.id,
 		date: item.date,
 		title: item.title.raw,
+		label: item.title.raw,
 		description: '',
 		text: item.content.raw,
 		alt: '',
@@ -226,17 +292,93 @@ export function toText( item ) {
 		url: '',
 		mime: '',
 		image: null,
+		embed: '',
 	};
 }
 
 /**
+ * A block of a link: its title and its description those of its page, unless written, its image the one of its page.
+ *
+ * @param {ApiLink} item The link, in the context of its edition.
+ * @return {Block} The block.
+ */
+export function toLink( item ) {
+	const image = item._embedded?.[ 'wp:featuredmedia' ]?.[ 0 ];
+
+	return {
+		key: `link-${ item.id }`,
+		kind: 'link',
+		id: item.id,
+		date: item.date,
+		title: item.title.raw,
+		// A page that gives no title is named after its URL: no title written.
+		label:
+			item.title.raw === item.meta?.moodboard_source
+				? ''
+				: item.title.raw,
+		description: item.content.raw,
+		text: '',
+		alt: '',
+		source: item.meta?.moodboard_source ?? '',
+		channels: item[ channelsBase ] ?? [],
+		url: item.meta?.moodboard_source ?? '',
+		mime: '',
+		image: image && ! image.code ? toImage( image ) : null,
+		embed: item.moodboard_embed ?? null,
+	};
+}
+
+/**
+ * The kinds of the blocks: their route, the fields the app reads, what they embed, and what turns them into blocks.
+ *
+ * @type {Record<Block['kind'], {route: string, fields: string, embed: string, to: ( item: ApiMedia & ApiText & ApiLink ) => Block}>}
+ */
+const KINDS = {
+	media: {
+		route: '/wp/v2/media',
+		fields: mediaFields,
+		embed: '',
+		to: toMedia,
+	},
+	text: {
+		route: `/wp/v2/${ textsBase }`,
+		fields: textFields,
+		embed: '',
+		to: toText,
+	},
+	link: {
+		route: `/wp/v2/${ linksBase }`,
+		fields: linkFields,
+		embed: linkEmbed,
+		to: toLink,
+	},
+};
+
+/**
  * The route of the blocks of a kind.
  *
- * @param {'media'|'text'} kind The kind.
+ * @param {Block['kind']} kind The kind.
  * @return {string} Its route.
  */
 function routeOf( kind ) {
-	return 'media' === kind ? '/wp/v2/media' : `/wp/v2/${ textsBase }`;
+	return KINDS[ kind ].route;
+}
+
+/**
+ * The arguments every request of the blocks of a kind gives: their fields, what they embed, in the context of their
+ * edition.
+ *
+ * @param {Block['kind']} kind The kind.
+ * @return {Object<string, string>} The arguments.
+ */
+function argsOf( kind ) {
+	const { fields, embed } = KINDS[ kind ];
+
+	return {
+		_fields: fields,
+		...( embed ? { _embed: embed } : {} ),
+		context: 'edit',
+	};
 }
 
 /**
@@ -256,61 +398,63 @@ export async function fetchChannels( signal ) {
 }
 
 /**
- * The blocks of channels, or those a search finds among them, the latest first.
+ * The blocks of a channel, or of the index, every block of the curator, in a channel or none; or those a search finds
+ * among them; the latest first.
  *
- * @param {number[]}    channelIds The channels.
- * @param {string}      search     The search, empty for every block.
- * @param {AbortSignal} signal     Stops it.
+ * @param {number}      channelId The channel, 0 for the index.
+ * @param {string}      search    The search, empty for every block.
+ * @param {AbortSignal} signal    Stops it.
  * @return {Promise<Block[]>} The blocks.
  */
-export async function fetchBlocks( channelIds, search, signal ) {
-	if ( ! channelIds.length ) {
-		return [];
-	}
-
+export async function fetchBlocks( channelId, search, signal ) {
 	const query = {
-		context: 'edit',
-		[ channelsBase ]: [ ...channelIds ]
-			.sort( ( a, b ) => a - b )
-			.join( ',' ),
+		...( channelId ? { [ channelsBase ]: channelId } : {} ),
 		...( search ? { search } : {} ),
 	};
-	const [ media, texts ] = await Promise.all( [
-		fetchAll(
-			routeOf( 'media' ),
-			{ _fields: mediaFields, ...query },
-			signal
-		),
-		fetchAll(
-			routeOf( 'text' ),
-			{ _fields: textFields, ...query },
-			signal
-		),
-	] );
+	const kinds = /** @type {Block['kind'][]} */ ( Object.keys( KINDS ) );
+	const lists = await Promise.all(
+		kinds.map( async ( kind ) => {
+			const items = await fetchAll(
+				routeOf( kind ),
+				{
+					...argsOf( kind ),
+					...query,
+					// The media of the library that are blocks: a text or a link is one by its post type.
+					...( 'media' === kind && ! channelId
+						? { moodboard_block: 1 }
+						: {} ),
+				},
+				signal
+			);
 
-	return [ ...media.map( toMedia ), ...texts.map( toText ) ].sort( ( a, b ) =>
-		b.date.localeCompare( a.date )
+			return items.map( KINDS[ kind ].to );
+		} )
 	);
+
+	return lists.flat().sort( ( a, b ) => b.date.localeCompare( a.date ) );
 }
 
 /**
- * A block, by its kind and its ID.
+ * A block, by its kind and its ID, for its page: a link with its player.
  *
- * @param {'media'|'text'} kind   Its kind.
- * @param {number}         id     Its ID.
- * @param {AbortSignal}    signal Stops it.
+ * @param {Block['kind']} kind   Its kind.
+ * @param {number}        id     Its ID.
+ * @param {AbortSignal}   signal Stops it.
  * @return {Promise<Block>} The block.
  */
 export async function fetchBlock( kind, id, signal ) {
+	const args = argsOf( kind );
+
+	if ( 'link' === kind ) {
+		args._fields += ',moodboard_embed';
+	}
+
 	const item = await apiFetch( {
-		path: addQueryArgs( `${ routeOf( kind ) }/${ id }`, {
-			_fields: 'media' === kind ? mediaFields : textFields,
-			context: 'edit',
-		} ),
+		path: addQueryArgs( `${ routeOf( kind ) }/${ id }`, args ),
 		signal,
 	} );
 
-	return 'media' === kind ? toMedia( item ) : toText( item );
+	return KINDS[ kind ].to( item );
 }
 
 /**
@@ -359,17 +503,30 @@ export async function deleteChannel( id ) {
 }
 
 /**
- * Uploads a file into a channel.
+ * The channels of a block added to a channel, none added to the index.
+ *
+ * @param {number} channelId The channel, 0 for the index.
+ * @return {number[]} Its channels.
+ */
+function channelsOf( channelId ) {
+	return channelId ? [ channelId ] : [];
+}
+
+/**
+ * Uploads a file as a block, into a channel or the index.
  *
  * @param {File}   file      The file.
- * @param {number} channelId The channel.
+ * @param {number} channelId The channel, 0 for the index.
  * @return {Promise<Block>} Its block.
  */
 export async function uploadFile( file, channelId ) {
 	const body = new FormData();
 
 	body.append( 'file', file );
-	body.append( `${ channelsBase }[]`, channelId.toString() );
+	body.append( 'meta[moodboard_block]', 'true' );
+	channelsOf( channelId ).forEach( ( id ) =>
+		body.append( `${ channelsBase }[]`, id.toString() )
+	);
 
 	return toMedia(
 		await apiFetch( {
@@ -381,10 +538,11 @@ export async function uploadFile( file, channelId ) {
 }
 
 /**
- * Imports an image from its URL into a channel: core downloads it, the plugin keeps the URL as its source.
+ * Imports an image from its URL as a block, into a channel or the index: core downloads it, the plugin keeps the URL as
+ * its source.
  *
  * @param {string} url       The URL of the image.
- * @param {number} channelId The channel.
+ * @param {number} channelId The channel, 0 for the index.
  * @return {Promise<Block>} Its block.
  */
 export async function importUrl( url, channelId ) {
@@ -392,16 +550,20 @@ export async function importUrl( url, channelId ) {
 		await apiFetch( {
 			path: addQueryArgs( routeOf( 'media' ), { context: 'edit' } ),
 			method: 'POST',
-			data: { url, [ channelsBase ]: [ channelId ] },
+			data: {
+				url,
+				meta: { moodboard_block: true },
+				[ channelsBase ]: channelsOf( channelId ),
+			},
 		} )
 	);
 }
 
 /**
- * Writes a text into a channel.
+ * Writes a text, into a channel or the index.
  *
  * @param {string} content   The text.
- * @param {number} channelId The channel.
+ * @param {number} channelId The channel, 0 for the index.
  * @return {Promise<Block>} Its block.
  */
 export async function createText( content, channelId ) {
@@ -412,10 +574,124 @@ export async function createText( content, channelId ) {
 			data: {
 				content,
 				status: 'private',
-				[ channelsBase ]: [ channelId ],
+				[ channelsBase ]: channelsOf( channelId ),
 			},
 		} )
 	);
+}
+
+/**
+ * Adds a link, into a channel or the index: its title and its image those core gets of its provider, such as the title
+ * and the thumbnail of a video, `oembed/1.0/proxy`, else those of its page, as core reads them for the previews of the
+ * editor, `wp-block-editor/v1/url-details`, with its description; its image downloaded as a media of the library,
+ * which is no block. A page core cannot read is added all the same, named after its URL.
+ *
+ * @param {string} url       The URL of the page.
+ * @param {number} channelId The channel, 0 for the index.
+ * @return {Promise<Block>} Its block.
+ */
+export async function createLink( url, channelId ) {
+	/** @type {{title?: string, description?: string, image?: string}} */
+	let details = {};
+	let featured = 0;
+
+	try {
+		/** @type {{title?: string, thumbnail_url?: string}} */
+		const embed = await apiFetch( {
+			path: addQueryArgs( '/oembed/1.0/proxy', { url } ),
+		} );
+
+		details = { title: embed.title, image: embed.thumbnail_url };
+	} catch {
+		try {
+			details = await apiFetch( {
+				path: addQueryArgs( '/wp-block-editor/v1/url-details', {
+					url,
+				} ),
+			} );
+		} catch {}
+	}
+
+	if ( details.image ) {
+		try {
+			featured = (
+				await apiFetch( {
+					path: '/wp/v2/media',
+					method: 'POST',
+					data: { url: details.image },
+				} )
+			).id;
+		} catch {}
+	}
+
+	return toLink(
+		await apiFetch( {
+			path: addQueryArgs( routeOf( 'link' ), argsOf( 'link' ) ),
+			method: 'POST',
+			data: {
+				title: text( details.title ?? '' ) || url,
+				content: text( details.description ?? '' ),
+				status: 'private',
+				featured_media: featured,
+				meta: { moodboard_source: url },
+				[ channelsBase ]: channelsOf( channelId ),
+			},
+		} )
+	);
+}
+
+/**
+ * The notes of a block, the oldest first: the notes of core, which only those who may edit it read.
+ *
+ * @param {Block}       block  The block.
+ * @param {AbortSignal} signal Stops it.
+ * @return {Promise<Note[]>} Its notes.
+ */
+export async function fetchNotes( block, signal ) {
+	const items = await fetchAll(
+		'/wp/v2/comments',
+		{
+			post: block.id,
+			type: 'note',
+			context: 'edit',
+			orderby: 'date',
+			order: 'asc',
+			_fields: 'id,date,content',
+		},
+		signal
+	);
+
+	return items.map( ( item ) => ( {
+		id: item.id,
+		date: item.date,
+		content: item.content.raw,
+	} ) );
+}
+
+/**
+ * Writes a note on a block.
+ *
+ * @param {Block}  block   The block.
+ * @param {string} content What it says.
+ */
+export async function addNote( block, content ) {
+	await apiFetch( {
+		path: '/wp/v2/comments',
+		method: 'POST',
+		data: { post: block.id, type: 'note', content },
+	} );
+}
+
+/**
+ * Deletes a note.
+ *
+ * @param {number} id Its comment ID.
+ */
+export async function deleteNote( id ) {
+	await apiFetch( {
+		path: `/wp/v2/comments/${ id }?force=true`,
+		method: 'DELETE',
+	} );
 }
 
 /**
@@ -427,14 +703,15 @@ export async function createText( content, channelId ) {
  */
 export async function updateBlock( block, fields ) {
 	const item = await apiFetch( {
-		path: addQueryArgs( `${ routeOf( block.kind ) }/${ block.id }`, {
-			context: 'edit',
-		} ),
+		path: addQueryArgs(
+			`${ routeOf( block.kind ) }/${ block.id }`,
+			argsOf( block.kind )
+		),
 		method: 'POST',
 		data: fields,
 	} );
 
-	return 'media' === block.kind ? toMedia( item ) : toText( item );
+	return KINDS[ block.kind ].to( item );
 }
 
 /**

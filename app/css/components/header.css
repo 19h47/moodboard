@@ -1,0 +1,68 @@
+/**
+ * The header of the page, on one line: the name of the app, the tabs of the index, then its tools, the size of the
+ * cards, the search, the selection and the menu that adds. A part of a view only shows in it, `data-only`: index, or
+ * grid for the index and a channel.
+ */
+
+@layer app.components {
+	.moodboard-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--app-space-s) var(--app-space-m);
+	}
+
+	.moodboard-header__title {
+		font-size: var(--app-text-l);
+	}
+
+	.moodboard-header__title > a {
+		text-decoration: none;
+	}
+
+	.moodboard-header__tools {
+		align-items: center;
+		margin-inline-start: auto;
+	}
+
+	moodboard-header:not([data-view="index"]) [data-only="index"],
+	moodboard-header:not([data-view="index"], [data-view="channel"]) [data-only="grid"] {
+		display: none;
+	}
+
+	/* The tabs of the index, in words, the current one in the color of the text */
+	.moodboard-tabs {
+		list-style: none;
+		display: flex;
+		gap: var(--app-space-m);
+	}
+
+	.moodboard-tab {
+		color: var(--app-text-muted);
+		font-family: var(--app-font-ui);
+		font-size: var(--app-text-s);
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	.moodboard-tab[aria-current="page"] {
+		color: var(--app-text);
+		text-decoration: underline;
+	}
+
+	/* The size of the cards, a short range among the controls */
+	moodboard-density {
+		display: flex;
+		align-items: center;
+	}
+
+	.moodboard-density__range {
+		inline-size: calc(var(--app-u3) * var(--app-phi)); /* Exception, an atom of a size of its own: a short range among the controls */
+		accent-color: var(--app-text);
+	}
+
+	/* The control that opens the menu that adds, which hangs under it */
+	[commandfor="moodboard-menu"] {
+		anchor-name: --moodboard-menu;
+	}
+}

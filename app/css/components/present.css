@@ -1,0 +1,77 @@
+/**
+ * The blocks presented, one at a time, over the whole screen: black, whatever the theme, as a room dark around its
+ * images; the block in the middle, as large as the screen leaves it, its place and its controls under it.
+ */
+
+@layer app.components {
+	.moodboard-present {
+		inline-size: 100%;
+		max-inline-size: none;
+		block-size: 100%;
+		max-block-size: none;
+		padding: 0;
+		border: 0;
+		background: var(--moodboard-present-bg);
+		color: var(--moodboard-present-text);
+		color-scheme: dark;
+	}
+
+	.moodboard-present::backdrop {
+		background: var(--moodboard-present-bg);
+	}
+
+	.moodboard-present[open] > .moodboard-present__frame {
+		display: grid;
+		grid-template-rows: minmax(0, 1fr) auto;
+		block-size: 100%;
+	}
+
+	/*
+	 * A swipe across the block goes to its neighbour. Its one cell is as large as the screen leaves it, whatever the
+	 * block: the image, the video and the text take it in turn
+	 */
+	.moodboard-present__stage {
+		display: grid;
+		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+		place-items: center;
+		padding: var(--app-space-l);
+		min-block-size: 0;
+		touch-action: pan-y;
+	}
+
+	.moodboard-present__stage > * {
+		grid-area: 1 / 1;
+	}
+
+	/* The whole cell, the image contained within it, however tall */
+	.moodboard-present__image {
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: contain;
+	}
+
+	.moodboard-present__text {
+		max-inline-size: var(--app-max-width);
+		max-block-size: 100%;
+		overflow: auto;
+		font-size: var(--app-text-xl);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.moodboard-present__bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--app-space-s) var(--app-space-m);
+		padding: var(--app-space-m) var(--app-space-l) calc(var(--app-space-m) + env(safe-area-inset-bottom));
+	}
+
+	/* Its controls on black, as the base draws them on the page */
+	.moodboard-present .app-control {
+		--app-bg: var(--moodboard-present-bg);
+		--app-text: var(--moodboard-present-text);
+		--app-line: var(--moodboard-present-line);
+	}
+}

@@ -90,15 +90,18 @@ abstract class TestCase extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Add a media of the current curator in channels, as uploaded then put in its channels.
+	 * Add a media of the current curator, a block of their moodboard unless said otherwise, in channels or none, as the
+	 * app uploads it.
 	 *
 	 * @param int[] $channel_ids Term IDs of its channels.
+	 * @param bool  $is_block    Whether it is a block, rather than any media of the library.
 	 * @return int Attachment ID.
 	 */
-	protected function add_media( array $channel_ids = array() ): int {
+	protected function add_media( array $channel_ids = array(), bool $is_block = true ): int {
 		$media_id = self::factory()->attachment->create( array( 'post_author' => get_current_user_id() ) );
 
 		wp_set_object_terms( $media_id, $channel_ids, 'moodboard_channel' );
+		update_post_meta( $media_id, 'moodboard_block', $is_block );
 
 		return $media_id;
 	}

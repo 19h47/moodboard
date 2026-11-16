@@ -1,19 +1,20 @@
 /**
  * The router of the app: the URL says what shows, the index, a channel, or a media or a text with the channel it was
- * opened from, and the tab and the search of the index. The links of the app are links: the Navigation API turns a
- * navigation within the app into a change of view, without reloading, puts a view gone back to where it was, and
- * leaves a link opened in a new tab or window to the browser. A view gives way to the next one in a view transition,
- * in which the image of a block opened goes from its card to its page, and back.
+ * opened from, and the tab and the search of the index, and, once only, what another app shared to it. The links of
+ * the app are links: the Navigation API turns a navigation within the app into a change of view, without reloading,
+ * puts a view gone back to where it was, and leaves a link opened in a new tab or window to the browser. A view gives
+ * way to the next one in a view transition, in which the image of a block opened goes from its card to its page, and
+ * back.
  */
 
-import { appUrl } from 'moodboard-app/app';
+import { appUrl, shareParams } from 'moodboard-app/app';
 import { store } from 'moodboard-app/store';
 
 /**
  * What a URL of the app shows.
  *
  * @typedef {Object} Route
- * @property {string} view  Its view: index, channel, media or text.
+ * @property {string} view  Its view: index, channel, media, text or link.
  * @property {number} id    The channel, the media or the text of its page, 0 for the index.
  * @property {number} from  The channel a media or a text was opened from, 0 for none.
  * @property {string} tab   What the index shows: all, channels or blocks.
@@ -21,7 +22,7 @@ import { store } from 'moodboard-app/store';
  */
 
 // The pages, with their ID in the argument of the same name: ?view=channel&channel=12.
-const PAGE_VIEWS = [ 'channel', 'media', 'text' ];
+const PAGE_VIEWS = [ 'channel', 'media', 'text', 'link' ];
 const TABS = [ 'all', 'channels', 'blocks' ];
 // The name the image of a block takes in a view transition, on its card, then on its page, or the other way.
 const IMAGE_TRANSITION = 'moodboard-image';
@@ -33,8 +34,8 @@ const app = new URL( appUrl );
  * @type {Map<string, number>}
  */
 const places = new Map();
-// Whether the router writes the search in the URL itself: the navigation it makes shows nothing new.
-let isWritingSearch = false;
+// Whether the router writes the URL itself, as the search typed: the navigation it makes shows nothing new.
+let isWritingUrl = false;
 
 /**
  * Whether `url` is in the app: its page, whatever it shows.
@@ -194,7 +195,7 @@ async function transition( event, from, show ) {
 navigation.addEventListener( 'navigate', ( event ) => {
 	// A reload loads the page again; a download, a form sent or a page out of the app are the browser's.
 	if (
-		isWritingSearch ||
+		isWritingUrl ||
 		! event.canIntercept ||
 		event.hashChange ||
 		event.downloadRequest ||
@@ -233,6 +234,35 @@ navigation.addEventListener( 'navigate', ( event ) => {
 } );
 
 /**
+ * Writes `url` in place of the URL of the app, as it shows already.
+ *
+ * @param {string} url A URL of the app.
+ */
+function replaceUrl( url ) {
+	isWritingUrl = true;
+	history.replaceState( history.state, '', url );
+	isWritingUrl = false;
+}
+
+/**
+ * What another app shared in `url`: its URL, else the first one of its text, as an app puts the URL of a page after its
+ * title, else its text, else its title.
+ *
+ * @param {string} url A URL of the app.
+ * @return {string} What it shared, empty for nothing.
+ */
+function sharedOf( url ) {
+	const { searchParams } = new URL( url );
+	const [ title, text, link ] = [
+		shareParams.title,
+		shareParams.text,
+		shareParams.url,
+	].map( ( name ) => searchParams.get( name )?.trim() ?? '' );
+
+	return link || text.match( /https?:\/\/\S+/ )?.[ 0 ] || text || title;
+}
+
+/**
  * Goes back to where the view shown was opened from, in the app as it is open; a view opened first, as from a link or
  * once reloaded, goes to `url`.
  *
@@ -250,6 +280,14 @@ export function back( url ) {
 
 store.show( routeOf( location.href ) );
 
+// What is shared shows once: its URL goes, so that a reload or the history opens it no more.
+const shared = sharedOf( location.href );
+
+if ( shared ) {
+	replaceUrl( urlOf( routeOf( location.href ) ) );
+	store.setShared( shared );
+}
+
 // The search typed goes to the URL of the index, in place, as a link to what it finds has it.
 store.select(
 	( state ) => state.query.trim(),
@@ -258,9 +296,7 @@ store.select(
 		const url = urlOf( { ...route, query } );
 
 		if ( 'index' === route.view && url !== location.href ) {
-			isWritingSearch = true;
-			history.replaceState( history.state, '', url );
-			isWritingSearch = false;
+			replaceUrl( url );
 		}
 	}
 );

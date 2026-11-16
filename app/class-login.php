@@ -150,7 +150,8 @@ class Login {
 	}
 
 	/**
-	 * The styles of the app instead of the ones of the login of WordPress. The dashicons stay, for the icons of the buttons of core: the one that shows the password, the help
+	 * The styles of the app instead of the ones of the login of WordPress, then the theme chosen in the app, before the
+	 * first paint. The dashicons stay, for the icons of the buttons of core: the one that shows the password, the help
 	 * of "Remember Me".
 	 *
 	 * @return void
@@ -162,6 +163,10 @@ class Login {
 
 		[ $style_url, $style_version ] = Plugin::get_asset( 'app/css/moodboard-login.css' );
 		wp_enqueue_style( 'moodboard-login', $style_url, array( 'moodboard-app', 'dashicons' ), $style_version );
+
+		[ $theme_url, $theme_version ] = Plugin::get_asset( 'app/js/moodboard-app-theme.js' );
+		wp_enqueue_script( 'moodboard-app-theme', $theme_url, array(), $theme_version, false );
+		wp_localize_script( 'moodboard-app-theme', 'moodboardApp', array( 'storageKey' => Page::STORAGE_KEY ) );
 	}
 
 	/**
@@ -171,11 +176,13 @@ class Login {
 	 * @return void
 	 */
 	public function print_head(): void {
-		[ $favicon_url ] = Plugin::get_asset( 'app/favicon.svg' );
+		[ $favicon_url ]    = Plugin::get_asset( 'app/favicon.svg' );
+		[ $touch_icon_url ] = Plugin::get_asset( 'app/apple-touch-icon.png' );
 
 		?>
 		<meta name="color-scheme" content="light dark">
 		<link rel="icon" type="image/svg+xml" href="<?php echo esc_url( $favicon_url ); ?>">
+		<link rel="apple-touch-icon" href="<?php echo esc_url( $touch_icon_url ); ?>">
 		<?php
 	}
 
@@ -201,13 +208,17 @@ class Login {
 	}
 
 	/**
-	 * The icon of the app, then its name, above the form instead of the logo of WordPress: the grid of its icon, in the
-	 * color of the text, so that it follows the theme; the name alone names the link.
+	 * The icon of the app, then its name, above the form instead of the logo of WordPress: the bookmark of its icon on
+	 * the home screen, in the color of the text, so that it follows the theme; the name alone names the link. Its box is
+	 * the one of the bookmark, without the margin of the grid of Material Symbols, so that it lines up with the name.
+	 *
+	 * The bookmark is from Material Symbols, by Google, under the Apache License 2.0:
+	 * https://github.com/google/material-design-icons
 	 *
 	 * @return string
 	 */
 	public function get_header_text(): string {
-		$icon = '<svg class="moodboard-login-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>';
+		$icon = '<svg class="moodboard-login-icon" viewBox="200 -840 560 720" aria-hidden="true" focusable="false"><path d="M200-120v-640q0-33 23.5-56.5T280-840h400q33 0 56.5 23.5T760-760v640L480-240 200-120Z"/></svg>';
 
 		return $icon . esc_html( $this->get_name() );
 	}

@@ -1,0 +1,37 @@
+/**
+ * A menu of the header, a popover under its control: its items, a line each.
+ */
+
+@layer app.components {
+	.moodboard-menu {
+		position-anchor: --moodboard-menu;
+		position-area: block-end span-inline-start;
+		margin: var(--app-space-xs) 0 0; /* Exception, a layer over the page: a gap under the control it hangs from */
+		padding: var(--app-space-xs);
+		border: 1px solid var(--app-line);
+		border-radius: var(--app-radius-m);
+		background: var(--app-bg);
+		color: var(--app-text);
+	}
+
+	.moodboard-menu:popover-open {
+		display: grid;
+	}
+
+	.moodboard-menu__item {
+		padding: var(--app-space-s) var(--app-space-m);
+		border: 0;
+		border-radius: calc(var(--app-radius-m) - var(--app-space-xs));
+		background: none;
+		color: inherit;
+		font-family: var(--app-font-ui);
+		font-size: var(--app-text-s);
+		text-align: start;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.moodboard-menu__item:is(:hover, :focus-visible) {
+		background: var(--app-fill);
+	}
+}

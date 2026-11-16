@@ -1,46 +1,59 @@
 /**
- * The page of a block: its media large, its image whole within the screen, then what it says beside it on a wide screen,
- * under it on a phone.
+ * The page of a block: its media first, as large as the page and the screen leave it, whole; then what it says, in the
+ * column of text, under it.
  */
 
 @layer app.views {
 	.moodboard-block {
 		display: grid;
 		gap: var(--app-space-l);
-		align-items: start;
 	}
 
-	.moodboard-block > nav {
-		grid-column: 1 / -1;
+	.moodboard-block__nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--app-space-s);
 	}
 
-	@media (width >= 42rem) {
-		.moodboard-block {
-			grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--app-max-width) / var(--app-phi)));
-			gap: var(--app-space-xl);
-		}
+	.moodboard-block__neighbours {
+		margin-inline-start: auto;
 	}
 
+	/* A swipe across the media opens a neighbour; up and down, it scrolls the page */
 	.moodboard-block__media {
 		display: grid;
 		justify-items: center;
-		gap: var(--app-space-m);
+		touch-action: pan-y;
 	}
 
-	/* An image or a video whole, as high as the screen leaves it */
+	/* An image or a video whole, as high as the screen leaves it under the header */
 	.moodboard-block__image {
 		max-inline-size: 100%;
-		max-block-size: calc(100dvh - 2 * var(--app-space-xl));
+		max-block-size: calc(100dvh - 2 * var(--app-space-xl) - 2 * var(--app-control-size));
 		inline-size: auto;
 		block-size: auto;
 		object-fit: contain;
 	}
 
+	/* The player of a link, as wide as the page, at the shape it gives */
+	.moodboard-block__embed {
+		justify-self: stretch;
+	}
+
+	.moodboard-block__embed iframe {
+		display: block;
+		inline-size: 100%;
+		block-size: auto;
+		aspect-ratio: 16 / 9;
+		max-block-size: calc(100dvh - 2 * var(--app-space-xl) - 2 * var(--app-control-size));
+		border: 0;
+	}
+
 	.moodboard-block__text {
 		justify-self: stretch;
-		padding: var(--app-space-l);
-		border: 1px solid var(--app-line-soft);
-		border-radius: var(--app-radius-s);
+		max-inline-size: var(--app-max-width);
+		margin-inline: auto;
 		font-size: var(--app-text-l);
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
@@ -49,11 +62,22 @@
 	.moodboard-block__info {
 		display: grid;
 		gap: var(--app-space-m);
+		max-inline-size: var(--app-max-width);
 	}
 
 	.moodboard-block__title {
 		font-size: var(--app-text-l);
 		overflow-wrap: anywhere;
+	}
+
+	/* A block without a title written: its heading names it for assistive technologies only, as .sr-only does */
+	.moodboard-block__title[data-untitled] {
+		position: absolute;
+		inline-size: 1px; /* Exception, as .sr-only: out of sight */
+		block-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	.moodboard-block__description {
@@ -73,10 +97,5 @@
 
 	.moodboard-block__meta a {
 		overflow-wrap: anywhere;
-	}
-
-	.moodboard-block__channels {
-		display: grid;
-		gap: var(--app-space-s);
 	}
 }

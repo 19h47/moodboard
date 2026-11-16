@@ -1,0 +1,28 @@
+/**
+ * The bar of the blocks selected: a layer at the bottom of the screen, over the page, how many then what changes them.
+ */
+
+@layer app.components {
+	.moodboard-selection {
+		position: fixed;
+		inset: auto 0 calc(var(--app-space-l) + env(safe-area-inset-bottom));
+		z-index: 1;
+		inline-size: fit-content;
+		max-inline-size: calc(100% - 2 * var(--app-space-l)); /* Exception, a layer fixed to the screen: within its gutters */
+		margin-inline: auto; /* Exception, a layer fixed to the screen: in its middle */
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: var(--app-space-s) var(--app-space-m);
+		padding: var(--app-space-s) var(--app-space-m);
+		border: 1px solid var(--app-line);
+		border-radius: var(--app-radius-m);
+		background: var(--app-bg);
+	}
+
+	/* A notice over the bar, rather than behind it */
+	body:has(> .moodboard-selection:not([hidden])) .moodboard-notice {
+		bottom: calc(var(--app-space-l) + var(--app-space-xl) + var(--app-control-size) + env(safe-area-inset-bottom));
+	}
+}

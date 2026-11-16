@@ -1,17 +1,15 @@
 <?php
 /**
  * The search of the index: its channels by name, its blocks by their title, their caption, their description or their
- * text.
+ * text. It searches as it is typed, or sent with Enter: its control is the one of the header that unfolds it.
  *
  * @package Moodboard
  *
  * @var array{id:string} $args ID of its field.
  */
 
-use Moodboard\Markup;
-
 ?>
-<form class="moodboard-search" role="search">
+<form role="search">
 	<label class="sr-only" for="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'Search the moodboard', 'moodboard' ); ?></label>
 	<input
 		id="<?php echo esc_attr( $args['id'] ); ?>"
@@ -20,7 +18,4 @@ use Moodboard\Markup;
 		autocomplete="off"
 		enterkeyhint="search"
 	>
-	<button class="app-control" type="submit" aria-label="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>" title="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>">
-		<?php Markup::render_icon( 'search' ); ?>
-	</button>
 </form>

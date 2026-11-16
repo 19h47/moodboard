@@ -11,14 +11,14 @@
 
 namespace Moodboard;
 
-use WP_Post;
 use WP_Term;
 
 /**
  * Gives each curator a moodboard of their own: they add blocks and channels, and change and delete their own, never those
  * of another curator. One capability, `curate_moodboard`, which the role Curator and the administrators have, stands for
- * every capability of the texts and the channels a curator has; those over the blocks and channels of others are given to
- * no one.
+ * every capability of the texts, the links and the channels a curator has; those over the blocks and channels of others
+ * are given to no one. A curator writes as a contributor of core does, `edit_posts` and `delete_posts`, which their media
+ * and the notes ask for.
  *
  * @since      1.0.0
  * @package    Moodboard
@@ -58,7 +58,8 @@ class Roles {
 	 * @var array<string,list<string>>
 	 */
 	private const array ROLES = array(
-		'moodboard_curator' => array( self::CURATE ),
+		// A curator writes as a contributor of core does, which their media, their notes and the previews of URLs ask for.
+		'moodboard_curator' => array( self::CURATE, 'edit_posts', 'delete_posts' ),
 		'administrator'     => array( self::CURATE ),
 	);
 
@@ -69,7 +70,6 @@ class Roles {
 	 */
 	public function hooks(): void {
 		add_action( 'init', array( $this, 'give_capabilities' ) );
-		add_filter( 'map_meta_cap', array( $this, 'map_own_media' ), 10, 4 );
 		add_filter( 'map_meta_cap', array( $this, 'map_own_channel' ), 10, 4 );
 		add_filter( 'gettext_with_context_default', array( $this, 'translate_role_name' ), 10, 3 );
 	}
@@ -110,30 +110,6 @@ class Roles {
 		}
 
 		update_option( self::OPTION, self::ROLES, true );
-	}
-
-	/**
-	 * A curator changes and deletes the media they uploaded, their blocks, with the capability of uploading them: core
-	 * asks for the one of writing posts, `edit_posts`, which a curator has not.
-	 *
-	 * @param string[] $caps    Primitive capabilities the user needs.
-	 * @param string   $cap     Capability checked.
-	 * @param int      $user_id User ID.
-	 * @param mixed[]  $args    Arguments of the check, the post ID first.
-	 * @return string[]
-	 */
-	public function map_own_media( array $caps, string $cap, int $user_id, array $args ): array {
-		if ( ! in_array( $cap, array( 'edit_post', 'delete_post' ), true ) ) {
-			return $caps;
-		}
-
-		$post = get_post( (int) ( $args[0] ?? 0 ) );
-
-		if ( ! $post instanceof WP_Post || 'attachment' !== $post->post_type || (int) $post->post_author !== $user_id || ! user_can( $user_id, self::CURATE ) ) {
-			return $caps;
-		}
-
-		return array( 'upload_files' );
 	}
 
 	/**

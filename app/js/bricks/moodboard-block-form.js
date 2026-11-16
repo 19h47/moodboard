@@ -35,13 +35,15 @@ class MoodboardBlockFormElement extends Brick {
 				$form.reset();
 				field( 'title' ).value = shown.title;
 				field( 'body' ).value =
-					'media' === shown.kind ? shown.description : shown.text;
+					'text' === shown.kind ? shown.text : shown.description;
 				field( 'alt' ).value = shown.alt;
 				field( 'source' ).value = shown.source;
 				// The label of the body, and the alternative text, as the block is.
 				this.querySelectorAll( '[data-kind]' ).forEach(
 					( /** @type {HTMLElement} */ $part ) => {
-						$part.hidden = $part.dataset.kind !== shown.kind;
+						$part.hidden = ! $part.dataset.kind
+							.split( ' ' )
+							.includes( shown.kind );
 					}
 				);
 				this.querySelector( '[data-row="alt"]' ).toggleAttribute(

@@ -1,34 +1,29 @@
 /**
- * The page of a channel: its path, its name, its description and its actions, in the column of text, over its grid.
+ * The page of a channel: its path, then its name, its number of blocks and Edit on a line, its description under them,
+ * in the column of text, over its grid.
  */
 
 @layer app.views {
 	.moodboard-channel-header {
 		display: grid;
-		gap: var(--app-space-s);
+		gap: var(--app-space-xs);
 		max-inline-size: var(--app-max-width);
 	}
 
+	.moodboard-channel-header__line {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--app-space-s) var(--app-space-m);
+	}
+
 	.moodboard-channel-header__name {
-		font-size: var(--app-text-xl);
-		line-height: 1.2;
-		letter-spacing: -0.02em;
+		font-size: var(--app-text-l);
+		overflow-wrap: anywhere;
 	}
 
 	.moodboard-channel-header__description {
+		color: var(--app-text-muted);
 		white-space: pre-wrap;
-	}
-}
-
-@layer app.views {
-	/* On a phone, the card that adds is a row of its own, wider than high: two cards side by side leave its text no room */
-	@media (width < 42rem) {
-		.moodboard-grid > [data-id="add"] {
-			grid-column: 1 / -1;
-		}
-
-		.moodboard-grid > [data-id="add"] .moodboard-card__frame {
-			aspect-ratio: 2;
-		}
 	}
 }

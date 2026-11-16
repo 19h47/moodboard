@@ -1,0 +1,25 @@
+/**
+ * The card of a link: the image of its page whole in its square, as a media has it, else the name of its site, framed.
+ */
+
+@layer app.components {
+	/* With the class of the frame, which it sets over: the sheets come in the order of their names */
+	.moodboard-card__frame.moodboard-link-card {
+		position: relative;
+		background: var(--app-fill);
+	}
+
+	.moodboard-link-card__image {
+		position: absolute;
+		inset: 0;
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: cover;
+	}
+
+	.moodboard-link-card__host {
+		padding: var(--app-space-m);
+		overflow-wrap: anywhere;
+		text-align: center;
+	}
+}

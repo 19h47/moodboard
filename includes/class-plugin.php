@@ -49,7 +49,7 @@ class Plugin {
 		$plugin_file = plugin_basename( MOODBOARD_FILE );
 
 		new Roles()->hooks();
-		new Texts()->hooks();
+		new Posts()->hooks();
 		new Channels()->hooks();
 		new Meta()->hooks();
 		new Media()->hooks();

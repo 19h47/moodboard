@@ -3,7 +3,7 @@
  * item of the list, and what they say, such as the number of blocks of a channel or the kind of a file.
  */
 
-import { _n, sprintf } from 'moodboard-app/app';
+import { __, _n, sprintf } from 'moodboard-app/app';
 import { urlOf } from 'moodboard-app/router';
 import { clone, fill, fillImage } from 'moodboard-app/dom';
 
@@ -46,6 +46,20 @@ export function formatDate( date ) {
 }
 
 /**
+ * The name of the site of a URL, without its www, as the card of a link names it.
+ *
+ * @param {string} url The URL.
+ * @return {string} The name of its site.
+ */
+export function hostOf( url ) {
+	try {
+		return new URL( url ).hostname.replace( /^www\./, '' );
+	} catch {
+		return url;
+	}
+}
+
+/**
  * The card of a channel, in its item.
  *
  * @param {Channel} channel The channel.
@@ -56,6 +70,9 @@ export function renderChannel( channel ) {
 	/** @type {HTMLAnchorElement} */
 	const $link = $item.querySelector( '[data-part="link"]' );
 
+	/** @type {HTMLElement} */
+	const $covers = $item.querySelector( '[data-list="covers"]' );
+
 	$item.dataset.id = `channel-${ channel.id }`;
 	$link.href = urlOf( { view: 'channel', id: channel.id } );
 	fill( $item, {
@@ -63,37 +80,122 @@ export function renderChannel( channel ) {
 		count: formatCount( channel.count ),
 	} );
 
+	// Its latest images, as a mosaic its number lays out; they name nothing the name of the channel does not.
+	$covers.dataset.count = channel.covers.length.toString();
+	$covers.replaceChildren(
+		...channel.covers.map( ( cover ) => {
+			const $cover = new Image( cover.width, cover.height );
+
+			$cover.alt = '';
+			$cover.loading = 'lazy';
+			$cover.decoding = 'async';
+			$cover.src = cover.url;
+
+			return $cover;
+		} )
+	);
+
 	return $item;
 }
 
 /**
- * The card of a block, in its item: a media, its image or the kind of its file, or a text. Its link keeps the channel
- * it is opened from, for its neighbours.
+ * What names a block, its title written, else its alternative text, the name of its file or its kind.
+ *
+ * @param {Block} block The block.
+ * @return {string} Its name.
+ */
+export function nameOf( block ) {
+	return (
+		block.label ||
+		block.alt ||
+		block.title ||
+		block.text.slice( 0, 60 ) ||
+		formatKind( block.mime )
+	);
+}
+
+/**
+ * The card of a block, in its item: a media, its image or the kind of its file; a text; or a link, the image of its
+ * page or the name of its site. Its link keeps the channel it is opened from, for its neighbours.
  *
  * @param {Block}  block The block.
  * @param {number} from  The channel shown, 0 for none.
  * @return {HTMLElement} The item.
  */
 export function renderBlock( block, from ) {
-	const $item = clone(
-		'media' === block.kind ? 'moodboard-media-card' : 'moodboard-text-card'
-	);
+	const $item = clone( `moodboard-${ block.kind }-card` );
 	/** @type {HTMLAnchorElement} */
 	const $link = $item.querySelector( '[data-part="link"]' );
 
 	$item.dataset.id = block.key;
 	$link.href = urlOf( { view: block.kind, id: block.id, from } );
+	// Under an image, its title written only: none for one named after its file, which its alternative text names.
 	fill( $item, {
-		title: block.title,
+		title: block.label,
 		text: block.text,
 		kind: block.image ? '' : formatKind( block.mime ),
+		host: 'link' === block.kind ? hostOf( block.url ) : '',
+		select: sprintf(
+			/* translators: %s: name of a block. */
+			__( 'Select %s', 'moodboard' ),
+			nameOf( block )
+		),
 	} );
 
 	const $image = $item.querySelector( 'img' );
 
 	if ( $image ) {
 		fillImage( $image, block.image );
+		$image.alt = block.alt || ( block.label ? '' : nameOf( block ) );
 	}
 
 	return $item;
+}
+
+/**
+ * The boxes of the channels whose name has a filter, by name, ticked for those of `checked`, from the template of an
+ * option.
+ *
+ * @param {Channel[]} channels Every channel.
+ * @param {string}    filter   The filter, empty for every channel.
+ * @param {number[]}  checked  The channels ticked.
+ * @return {HTMLElement[]} The items of the boxes.
+ */
+export function renderChannelOptions( channels, filter, checked ) {
+	const search = filter.trim().toLocaleLowerCase();
+
+	return channels
+		.filter( ( channel ) =>
+			channel.name.toLocaleLowerCase().includes( search )
+		)
+		.toSorted( ( a, b ) => a.name.localeCompare( b.name ) )
+		.map( ( channel ) => {
+			const $item = clone( 'moodboard-connect-option' );
+			/** @type {HTMLInputElement} */
+			const $box = $item.querySelector( 'input' );
+
+			$box.value = channel.id.toString();
+			$box.checked = checked.includes( channel.id );
+			fill( $item, { name: channel.name } );
+
+			return $item;
+		} );
+}
+
+/**
+ * Whether no channel has the name typed, which a new channel may take.
+ *
+ * @param {Channel[]} channels Every channel.
+ * @param {string}    name     The name typed.
+ * @return {boolean} Whether it is a new name.
+ */
+export function isNewName( channels, name ) {
+	const search = name.trim().toLocaleLowerCase();
+
+	return (
+		!! search &&
+		! channels.some(
+			( channel ) => channel.name.toLocaleLowerCase() === search
+		)
+	);
 }

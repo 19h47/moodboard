@@ -169,7 +169,7 @@ class MoodboardChannelFormElement extends Brick {
 							'moodboard'
 					  )
 					: __(
-							'Delete this channel? Its sub-channels go to the index; the blocks in no other channel stay in the media library only.',
+							'Delete this channel? Its sub-channels and its blocks stay in the index.',
 							'moodboard'
 					  )
 			)

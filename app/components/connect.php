@@ -1,20 +1,32 @@
 <?php
 /**
- * The channels of a block: a filter of their names, a box each, ticked for those the block is in, and the button that
- * adds a channel of the name typed. Its dialog fills it as it opens.
+ * Channels to tick: a filter of their names, a box each, and the button that adds a channel of the name typed. The
+ * channels of the block shown, each box putting it in or taking it out at once; or, with `submit`, the channels the
+ * blocks selected go in, once sent. Its dialog fills it as it opens.
  *
  * @package Moodboard
+ *
+ * @var array{id:string,submit?:string} $args Prefix of the IDs of its fields, and the label of the button that sends it.
  */
 
+$moodboard_id     = $args['id'];
+$moodboard_submit = $args['submit'] ?? '';
+$moodboard_tag    = $moodboard_submit ? 'form' : 'div';
+
 ?>
-<div class="moodboard-form">
+<<?php echo esc_html( $moodboard_tag ); ?> class="moodboard-form">
 	<p class="moodboard-field">
-		<label for="moodboard-connect-filter"><?php esc_html_e( 'Find or add a channel', 'moodboard' ); ?></label>
-		<input class="moodboard-input" id="moodboard-connect-filter" type="search" autocomplete="off">
+		<label for="<?php echo esc_attr( "$moodboard_id-filter" ); ?>"><?php esc_html_e( 'Find or add a channel', 'moodboard' ); ?></label>
+		<input class="moodboard-input" id="<?php echo esc_attr( "$moodboard_id-filter" ); ?>" type="search" autocomplete="off">
 	</p>
 	<button class="app-pill" type="button" data-action="create" hidden></button>
 	<fieldset class="moodboard-connect">
-		<legend class="sr-only"><?php esc_html_e( 'Channels of the block', 'moodboard' ); ?></legend>
+		<legend class="sr-only"><?php esc_html_e( 'Channels', 'moodboard' ); ?></legend>
 		<ul class="moodboard-connect__list" data-list="channels"></ul>
 	</fieldset>
-</div>
+	<?php if ( $moodboard_submit ) : ?>
+		<p class="moodboard-form__actions">
+			<button class="app-pill" type="submit"><?php echo esc_html( $moodboard_submit ); ?></button>
+		</p>
+	<?php endif; ?>
+</<?php echo esc_html( $moodboard_tag ); ?>>

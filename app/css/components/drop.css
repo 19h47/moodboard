@@ -1,0 +1,30 @@
+/**
+ * Files dragged over the page: a layer over the whole screen, lined, that says where they go.
+ */
+
+@layer app.components {
+	.moodboard-drop {
+		position: fixed;
+		inset: 0;
+		z-index: 2;
+		display: grid;
+		place-items: center;
+		padding: var(--app-space-l);
+		background: color-mix(in srgb, var(--app-bg) 85%, transparent);
+		/* The files go to the page under it */
+		pointer-events: none;
+	}
+
+	.moodboard-drop::before {
+		content: "";
+		position: absolute;
+		inset: var(--app-space-m);
+		border: 2px dashed var(--app-text);
+		border-radius: var(--app-radius-m);
+	}
+
+	.moodboard-drop__target {
+		font-size: var(--app-text-l);
+		text-align: center;
+	}
+}
