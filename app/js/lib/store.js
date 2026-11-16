@@ -413,7 +413,21 @@ class MoodboardStore extends Store {
 
 		const errors = [];
 
-		this.set( ( state ) => ( { ...state, adding: true } ) );
+		// Said at once, as a file dropped or pasted takes a moment to upload.
+		this.set( ( state ) => ( {
+			...state,
+			adding: true,
+			notice: sprintf(
+				/* translators: %d: number of blocks being added. */
+				_n(
+					'Adding %d block…',
+					'Adding %d blocks…',
+					requests.length,
+					'moodboard'
+				),
+				requests.length
+			),
+		} ) );
 
 		// One after the other: a server takes one upload at a time better than many.
 		for ( const request of requests ) {

@@ -37,6 +37,8 @@ The URL says what shows: `?view=channel&channel=12`, `?view=media&media=5&channe
 
 `app/css/app-style.css` is a copy of the [base shared by the author's small apps](https://gist.github.com/19h47/27df983fac74beb8d3e0a30688654498), with its revision in its header. `app/css/moodboard-app.css` declares the order of the layers of the app and its tokens, then a sheet per component in `app/css/components` and per view in `app/css/views`. The sheets of the components come in the order of their names: a card sets its frame with the class of the frame and its own, `.moodboard-card__frame.moodboard-media-card`, to win over the base of the cards.
 
+The page of a block is two columns on a wide screen, its media, sticky, then the column of text a step of the scale smaller, φ, beside it: its details, its actions, whose menu is a popover, and `tab-set`, the tabs of its channels and its notes, as the tabs pattern of the APG has them. Under 60rem, they stack.
+
 The cards share `.moodboard-card`, a square frame and a title; each content is a card of its own, in `app/components`: `channel-card`, `media-card`, `text-card` and `add-block`. A template of an item of a list holds one, `<li>` then a card.
 
 The scripts reach the markup by data attributes, `data-field`, `data-list`, `data-action`, `data-part`, or by what an element is, never by a class: ESLint fails on a script that does. `pnpm lint:css` fails on a length off the scale and on a component with a margin or a width of its own.

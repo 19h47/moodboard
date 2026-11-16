@@ -1,42 +1,65 @@
 /**
- * The page of a block: its media first, as large as the page and the screen leave it, whole; then what it says, in the
- * column of text, under it.
+ * The page of a block, as Are.na has it: its media first, as large as the screen leaves it, whole and never larger than
+ * it is; beside it on a wide screen, under it on a phone, what it says and what changes it, its channels and its notes.
  */
 
 @layer app.views {
 	.moodboard-block {
+		/* The height of the screen under the header, which the media takes on a wide screen */
+		--moodboard-block-stage: calc(100dvh - 2 * var(--app-toolbar-top) - var(--app-control-size) - var(--app-space-l));
+
 		display: grid;
+		grid-template-areas: "nav" "media" "info";
 		gap: var(--app-space-l);
 	}
 
-	.moodboard-block__nav {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--app-space-s);
+	@media (width >= 60rem) {
+		.moodboard-block {
+			grid-template-areas: "media nav" "media info";
+			/* What is beside it, the column of text a step of the scale smaller, the rest the media's */
+			grid-template-columns: minmax(0, 1fr) calc(var(--app-max-width) / var(--app-phi));
+			grid-template-rows: auto 1fr;
+			gap: var(--app-space-m) var(--app-space-l);
+		}
+
+		/* The media stays on the screen as what is beside it scrolls, a line between them */
+		.moodboard-block__media {
+			position: sticky;
+			top: var(--app-toolbar-top);
+			align-self: start;
+			block-size: var(--moodboard-block-stage);
+			align-content: center;
+			padding-inline-end: var(--app-space-l);
+			border-inline-end: 1px solid var(--app-line-soft);
+		}
 	}
 
-	.moodboard-block__neighbours {
-		margin-inline-start: auto;
+	.moodboard-block__nav {
+		grid-area: nav;
+		justify-content: end;
 	}
 
 	/* A swipe across the media opens a neighbour; up and down, it scrolls the page */
 	.moodboard-block__media {
+		grid-area: media;
 		display: grid;
 		justify-items: center;
+		min-inline-size: 0;
 		touch-action: pan-y;
 	}
 
-	/* An image or a video whole, as high as the screen leaves it under the header */
+	/*
+	 * An image or a video whole, as large as the place leaves it, never larger than it is: its width is the one of its
+	 * attribute, its own, its height follows
+	 */
 	.moodboard-block__image {
 		max-inline-size: 100%;
-		max-block-size: calc(100dvh - 2 * var(--app-space-xl) - 2 * var(--app-control-size));
-		inline-size: auto;
+		max-block-size: var(--moodboard-block-stage);
 		block-size: auto;
 		object-fit: contain;
 	}
 
-	/* The player of a link, as wide as the page, at the shape it gives */
+	/* The player of a link, as wide as the place, at the shape it gives */
 	.moodboard-block__embed {
 		justify-self: stretch;
 	}
@@ -46,7 +69,7 @@
 		inline-size: 100%;
 		block-size: auto;
 		aspect-ratio: 16 / 9;
-		max-block-size: calc(100dvh - 2 * var(--app-space-xl) - 2 * var(--app-control-size));
+		max-block-size: var(--moodboard-block-stage);
 		border: 0;
 	}
 
@@ -60,9 +83,11 @@
 	}
 
 	.moodboard-block__info {
+		grid-area: info;
 		display: grid;
+		align-content: start;
 		gap: var(--app-space-m);
-		max-inline-size: var(--app-max-width);
+		min-inline-size: 0;
 	}
 
 	.moodboard-block__title {
@@ -84,18 +109,51 @@
 		white-space: pre-wrap;
 	}
 
-	.moodboard-block__meta {
-		display: grid;
-		gap: var(--app-space-xs);
+	/* What it is, a row each, its label then its value at the end, a line under each */
+	.moodboard-block__meta > div {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--app-space-m);
+		padding-block: var(--app-space-xs);
+		border-block-end: 1px solid var(--app-line-soft);
 	}
 
-	.moodboard-block__meta > div {
+	.moodboard-block__meta dd {
+		min-inline-size: 0;
+		text-align: end;
+		overflow-wrap: anywhere;
+	}
+
+	.moodboard-block__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--app-space-s);
 	}
 
-	.moodboard-block__meta a {
-		overflow-wrap: anywhere;
+	/* The menu of its actions hangs from its control */
+	.moodboard-block__more {
+		anchor-name: --moodboard-block-actions;
+	}
+
+	.moodboard-block__channels {
+		list-style: none;
+		display: grid;
+	}
+
+	/* A channel it is in, a row, its name then its count at the end, a line between them */
+	.moodboard-block__channels > li + li {
+		border-block-start: 1px solid var(--app-line-soft);
+	}
+
+	.moodboard-block__channel {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--app-space-m);
+		padding-block: var(--app-space-s);
+		text-decoration: none;
+	}
+
+	.moodboard-block__channel:is(:hover, :focus-visible) > [data-field="name"] {
+		text-decoration: underline;
 	}
 }

@@ -6,7 +6,7 @@ const NOTICE_MS = 6000;
 
 /**
  * What the app says last, such as blocks added or an error, in a live region that assistive technologies read; it
- * hides after a moment.
+ * hides after a moment, once blocks are no longer being added.
  */
 class MoodboardNoticeElement extends Brick {
 	connect() {
@@ -23,7 +23,8 @@ class MoodboardNoticeElement extends Brick {
 					$text.textContent = notice;
 					this.hidden = ! notice;
 
-					if ( notice ) {
+					// The blocks being added say they are until they are: the notice that follows hides.
+					if ( notice && ! store.get().adding ) {
 						timer = setTimeout(
 							() => store.notify( '' ),
 							NOTICE_MS

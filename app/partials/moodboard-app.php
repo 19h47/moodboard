@@ -116,13 +116,11 @@ $moodboard_tabs = array(
 
 				<moodboard-view name="media text link" <?php echo in_array( $view, array( 'media', 'text', 'link' ), true ) ? '' : 'hidden'; ?>>
 					<moodboard-block class="moodboard-block">
-						<nav class="moodboard-block__nav" aria-label="<?php esc_attr_e( 'Blocks of the channel', 'moodboard' ); ?>">
-							<a class="app-pill app-pill--small" href="" data-part="channel" hidden><?php Markup::render_icon( 'arrow_back' ); ?> <span data-field="channel"></span></a>
-							<span class="app-toolbar moodboard-block__neighbours">
-								<button class="app-control" type="button" commandfor="moodboard-present" command="show-modal" aria-label="<?php esc_attr_e( 'Present', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Present', 'moodboard' ); ?>"><?php Markup::render_icon( 'play_arrow' ); ?></button>
-								<a class="app-control" href="" data-part="previous" rel="prev" aria-label="<?php esc_attr_e( 'Previous', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Previous', 'moodboard' ); ?>" hidden><?php Markup::render_icon( 'arrow_back' ); ?></a>
-								<a class="app-control" href="" data-part="next" rel="next" aria-label="<?php esc_attr_e( 'Next', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Next', 'moodboard' ); ?>" hidden><?php Markup::render_icon( 'arrow_forward' ); ?></a>
-							</span>
+						<nav class="moodboard-block__nav app-toolbar" aria-label="<?php esc_attr_e( 'Blocks of the channel', 'moodboard' ); ?>">
+							<button class="app-control" type="button" commandfor="moodboard-present" command="show-modal" aria-label="<?php esc_attr_e( 'Present', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Present', 'moodboard' ); ?>"><?php Markup::render_icon( 'play_arrow' ); ?></button>
+							<a class="app-control" href="" data-part="previous" rel="prev" aria-label="<?php esc_attr_e( 'Previous', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Previous', 'moodboard' ); ?>" hidden><?php Markup::render_icon( 'arrow_back' ); ?></a>
+							<a class="app-control" href="" data-part="next" rel="next" aria-label="<?php esc_attr_e( 'Next', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Next', 'moodboard' ); ?>" hidden><?php Markup::render_icon( 'arrow_forward' ); ?></a>
+							<a class="app-control" href="" data-part="channel"><?php Markup::render_icon( 'close' ); ?></a>
 						</nav>
 						<div class="moodboard-block__media" data-part="media">
 							<img class="moodboard-block__image" data-field="image" alt="" hidden>
@@ -137,24 +135,42 @@ $moodboard_tabs = array(
 							<p class="moodboard-block__description" data-field="description"></p>
 							<dl class="moodboard-block__meta app-text-s app-font-ui">
 								<div data-row>
-									<dt class="app-text-muted app-uppercase"><?php esc_html_e( 'Source', 'moodboard' ); ?></dt>
-									<dd><a data-field="source" href="" rel="noreferrer" target="_blank"></a></dd>
-								</div>
-								<div data-row>
-									<dt class="app-text-muted app-uppercase"><?php esc_html_e( 'Added', 'moodboard' ); ?></dt>
+									<dt class="app-text-muted"><?php esc_html_e( 'Added', 'moodboard' ); ?></dt>
 									<dd data-field="date"></dd>
 								</div>
+								<div data-row="dimensions">
+									<dt class="app-text-muted"><?php esc_html_e( 'Dimensions', 'moodboard' ); ?></dt>
+									<dd data-field="dimensions"></dd>
+								</div>
+								<div data-row="source">
+									<dt class="app-text-muted"><?php esc_html_e( 'Source', 'moodboard' ); ?></dt>
+									<dd><a data-field="source" href="" rel="noreferrer" target="_blank"></a></dd>
+								</div>
 							</dl>
-							<ul class="moodboard-pills" data-list="channels" aria-label="<?php esc_attr_e( 'Channels', 'moodboard' ); ?>"></ul>
-							<p class="moodboard-pills">
-								<button class="app-pill app-pill--small" type="button" commandfor="moodboard-connect" command="show-modal"><?php esc_html_e( 'Connect', 'moodboard' ); ?></button>
-								<button class="app-pill app-pill--small" type="button" commandfor="moodboard-edit-block" command="show-modal"><?php esc_html_e( 'Edit', 'moodboard' ); ?></button>
-								<button class="app-pill app-pill--small" type="button" data-action="disconnect" hidden></button>
-								<button class="app-pill app-pill--small" type="button" data-action="delete"><?php esc_html_e( 'Delete', 'moodboard' ); ?></button>
+							<p class="moodboard-block__actions">
+								<button class="app-pill" type="button" commandfor="moodboard-connect" command="show-modal"><?php esc_html_e( 'Connect', 'moodboard' ); ?> <?php Markup::render_icon( 'arrow_forward' ); ?></button>
+								<button class="app-pill moodboard-block__more" type="button" commandfor="moodboard-block-actions" command="toggle-popover"><?php esc_html_e( 'Actions', 'moodboard' ); ?> <?php Markup::render_icon( 'expand_more' ); ?></button>
 							</p>
-							<moodboard-notes>
-								<?php Markup::render_component( 'notes' ); ?>
-							</moodboard-notes>
+							<div class="moodboard-menu moodboard-menu--block" id="moodboard-block-actions" popover>
+								<button class="moodboard-menu__item" type="button" commandfor="moodboard-edit-block" command="show-modal"><?php esc_html_e( 'Edit', 'moodboard' ); ?></button>
+								<button class="moodboard-menu__item" type="button" data-action="disconnect" hidden></button>
+								<button class="moodboard-menu__item" type="button" data-action="delete"><?php esc_html_e( 'Delete', 'moodboard' ); ?></button>
+							</div>
+							<tab-set class="moodboard-tab-set">
+								<div role="tablist" aria-label="<?php esc_attr_e( 'About the block', 'moodboard' ); ?>">
+									<button type="button" role="tab" id="moodboard-block-tab-channels" aria-controls="moodboard-block-channels" aria-selected="true"><?php esc_html_e( 'Channels', 'moodboard' ); ?> <span class="moodboard-tab-set__count" data-field="channels-count"></span></button>
+									<button type="button" role="tab" id="moodboard-block-tab-notes" aria-controls="moodboard-block-notes" aria-selected="false" tabindex="-1"><?php esc_html_e( 'Notes', 'moodboard' ); ?> <span class="moodboard-tab-set__count" data-field="notes-count"></span></button>
+								</div>
+								<div role="tabpanel" id="moodboard-block-channels" aria-labelledby="moodboard-block-tab-channels">
+									<ul class="moodboard-block__channels" data-list="channels"></ul>
+									<p class="app-text-s app-text-muted" data-field="no-channel"><?php esc_html_e( 'In the index only.', 'moodboard' ); ?></p>
+								</div>
+								<div role="tabpanel" id="moodboard-block-notes" aria-labelledby="moodboard-block-tab-notes" hidden>
+									<moodboard-notes>
+										<?php Markup::render_component( 'notes' ); ?>
+									</moodboard-notes>
+								</div>
+							</tab-set>
 						</div>
 					</moodboard-block>
 				</moodboard-view>
@@ -301,8 +317,8 @@ $moodboard_tabs = array(
 		<template id="moodboard-path-item">
 			<li><a href=""></a></li>
 		</template>
-		<template id="moodboard-channel-pill">
-			<li><a class="app-pill app-pill--small" href=""></a></li>
+		<template id="moodboard-block-channel">
+			<li><a class="moodboard-block__channel" href=""><span data-field="name"></span> <span class="app-text-muted" data-field="count"></span></a></li>
 		</template>
 		<template id="moodboard-connect-option">
 			<li><label class="moodboard-connect__option"><input type="checkbox"> <span data-field="name"></span></label></li>

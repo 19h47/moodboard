@@ -14,6 +14,12 @@
 		color: var(--app-text);
 	}
 
+	/* The menu of the actions of a block, under its control */
+	.moodboard-menu--block {
+		position-anchor: --moodboard-block-actions;
+		position-area: block-end span-inline-end;
+	}
+
 	.moodboard-menu:popover-open {
 		display: grid;
 	}
