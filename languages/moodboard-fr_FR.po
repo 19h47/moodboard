@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-17T07:30:45+00:00\n"
+"POT-Creation-Date: 2026-11-17T18:18:14+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -418,15 +418,15 @@ msgid "Block deleted."
 msgstr "Bloc supprimé."
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-bulk.js:34 app/js/bricks/moodboard-connect.js:34
+#: app/js/bricks/moodboard-bulk.js:37 app/js/bricks/moodboard-connect.js:36
 msgid "Add the channel “%s”"
 msgstr "Ajouter le canal « %s »"
 
-#: app/js/bricks/moodboard-channel-form.js:82
+#: app/js/bricks/moodboard-channel-form.js:102
 msgid "The channel could not be saved."
 msgstr "Le canal n’a pas pu être enregistré."
 
-#: app/js/bricks/moodboard-channel-form.js:167
+#: app/js/bricks/moodboard-channel-form.js:187
 msgid ""
 "Delete this channel? Its sub-channels and the blocks in no other channel go "
 "to its parent."
@@ -434,12 +434,12 @@ msgstr ""
 "Supprimer ce canal ? Ses sous-canaux et les blocs qui ne sont dans aucun "
 "autre canal vont dans son parent."
 
-#: app/js/bricks/moodboard-channel-form.js:171
+#: app/js/bricks/moodboard-channel-form.js:191
 msgid "Delete this channel? Its sub-channels and its blocks stay in the index."
 msgstr ""
 "Supprimer ce canal ? Ses sous-canaux et ses blocs restent dans l’index."
 
-#: app/js/bricks/moodboard-channel-form.js:183
+#: app/js/bricks/moodboard-channel-form.js:203
 msgid "Channel deleted."
 msgstr "Canal supprimé."
 
@@ -524,48 +524,48 @@ msgstr[1] "%d blocs"
 msgid "Select %s"
 msgstr "Sélectionner %s"
 
-#: app/js/lib/store.js:246
+#: app/js/lib/store.js:255
 msgid "The channels could not load."
 msgstr "Les canaux n’ont pas pu se charger."
 
-#: app/js/lib/store.js:310
+#: app/js/lib/store.js:319
 msgid "The blocks could not load."
 msgstr "Les blocs n’ont pas pu se charger."
 
-#: app/js/lib/store.js:356
+#: app/js/lib/store.js:365
 msgid "The block could not load."
 msgstr "Le bloc n’a pas pu se charger."
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:475
+#: app/js/lib/store.js:484
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] "Ajout de %d bloc…"
 msgstr[1] "Ajout de %d blocs…"
 
-#: app/js/lib/store.js:496
+#: app/js/lib/store.js:505
 msgid "A block could not be added."
 msgstr "Un bloc n’a pas pu être ajouté."
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:507
+#: app/js/lib/store.js:516
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] "%d bloc ajouté."
 msgstr[1] "%d blocs ajoutés."
 
-#: app/js/lib/store.js:693
+#: app/js/lib/store.js:709
 msgid "Blocks connected."
 msgstr "Blocs connectés."
 
-#: app/js/lib/store.js:705
+#: app/js/lib/store.js:721
 msgid "Blocks removed from the channel."
 msgstr "Blocs retirés du canal."
 
-#: app/js/lib/store.js:716
+#: app/js/lib/store.js:732
 msgid "Blocks deleted."
 msgstr "Blocs supprimés."
 
-#: app/js/lib/store.js:739
+#: app/js/lib/store.js:755
 msgid "The notes could not load."
 msgstr "Les notes n’ont pas pu se charger."

@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.1.6
+Stable tag: 0.1.7
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,7 +21,7 @@ Moodboard gathers the visual research of a project, such as a novel, in a clean 
 * **Blocks** – An image or another file of the media library, a text, or a link, a page or a video of the web, with its title, its description, who made it, such as an artist or a photographer, and its source, the URL it comes from. Who made an image is the credit its file holds, who made a link the author its provider gives, until written otherwise. A video plays in its page.
 * **Notes** – Notes on a block, for oneself, the notes of WordPress, which only its curator reads.
 * **Presenting** – The blocks of a channel one at a time, over the whole screen, on black: by the arrows, a swipe, or on their own.
-* **Channels** – The collections of a moodboard. A block is in as many channels as one likes, or in none, in the index, and a channel under another, as deep as one likes.
+* **Channels** – The collections of a moodboard. A block is in as many channels as one likes, or in none, in the index, and a channel under another, as deep as one likes. A channel added while connecting a block opens its form, to choose where it goes.
 * **The app** – Under **Media > Moodboard**, full screen, the images first: the index, every channel and every block, a page for each channel, its sub-channels and its blocks, and a page for each block, as Are.na has it: its image as large as the screen, beside it what it is, what changes it, its channels and its notes, its neighbours a key or a swipe away. An image shows its title once written, never the name of its file. A channel shows its latest images. The cards come in four sizes, the largest two a row, kept on the device. It installs on the home screen of a phone.
 * **Adding** – Files dropped anywhere on the page or pasted, such as a screenshot, or a link dragged from another page, into the channel shown or the index; with +, files picked, a text written, or a URL: an image WordPress downloads, or a link, its title and its image those of its page.
 * **Sharing** – From the share sheet of a phone: on Android, or in Chrome, once the app is installed, and on an iPhone with a shortcut. Shared from an iPhone, an image, a link or a text is added at once, without opening the app; shared from Android or Chrome, it opens the + of the app, written in it, to add with a tap.
@@ -66,6 +66,11 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.1.7 =
+
+* Fixed: channels ticked one after the other in Connect are all kept, each change waiting for the one before, which only the last one was.
+* Changed: a channel added from Connect opens its form, its name typed, to choose the channel it goes under and write its description; the block, or the blocks selected, go in it.
 
 = 0.1.6 =
 
