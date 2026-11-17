@@ -9,9 +9,17 @@ import { showBusy } from 'moodboard-app/behaviors';
 /**
  * The form of a channel, in its dialog: a new one, under the channel its button says, or the channel shown, which it
  * changes, moves or deletes. Opened, the dialog fills it: the button that opens it says which, `data-parent` "current"
- * for a channel under the one shown.
+ * for a channel under the one shown, and its value the name of a new one. A new channel added is shown, unless the
+ * button takes it: an `added` event on the button, which it cancels, such as the one of Connect, which ticks it.
  */
 class MoodboardChannelFormElement extends Brick {
+	/**
+	 * The button that opened the form.
+	 *
+	 * @type {HTMLElement|null}
+	 */
+	#opener = null;
+
 	connect( signal ) {
 		const $dialog = this.closest( 'dialog' );
 		/** @type {HTMLFormElement} */
@@ -40,8 +48,13 @@ class MoodboardChannelFormElement extends Brick {
 					? ( 'current' === source?.dataset.parent && shown?.id ) || 0
 					: shown?.parent ?? 0;
 
+				this.#opener = source;
 				$form.reset();
 				this.#fillParents( $parent, isNew ? null : shown, parent );
+
+				if ( isNew && source instanceof HTMLButtonElement ) {
+					field( 'name' ).value = source.value;
+				}
 
 				if ( ! isNew && shown ) {
 					field( 'name' ).value = shown.name;
@@ -67,11 +80,18 @@ class MoodboardChannelFormElement extends Brick {
 				try {
 					if ( isNew ) {
 						const channel = await store.createChannel( fields );
+						const added = new CustomEvent( 'added', {
+							detail: channel,
+							cancelable: true,
+						} );
 
 						$dialog.close();
-						navigation.navigate(
-							urlOf( { view: 'channel', id: channel.id } )
-						);
+
+						if ( this.#opener?.dispatchEvent( added ) ?? true ) {
+							navigation.navigate(
+								urlOf( { view: 'channel', id: channel.id } )
+							);
+						}
 					} else {
 						await store.updateChannel( store.get().id, fields );
 						$dialog.close();
