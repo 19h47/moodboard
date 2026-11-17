@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.1.5
+Stable tag: 0.1.6
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -31,7 +31,7 @@ Moodboard gathers the visual research of a project, such as a novel, in a clean 
 
 = Technical =
 
-* A block is a media, `attachment`, marked by the meta `moodboard_block`, a text, the `moodboard_text` post type, or a link, the `moodboard_link` post type, both always private. A link has its URL as its source, the image of its page as its featured image, and its player, `moodboard_embed`, the one core embeds. A link added by its URL alone, `POST wp/v2/moodboard-links` with its source and no title, takes its title and its image from what core gives of its URL: its oEmbed, else the preview of its page. The notes are the comments of the type note of core. A channel is a term of the hierarchical `moodboard_channel` taxonomy over both, its curator in the term meta `moodboard_author`. The source of a block is the meta `moodboard_source`, who made it the meta `moodboard_by`, which a search of the REST API finds too.
+* A block is a media, `attachment`, marked by the meta `moodboard_block`, a text, the `moodboard_text` post type, or a link, the `moodboard_link` post type, both always private. A link has its URL as its source, the image of its page as its featured image, and its player, `moodboard_embed`, the one core embeds. A link added by its URL alone, `POST wp/v2/moodboard-links` with its source and no title, takes its title and its image from what core gives of its URL: its oEmbed, and the preview of its page for what its oEmbed leaves out, such as the image of a post of Tumblr, at its largest size; a URL of an image is its own image. The notes are the comments of the type note of core. A channel is a term of the hierarchical `moodboard_channel` taxonomy over both, its curator in the term meta `moodboard_author`. The source of a block is the meta `moodboard_source`, who made it the meta `moodboard_by`, which a search of the REST API finds too.
 * `GET wp/v2/media?moodboard_block=1` lists the media of the current user that are blocks, in a channel or none.
 * A channel of the REST API has `moodboard_covers`, its latest images and those of its sub-channels, four at most, computed.
 * The app reads and writes through the REST API of WordPress: `wp/v2/media`, `wp/v2/moodboard-texts` and `wp/v2/moodboard-channels`. An image comes from its URL through `POST wp/v2/media` with `url`, as core sideloads it; the plugin gives it the channels and the source of the request.
@@ -66,6 +66,10 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.1.6 =
+
+* Fixed: a link to a post of Tumblr takes its title and its image, at its original size, which its oEmbed does not give; a link to an image, as Pinterest shares one, takes it as its image.
 
 = 0.1.5 =
 
