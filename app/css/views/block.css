@@ -5,8 +5,8 @@
 
 @layer app.views {
 	.moodboard-block {
-		/* The height of the screen under the header, which the media takes on a wide screen */
-		--moodboard-block-stage: calc(100dvh - 2 * var(--app-toolbar-top) - var(--app-control-size) - var(--app-space-l));
+		/* The height of the screen under the header, which the media takes on a wide screen, the bottom of the page left */
+		--moodboard-block-stage: calc(100dvh - var(--moodboard-header-size) - var(--app-toolbar-top));
 
 		display: grid;
 		grid-template-areas: "nav" "media" "info";
@@ -22,10 +22,10 @@
 			gap: var(--app-space-m) var(--app-space-l);
 		}
 
-		/* The media stays on the screen as what is beside it scrolls, a line between them */
+		/* The media stays on the screen, under the header, as what is beside it scrolls, a line between them */
 		.moodboard-block__media {
 			position: sticky;
-			top: var(--app-toolbar-top);
+			top: var(--moodboard-header-size);
 			align-self: start;
 			block-size: var(--moodboard-block-stage);
 			align-content: center;

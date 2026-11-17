@@ -30,6 +30,12 @@
 		--moodboard-card-min: calc(var(--app-u3) * var(--app-phi) * var(--app-phi));
 		/* The page of a moodboard, wider than the column of text: a grid of cards */
 		--moodboard-page-width: calc(var(--app-max-width) * var(--app-phi) * var(--app-phi));
+		/*
+		 * The header, which stays at the top of the screen, on one line until it gives its height: the top of the page, a
+		 * control high, a small step under it. What sticks under it, or scrolls into view, starts there
+		 */
+		--moodboard-header-size: calc(var(--app-toolbar-top) + var(--app-control-size) + var(--app-space-m));
+		scroll-padding-block-start: var(--moodboard-header-size);
 	}
 
 	@media (width >= 42rem) {
