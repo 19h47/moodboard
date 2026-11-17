@@ -4,9 +4,11 @@ import { Brick } from 'moodboard-app/brick';
 import { showBusy } from 'moodboard-app/behaviors';
 import { isNewName, renderChannelOptions } from 'moodboard-app/render';
 
+/** @import { Channel } from 'moodboard-app/api' */
+
 /**
  * The channels the blocks selected go in, in its dialog: every channel of the curator, a box each, none ticked; a
- * filter of their names, and a new channel of the name typed, ticked. Sent, it puts each block in the channels ticked,
+ * filter of their names, and a new channel of the name typed, its form opened to choose where it goes, ticked. Sent, it puts each block in the channels ticked,
  * besides its own.
  */
 class MoodboardBulkElement extends Brick {
@@ -29,6 +31,7 @@ class MoodboardBulkElement extends Brick {
 				...renderChannelOptions( items, $filter.value, [ ...checked ] )
 			);
 			$create.hidden = ! isNewName( items, $filter.value );
+			$create.value = $filter.value.trim();
 			$create.textContent = sprintf(
 				/* translators: %s: name of a channel. */
 				__( 'Add the channel “%s”', 'moodboard' ),
@@ -65,25 +68,13 @@ class MoodboardBulkElement extends Brick {
 		);
 
 		$create.addEventListener(
-			'click',
-			async () => {
-				$create.disabled = true;
-
-				try {
-					const channel = await store.createChannel( {
-						name: $filter.value.trim(),
-						description: '',
-						parent: 0,
-					} );
-
-					checked.add( channel.id );
-					$filter.value = '';
-					fill();
-				} catch ( error ) {
-					store.notify( error?.message ?? '' );
-				} finally {
-					$create.disabled = false;
-				}
+			'added',
+			( /** @type {CustomEvent<Channel>} */ event ) => {
+				event.preventDefault();
+				checked.add( event.detail.id );
+				$filter.value = '';
+				fill();
+				$filter.focus();
 			},
 			{ signal }
 		);

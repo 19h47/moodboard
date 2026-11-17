@@ -3,11 +3,12 @@ import { store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { isNewName, renderChannelOptions } from 'moodboard-app/render';
 
-/** @import { Block } from 'moodboard-app/api' */
+/** @import { Block, Channel } from 'moodboard-app/api' */
 
 /**
  * The channels of the block shown, in its dialog: every channel of the curator, a box each, ticked for those it is in,
- * which puts it in or takes it out at once; a filter of their names, and a new channel of the name typed.
+ * which puts it in or takes it out at once; a filter of their names, and a new channel of the name typed, its form
+ * opened to choose where it goes, which the block goes in.
  */
 class MoodboardConnectElement extends Brick {
 	connect( signal ) {
@@ -29,6 +30,7 @@ class MoodboardConnectElement extends Brick {
 				)
 			);
 			$create.hidden = ! isNewName( items, $filter.value );
+			$create.value = $filter.value.trim();
 			$create.textContent = sprintf(
 				/* translators: %s: name of a channel. */
 				__( 'Add the channel “%s”', 'moodboard' ),
@@ -73,24 +75,18 @@ class MoodboardConnectElement extends Brick {
 		);
 
 		$create.addEventListener(
-			'click',
-			async () => {
-				$create.disabled = true;
+			'added',
+			async ( /** @type {CustomEvent<Channel>} */ event ) => {
+				event.preventDefault();
+				$filter.value = '';
+				fill();
+				$filter.focus();
 
 				try {
-					const channel = await store.createChannel( {
-						name: $filter.value.trim(),
-						description: '',
-						parent: 0,
-					} );
-
-					await store.connect( this.#block(), channel.id, true );
-					$filter.value = '';
+					await store.connect( this.#block(), event.detail.id, true );
 					fill();
 				} catch ( error ) {
 					store.notify( error?.message ?? '' );
-				} finally {
-					$create.disabled = false;
 				}
 			},
 			{ signal }

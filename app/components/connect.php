@@ -1,8 +1,8 @@
 <?php
 /**
- * Channels to tick: a filter of their names, a box each, and the button that adds a channel of the name typed. The
- * channels of the block shown, each box putting it in or taking it out at once; or, with `submit`, the channels the
- * blocks selected go in, once sent. Its dialog fills it as it opens.
+ * Channels to tick: a filter of their names, a box each, and the button that opens the form of a new channel of the
+ * name typed, which ticks it once added. The channels of the block shown, each box putting it in or taking it out at
+ * once; or, with `submit`, the channels the blocks selected go in, once sent. Its dialog fills it as it opens.
  *
  * @package Moodboard
  *
@@ -19,7 +19,7 @@ $moodboard_tag    = $moodboard_submit ? 'form' : 'div';
 		<label for="<?php echo esc_attr( "$moodboard_id-filter" ); ?>"><?php esc_html_e( 'Find or add a channel', 'moodboard' ); ?></label>
 		<input class="moodboard-input" id="<?php echo esc_attr( "$moodboard_id-filter" ); ?>" type="search" autocomplete="off">
 	</p>
-	<button class="app-pill" type="button" data-action="create" hidden></button>
+	<button class="app-pill" type="button" commandfor="moodboard-new-channel" command="show-modal" data-action="create" hidden></button>
 	<fieldset class="moodboard-connect">
 		<legend class="sr-only"><?php esc_html_e( 'Channels', 'moodboard' ); ?></legend>
 		<ul class="moodboard-connect__list" data-list="channels"></ul>
