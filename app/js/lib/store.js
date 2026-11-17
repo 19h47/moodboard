@@ -133,6 +133,15 @@ class MoodboardStore extends Store {
 	 */
 	#controllers = new Map();
 
+	/**
+	 * The channels of blocks being changed, one change after the other, the lists reloaded with it: each starts from the
+	 * channels the one before left, as boxes ticked quickly would otherwise each send the channels of before, the last
+	 * one undoing the others.
+	 *
+	 * @type {Promise<unknown>}
+	 */
+	#connecting = Promise.resolve();
+
 	constructor() {
 		super( {
 			view: '',
@@ -573,12 +582,19 @@ class MoodboardStore extends Store {
 	 * @param {boolean} isConnected Whether it goes in.
 	 */
 	async connect( block, channelId, isConnected ) {
-		const channelIds = isConnected
-			? [ ...new Set( [ ...block.channels, channelId ] ) ]
-			: block.channels.filter( ( id ) => id !== channelId );
+		const connected = this.#connecting.then( async () => {
+			const { channels } = this.get().blocks[ block.key ] ?? block;
+			const channelIds = isConnected
+				? [ ...new Set( [ ...channels, channelId ] ) ]
+				: channels.filter( ( id ) => id !== channelId );
 
-		this.#setBlock( await api.setChannels( block, channelIds ) );
-		await this.#refresh();
+			this.#setBlock( await api.setChannels( block, channelIds ) );
+			await this.#refresh();
+		} );
+
+		// A change that fails leaves the next to start from what is saved.
+		this.#connecting = connected.catch( () => {} );
+		await connected;
 	}
 
 	/**
