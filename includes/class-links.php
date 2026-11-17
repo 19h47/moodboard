@@ -16,8 +16,8 @@ use WP_REST_Request;
 
 /**
  * A link added by its URL alone, `POST /wp/v2/moodboard-links` with its source and no title, takes what core gives of
- * it: its provider, through `oembed/1.0/proxy`, such as the title and the thumbnail of a video, else its page, through
- * `wp-block-editor/v1/url-details`, its title, its description and its image. The image is copied to the library as the
+ * it: its provider, through `oembed/1.0/proxy`, such as the title, the author and the thumbnail of a video, else its
+ * page, through `wp-block-editor/v1/url-details`, its title, its description and its image. The image is copied to the library as the
  * featured image of the link. The app and the shortcut of an iPhone add a link alike.
  *
  * @since      1.0.0
@@ -79,6 +79,10 @@ class Links {
 		$link->post_title   = $title;
 		$link->post_content = $details['description'];
 
+		if ( '' !== $details['by'] && '' === (string) get_post_meta( $link->ID, Meta::BY, true ) ) {
+			update_post_meta( $link->ID, Meta::BY, $details['by'] );
+		}
+
 		$image_id = '' !== $details['image'] ? self::copy_image( $details['image'], $link->ID, $details['title'] ) : 0;
 
 		if ( $image_id ) {
@@ -90,7 +94,7 @@ class Links {
 	 * What core gives of a URL, as the editor asks for it: its provider, else its page.
 	 *
 	 * @param string $url URL.
-	 * @return array{title:string,description:string,image:string}
+	 * @return array{title:string,description:string,image:string,by:string}
 	 */
 	private static function get_details( string $url ): array {
 		$embed = self::get( '/oembed/1.0/proxy', $url );
@@ -100,6 +104,7 @@ class Links {
 				'title'       => self::to_text( $embed['title'] ?? '' ),
 				'description' => '',
 				'image'       => (string) ( $embed['thumbnail_url'] ?? '' ),
+				'by'          => self::to_text( $embed['author_name'] ?? '' ),
 			);
 		}
 
@@ -109,6 +114,7 @@ class Links {
 			'title'       => self::to_text( $page['title'] ?? '' ),
 			'description' => self::to_text( $page['description'] ?? '' ),
 			'image'       => (string) ( $page['image'] ?? '' ),
+			'by'          => '',
 		);
 	}
 

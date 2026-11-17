@@ -63,6 +63,7 @@ import {
  * @property {string}                text        The text of a text, as written.
  * @property {string}                alt         The alternative text of an image.
  * @property {string}                source      The URL it comes from.
+ * @property {string}                by          Who made it, such as an artist, a photographer or an account.
  * @property {number[]}              channels    The channels it is in.
  * @property {string}                url         The file of a media.
  * @property {string}                mime        The type of the file of a media.
@@ -101,10 +102,10 @@ import {
  * The fields of a block the API gives both kinds: its channels are under the REST base of their taxonomy.
  *
  * @typedef {Object} ApiBlock
- * @property {number}                      id    Its post ID.
- * @property {string}                      date  When it was added.
- * @property {Raw}                         title Its title.
- * @property {{moodboard_source?: string}} meta  Its source.
+ * @property {number}                                             id    Its post ID.
+ * @property {string}                                             date  When it was added.
+ * @property {Raw}                                                title Its title.
+ * @property {{moodboard_source?: string, moodboard_by?: string}} meta  Its source, and who made it.
  */
 
 /**
@@ -262,6 +263,7 @@ export function toMedia( item ) {
 		text: '',
 		alt: item.alt_text,
 		source: item.meta?.moodboard_source ?? '',
+		by: item.meta?.moodboard_by ?? '',
 		channels: item[ channelsBase ] ?? [],
 		url: item.source_url,
 		mime: item.mime_type,
@@ -288,6 +290,7 @@ export function toText( item ) {
 		text: item.content.raw,
 		alt: '',
 		source: item.meta?.moodboard_source ?? '',
+		by: item.meta?.moodboard_by ?? '',
 		channels: item[ channelsBase ] ?? [],
 		url: '',
 		mime: '',
@@ -320,6 +323,7 @@ export function toLink( item ) {
 		text: '',
 		alt: '',
 		source: item.meta?.moodboard_source ?? '',
+		by: item.meta?.moodboard_by ?? '',
 		channels: item[ channelsBase ] ?? [],
 		url: item.meta?.moodboard_source ?? '',
 		mime: '',
