@@ -12,9 +12,9 @@ const SWIPE_PX = 60;
 
 /**
  * The page of a block: a media, its image, its video or a link to its file; a text; or a link, its player, else the image
- * of its page, else a link to it. Beside it, as Are.na has it: its title, its description, its date, its dimensions and
- * its source, what changes it, and the channels it is in and its notes, a tab each. ← and → open its neighbours in the
- * channel it was opened from, Escape goes back to it.
+ * of its page, else a link to it. Beside it, as Are.na has it: its title, its description, its date, its dimensions, who
+ * made it and its source, what changes it, and the channels it is in and its notes, a tab each. ← and → open its
+ * neighbours in the channel it was opened from, Escape goes back to it.
  */
 class MoodboardBlockElement extends Brick {
 	/** @type {Block|null} */
@@ -219,6 +219,7 @@ class MoodboardBlockElement extends Brick {
 			description: block?.description ?? '',
 			text: block?.text ?? '',
 			source: block?.source ? hostOf( block.source ) : '',
+			by: block?.by ?? '',
 			date: block ? formatDate( block.date ) : '',
 			dimensions: image
 				? sprintf(
@@ -271,6 +272,9 @@ class MoodboardBlockElement extends Brick {
 		/** @type {HTMLElement} */ (
 			this.querySelector( '[data-row="dimensions"]' )
 		).hidden = ! image;
+		/** @type {HTMLElement} */ (
+			this.querySelector( '[data-row="by"]' )
+		).hidden = ! block?.by;
 
 		$channel.href = from
 			? urlOf( { view: 'channel', id: from } )

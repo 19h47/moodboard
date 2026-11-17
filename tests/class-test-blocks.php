@@ -76,6 +76,7 @@ class Test_Blocks extends TestCase {
 								'type'          => 'video',
 								'version'       => '1.0',
 								'title'         => 'La mer &amp; le port',
+								'author_name'   => 'Robert Smithson',
 								'html'          => '<iframe src="https://www.youtube.com/embed/moodboard"></iframe>',
 								'thumbnail_url' => $image,
 							)
@@ -123,11 +124,67 @@ class Test_Blocks extends TestCase {
 		$link = $response->get_data();
 
 		$this->assertSame( 'La mer & le port', $link['title']['raw'] );
+		$this->assertSame( 'Robert Smithson', $link['meta']['moodboard_by'] );
 		$this->assertSame( $url, $link['meta']['moodboard_source'] );
 		$this->assertSame( 'private', $link['status'] );
 		$this->assertNotSame( 0, $link['featured_media'] );
 		$this->assertSame( 'image/png', get_post_mime_type( $link['featured_media'] ) );
 		$this->assertFalse( (bool) get_post_meta( $link['featured_media'], 'moodboard_block', true ), 'The image of a link is no block of its own.' );
+	}
+
+	/**
+	 * A block of an image takes who made it from its file, its credit, else its copyright, as WordPress reads it once
+	 * it is added; a media of the library, which is no block, takes nothing, nor a block whose author is written.
+	 *
+	 * @return void
+	 */
+	public function test_an_image_takes_who_made_it_from_its_file(): void {
+		$credited  = $this->add_media();
+		$copyright = $this->add_media();
+		$written   = $this->add_media();
+		$library   = $this->add_media( array(), false );
+
+		update_post_meta( $written, 'moodboard_by', 'Natalia Guerrero' );
+
+		foreach ( array( $credited, $written, $library ) as $media_id ) {
+			apply_filters( 'wp_generate_attachment_metadata', array( 'image_meta' => array( 'credit' => 'Robert Smithson' ) ), $media_id, 'create' );
+		}
+
+		apply_filters( 'wp_generate_attachment_metadata', array( 'image_meta' => array( 'copyright' => '© Lina Ptushkina' ) ), $copyright, 'create' );
+
+		$this->assertSame( 'Robert Smithson', get_post_meta( $credited, 'moodboard_by', true ) );
+		$this->assertSame( '© Lina Ptushkina', get_post_meta( $copyright, 'moodboard_by', true ) );
+		$this->assertSame( 'Natalia Guerrero', get_post_meta( $written, 'moodboard_by', true ) );
+		$this->assertSame( '', get_post_meta( $library, 'moodboard_by', true ) );
+	}
+
+	/**
+	 * A search finds a block by who made it, as by its title or its text.
+	 *
+	 * @return void
+	 */
+	public function test_a_search_finds_a_block_by_who_made_it(): void {
+		$text = $this->request(
+			'POST',
+			'/wp/v2/moodboard-texts',
+			array(
+				'content' => 'Un tas de terre entre des miroirs.',
+				'meta'    => array( 'moodboard_by' => 'Robert Smithson' ),
+			)
+		)->get_data();
+		$this->request( 'POST', '/wp/v2/moodboard-texts', array( 'content' => 'Une autre phrase.' ) );
+
+		$found = $this->request(
+			'GET',
+			'/wp/v2/moodboard-texts',
+			array(
+				'search'  => 'Smithson',
+				'context' => 'edit',
+			)
+		)->get_data();
+
+		$this->assertSame( array( $text['id'] ), array_column( $found, 'id' ) );
+		$this->assertCount( 1, $this->request( 'GET', '/wp/v2/moodboard-texts', array( 'search' => 'miroirs' ) )->get_data() );
 	}
 
 	/**

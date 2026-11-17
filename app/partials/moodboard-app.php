@@ -142,6 +142,10 @@ $moodboard_tabs = array(
 									<dt class="app-text-muted"><?php esc_html_e( 'Dimensions', 'moodboard' ); ?></dt>
 									<dd data-field="dimensions"></dd>
 								</div>
+								<div data-row="by">
+									<dt class="app-text-muted"><?php esc_html_e( 'By', 'moodboard' ); ?></dt>
+									<dd data-field="by"></dd>
+								</div>
 								<div data-row="source">
 									<dt class="app-text-muted"><?php esc_html_e( 'Source', 'moodboard' ); ?></dt>
 									<dd><a data-field="source" href="" rel="noreferrer" target="_blank"></a></dd>

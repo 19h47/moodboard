@@ -1,6 +1,7 @@
 <?php
 /**
- * The form of a block: its title, its description or its text, the alternative text of an image and its source. Its
+ * The form of a block: its title, its description or its text, the alternative text of an image, who made it and its
+ * source. Its
  * dialog fills it as it opens, and shows the fields of the block.
  *
  * @package Moodboard
@@ -23,6 +24,11 @@
 		<label for="moodboard-block-alt"><?php esc_html_e( 'Alternative text', 'moodboard' ); ?></label>
 		<input class="moodboard-input" id="moodboard-block-alt" name="alt" aria-describedby="moodboard-block-alt-description" autocomplete="off">
 		<span class="app-text-s app-text-muted" id="moodboard-block-alt-description"><?php esc_html_e( 'What the image shows, for those who do not see it.', 'moodboard' ); ?></span>
+	</p>
+	<p class="moodboard-field">
+		<label for="moodboard-block-by"><?php esc_html_e( 'By', 'moodboard' ); ?></label>
+		<input class="moodboard-input" id="moodboard-block-by" name="by" aria-describedby="moodboard-block-by-description" autocomplete="off">
+		<span class="app-text-s app-text-muted" id="moodboard-block-by-description"><?php esc_html_e( 'Who made it: an artist, a photographer, an account.', 'moodboard' ); ?></span>
 	</p>
 	<p class="moodboard-field">
 		<label for="moodboard-block-source"><?php esc_html_e( 'Source', 'moodboard' ); ?></label>

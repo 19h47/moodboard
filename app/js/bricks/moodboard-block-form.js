@@ -5,7 +5,7 @@ import { showBusy } from 'moodboard-app/behaviors';
 
 /**
  * The form of the block shown, in its dialog: its title, its description or its text, the alternative text of an
- * image and its source. Opened, the dialog fills it from the block.
+ * image, who made it and its source. Opened, the dialog fills it from the block.
  */
 class MoodboardBlockFormElement extends Brick {
 	connect( signal ) {
@@ -37,6 +37,7 @@ class MoodboardBlockFormElement extends Brick {
 				field( 'body' ).value =
 					'text' === shown.kind ? shown.text : shown.description;
 				field( 'alt' ).value = shown.alt;
+				field( 'by' ).value = shown.by;
 				field( 'source' ).value = shown.source;
 				// The label of the body, and the alternative text, as the block is.
 				this.querySelectorAll( '[data-kind]' ).forEach(
@@ -73,7 +74,10 @@ class MoodboardBlockFormElement extends Brick {
 									alt_text: field( 'alt' ).value,
 							  }
 							: { content: body } ),
-						meta: { moodboard_source: field( 'source' ).value },
+						meta: {
+							moodboard_by: field( 'by' ).value,
+							moodboard_source: field( 'source' ).value,
+						},
 					} );
 					$dialog.close();
 				} catch ( error ) {
