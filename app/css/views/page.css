@@ -1,10 +1,25 @@
 /**
  * The page of the app, wider than the column of text, as its grid of cards needs; its parts of text keep the column.
+ * Its header stays at the top of the screen as the view scrolls under it, on the background of the page: the top of the
+ * page is its own, and the step under it, as the base spaces them.
  */
 
 @layer app.views {
 	.moodboard-page {
 		max-width: var(--moodboard-page-width);
+	}
+
+	.moodboard-page > .app-content {
+		padding-block-start: 0;
+	}
+
+	.moodboard-page .moodboard-header {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		margin-block-end: 0;
+		padding-block: var(--app-toolbar-top) var(--app-space-m);
+		background: var(--app-bg);
 	}
 
 	moodboard-view {
