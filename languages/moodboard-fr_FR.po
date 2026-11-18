@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-18T08:02:59+00:00\n"
+"POT-Creation-Date: 2026-11-18T10:56:28+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -61,7 +61,7 @@ msgstr "Un texte, ou une URL"
 msgid "Pick files"
 msgstr "Choisir des fichiers"
 
-#: app/components/add-block.php:23 app/partials/moodboard-app.php:84
+#: app/components/add-block.php:23 app/partials/moodboard-app.php:87
 msgid "Add"
 msgstr "Ajouter"
 
@@ -85,7 +85,7 @@ msgstr "Texte alternatif"
 msgid "What the image shows, for those who do not see it."
 msgstr "Ce que montre l’image, pour qui ne la voit pas."
 
-#: app/components/block-form.php:29 app/partials/moodboard-app.php:146
+#: app/components/block-form.php:29 app/partials/moodboard-app.php:151
 msgid "By"
 msgstr "Par"
 
@@ -93,7 +93,7 @@ msgstr "Par"
 msgid "Who made it: an artist, a photographer, an account."
 msgstr "Qui l’a fait : un artiste, un photographe, un compte."
 
-#: app/components/block-form.php:34 app/partials/moodboard-app.php:150
+#: app/components/block-form.php:34 app/partials/moodboard-app.php:155
 msgid "Source"
 msgstr "Source"
 
@@ -126,16 +126,16 @@ msgid "Find or add a channel"
 msgstr "Trouver ou ajouter un canal"
 
 #: app/components/connect.php:24 app/partials/moodboard-app.php:26
-#: app/partials/moodboard-app.php:165
+#: app/partials/moodboard-app.php:170
 msgid "Channels"
 msgstr "Canaux"
 
-#: app/components/dialog-close.php:14 app/partials/moodboard-app.php:236
+#: app/components/dialog-close.php:14 app/partials/moodboard-app.php:243
 msgid "Close"
 msgstr "Fermer"
 
-#: app/components/note.php:13 app/partials/moodboard-app.php:161
-#: app/partials/moodboard-app.php:194
+#: app/components/note.php:13 app/partials/moodboard-app.php:166
+#: app/partials/moodboard-app.php:201
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -180,121 +180,139 @@ msgctxt "verb"
 msgid "Search"
 msgstr "Rechercher"
 
-#: app/partials/moodboard-app.php:72 app/partials/moodboard-app.php:120
+#: app/partials/moodboard-app.php:72 app/partials/moodboard-app.php:125
 msgid "Present"
 msgstr "Présenter"
 
-#: app/partials/moodboard-app.php:74 app/js/bricks/moodboard-selection.js:64
+#: app/partials/moodboard-app.php:74 app/js/bricks/moodboard-selection.js:67
 msgid "Select blocks"
 msgstr "Sélectionner des blocs"
 
 #: app/partials/moodboard-app.php:77
+msgid "Put the blocks in order"
+msgstr "Ordonner les blocs"
+
+#: app/partials/moodboard-app.php:80
 msgid "Dark theme"
 msgstr "Thème sombre"
 
-#: app/partials/moodboard-app.php:77
+#: app/partials/moodboard-app.php:80
 msgid "Light or dark theme"
 msgstr "Thème clair ou sombre"
 
-#: app/partials/moodboard-app.php:89
+#: app/partials/moodboard-app.php:92
 #: app/js/bricks/moodboard-channel-header.js:59
 msgid "Index"
 msgstr "Index"
 
-#: app/partials/moodboard-app.php:101
+#: app/partials/moodboard-app.php:104
 msgid "Channels it is under"
 msgstr "Canaux parents"
 
-#: app/partials/moodboard-app.php:107 app/partials/moodboard-app.php:159
+#: app/partials/moodboard-app.php:110 app/partials/moodboard-app.php:164
 msgid "Edit"
 msgstr "Modifier"
 
-#: app/partials/moodboard-app.php:119
+#: app/partials/moodboard-app.php:116
+msgid ""
+"Space or Enter picks the block up, the arrow keys move it, Space or Enter "
+"put it down, Escape puts it back."
+msgstr "Espace ou Entrée prend le bloc, les flèches le déplacent, Espace ou Entrée le pose, Échap le remet en place."
+
+#: app/partials/moodboard-app.php:124
 msgid "Blocks of the channel"
 msgstr "Blocs du canal"
 
-#: app/partials/moodboard-app.php:121 app/partials/moodboard-app.php:228
+#: app/partials/moodboard-app.php:126 app/partials/moodboard-app.php:235
 msgid "Previous"
 msgstr "Précédent"
 
-#: app/partials/moodboard-app.php:122 app/partials/moodboard-app.php:235
+#: app/partials/moodboard-app.php:127 app/partials/moodboard-app.php:242
 msgid "Next"
 msgstr "Suivant"
 
-#: app/partials/moodboard-app.php:129
+#: app/partials/moodboard-app.php:134
 msgid "Open the file"
 msgstr "Ouvrir le fichier"
 
-#: app/partials/moodboard-app.php:130
+#: app/partials/moodboard-app.php:135
 msgid "Open the page"
 msgstr "Ouvrir la page"
 
-#: app/partials/moodboard-app.php:138
+#: app/partials/moodboard-app.php:143
 msgid "Added"
 msgstr "Ajouté le"
 
-#: app/partials/moodboard-app.php:142
+#: app/partials/moodboard-app.php:147
 msgid "Dimensions"
 msgstr "Dimensions"
 
-#: app/partials/moodboard-app.php:155 app/partials/moodboard-app.php:192
-#: app/partials/moodboard-app.php:299
+#: app/partials/moodboard-app.php:160 app/partials/moodboard-app.php:197
+#: app/partials/moodboard-app.php:306
 msgid "Connect"
 msgstr "Connecter"
 
-#: app/partials/moodboard-app.php:156
+#: app/partials/moodboard-app.php:161
 msgid "Actions"
 msgstr "Actions"
 
-#: app/partials/moodboard-app.php:164
+#: app/partials/moodboard-app.php:169
 msgid "About the block"
 msgstr "À propos du bloc"
 
-#: app/partials/moodboard-app.php:166
+#: app/partials/moodboard-app.php:171
 msgid "Notes"
 msgstr "Notes"
 
-#: app/partials/moodboard-app.php:170
+#: app/partials/moodboard-app.php:175
 msgid "In the index only."
 msgstr "Dans l’index seulement."
 
-#: app/partials/moodboard-app.php:185
+#: app/partials/moodboard-app.php:190
 msgid "Add blocks"
 msgstr "Ajouter des blocs"
 
-#: app/partials/moodboard-app.php:186 app/partials/moodboard-app.php:244
+#: app/partials/moodboard-app.php:191 app/partials/moodboard-app.php:251
 msgid "New channel"
 msgstr "Nouveau canal"
 
-#: app/partials/moodboard-app.php:195
+#: app/partials/moodboard-app.php:198
+msgid "Move first"
+msgstr "Mettre en premier"
+
+#: app/partials/moodboard-app.php:199
+msgid "Move last"
+msgstr "Mettre en dernier"
+
+#: app/partials/moodboard-app.php:202
 msgid "Done"
 msgstr "Terminer"
 
-#: app/partials/moodboard-app.php:215
+#: app/partials/moodboard-app.php:222
 msgid "Presentation"
 msgstr "Présentation"
 
-#: app/partials/moodboard-app.php:229
+#: app/partials/moodboard-app.php:236
 msgid "Play on their own"
 msgstr "Défilement automatique"
 
-#: app/partials/moodboard-app.php:260
+#: app/partials/moodboard-app.php:267
 msgid "Edit the channel"
 msgstr "Modifier le canal"
 
-#: app/partials/moodboard-app.php:276
+#: app/partials/moodboard-app.php:283
 msgid "Edit the block"
 msgstr "Modifier le bloc"
 
-#: app/partials/moodboard-app.php:284
+#: app/partials/moodboard-app.php:291
 msgid "Connect to channels"
 msgstr "Connecter à des canaux"
 
-#: app/partials/moodboard-app.php:292
+#: app/partials/moodboard-app.php:299
 msgid "Connect the blocks selected"
 msgstr "Connecter les blocs sélectionnés"
 
-#: includes/class-channels.php:81
+#: includes/class-channels.php:91
 msgid ""
 "The latest images of the channel and of its sub-channels, at the size of a "
 "card."
@@ -302,21 +320,27 @@ msgstr ""
 "Les dernières images du canal et de ses sous-canaux, à la taille d’une "
 "vignette."
 
-#: includes/class-channels.php:148
+#: includes/class-channels.php:158
 msgctxt "moodboard channels general name"
 msgid "Channels"
 msgstr "Canaux"
 
-#: includes/class-channels.php:149
+#: includes/class-channels.php:159
 msgctxt "moodboard channels singular name"
 msgid "Channel"
 msgstr "Canal"
 
-#: includes/class-channels.php:177
+#: includes/class-channels.php:194
 msgid "The curator of the channel."
 msgstr "La personne qui cure le canal."
 
-#: includes/class-channels.php:219
+#: includes/class-channels.php:205
+msgid ""
+"The blocks of the channel, in the order its curator gave them: a block added "
+"since comes first."
+msgstr "Les blocs du canal, dans l’ordre que leur a donné la personne qui le cure : un bloc ajouté depuis vient en premier."
+
+#: includes/class-channels.php:270
 msgid "A channel goes under one of your channels only."
 msgstr "Un canal ne va que dans l’un de vos canaux."
 
@@ -397,7 +421,7 @@ msgid "%1$d × %2$d"
 msgstr "%1$d × %2$d"
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-block.js:289 app/js/bricks/moodboard-selection.js:76
+#: app/js/bricks/moodboard-block.js:289 app/js/bricks/moodboard-selection.js:85
 msgid "Remove from %s"
 msgstr "Retirer de %s"
 
@@ -468,19 +492,39 @@ msgstr "Déposer dans « %s »"
 msgid "Drop into the index"
 msgstr "Déposer dans l’index"
 
-#: app/js/bricks/moodboard-grid.js:104
+#: app/js/bricks/moodboard-grid.js:142
 msgid "Loading…"
 msgstr "Chargement…"
 
-#: app/js/bricks/moodboard-grid.js:188
+#. translators: 1: name of a block, 2: its place, 3: number of blocks.
+#: app/js/bricks/moodboard-grid.js:478
+msgid "%1$s picked up, %2$d of %3$d."
+msgstr "%1$s pris, %2$d sur %3$d."
+
+#. translators: 1: place of a block, 2: number of blocks.
+#: app/js/bricks/moodboard-grid.js:498
+msgid "%1$d of %2$d."
+msgstr "%1$d sur %2$d."
+
+#. translators: 1: name of a block, 2: its place, 3: number of blocks.
+#: app/js/bricks/moodboard-grid.js:515
+msgid "%1$s put down, %2$d of %3$d."
+msgstr "%1$s posé, %2$d sur %3$d."
+
+#. translators: %s: name of a block.
+#: app/js/bricks/moodboard-grid.js:537
+msgid "%s put back."
+msgstr "%s remis en place."
+
+#: app/js/bricks/moodboard-grid.js:592
 msgid "Nothing found."
 msgstr "Rien trouvé."
 
-#: app/js/bricks/moodboard-grid.js:192
+#: app/js/bricks/moodboard-grid.js:596
 msgid "Nothing yet: drop images here, or add some with +."
 msgstr "Rien pour l’instant : déposez des images ici, ou ajoutez-en avec +."
 
-#: app/js/bricks/moodboard-grid.js:196
+#: app/js/bricks/moodboard-grid.js:600
 msgid "Nothing yet: drop images here, or add a channel with +."
 msgstr ""
 "Rien pour l’instant : déposez des images ici, ou ajoutez un canal avec +."
@@ -499,14 +543,14 @@ msgid "%1$d of %2$d"
 msgstr "%1$d sur %2$d"
 
 #. translators: %d: number of blocks selected.
-#: app/js/bricks/moodboard-selection.js:56
+#: app/js/bricks/moodboard-selection.js:59
 msgid "%d block selected"
 msgid_plural "%d blocks selected"
 msgstr[0] "%d bloc sélectionné"
 msgstr[1] "%d blocs sélectionnés"
 
 #. translators: %d: number of blocks selected.
-#: app/js/bricks/moodboard-selection.js:104
+#: app/js/bricks/moodboard-selection.js:117
 msgid "Delete %d block, and its file?"
 msgid_plural "Delete %d blocks, and their files?"
 msgstr[0] "Supprimer %d bloc, et son fichier ?"
@@ -524,48 +568,61 @@ msgstr[1] "%d blocs"
 msgid "Select %s"
 msgstr "Sélectionner %s"
 
-#: app/js/lib/store.js:255
+#. translators: %s: name of a block.
+#: app/js/lib/render.js:145
+msgid "Move %s"
+msgstr "Déplacer %s"
+
+#: app/js/lib/store.js:265
 msgid "The channels could not load."
 msgstr "Les canaux n’ont pas pu se charger."
 
-#: app/js/lib/store.js:319
+#: app/js/lib/store.js:338
 msgid "The blocks could not load."
 msgstr "Les blocs n’ont pas pu se charger."
 
-#: app/js/lib/store.js:365
+#: app/js/lib/store.js:384
 msgid "The block could not load."
 msgstr "Le bloc n’a pas pu se charger."
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:484
+#: app/js/lib/store.js:503
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] "Ajout de %d bloc…"
 msgstr[1] "Ajout de %d blocs…"
 
-#: app/js/lib/store.js:505
+#: app/js/lib/store.js:524
 msgid "A block could not be added."
 msgstr "Un bloc n’a pas pu être ajouté."
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:516
+#: app/js/lib/store.js:535
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] "%d bloc ajouté."
 msgstr[1] "%d blocs ajoutés."
 
-#: app/js/lib/store.js:709
+#: app/js/lib/store.js:749
+msgid "The order could not be kept."
+msgstr "L’ordre n’a pas pu être enregistré."
+
+#: app/js/lib/store.js:808
 msgid "Blocks connected."
 msgstr "Blocs connectés."
 
-#: app/js/lib/store.js:721
+#: app/js/lib/store.js:820
 msgid "Blocks removed from the channel."
 msgstr "Blocs retirés du canal."
 
-#: app/js/lib/store.js:732
+#: app/js/lib/store.js:842
+msgid "Blocks moved."
+msgstr "Blocs déplacés."
+
+#: app/js/lib/store.js:853
 msgid "Blocks deleted."
 msgstr "Blocs supprimés."
 
-#: app/js/lib/store.js:755
+#: app/js/lib/store.js:876
 msgid "The notes could not load."
 msgstr "Les notes n’ont pas pu se charger."
