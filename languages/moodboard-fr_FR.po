@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-17T18:18:14+00:00\n"
+"POT-Creation-Date: 2026-11-18T08:02:59+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: moodboard.php:11 app/class-login.php:207 app/class-page.php:162
-#: app/class-page.php:163 app/class-page.php:294 app/class-page.php:295
+#: app/class-page.php:163 app/class-page.php:296 app/class-page.php:297
 #: app/partials/moodboard-app.php:38 app/partials/moodboard-app.php:56
 msgid "Moodboard"
 msgstr "Moodboard"

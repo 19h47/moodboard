@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.1.7
+Stable tag: 0.1.8
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -66,6 +66,10 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.1.8 =
+
+* Fixed: Moodboard is installed beside Library, as another app of the same admin: its scope is the Media page, where it is, rather than the whole admin, which took the page of Library for its own.
 
 = 0.1.7 =
 
