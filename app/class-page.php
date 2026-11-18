@@ -281,8 +281,10 @@ JS;
 	/**
 	 * Render the web app manifest, which makes the app installable. The page links it with crossorigin="use-credentials":
 	 * it is behind the login, like the app. Its icons are the dark ones: the home screen icon of a web app does not follow
-	 * the system theme. Its share target, where a browser has one, puts the app in the share sheet of the system: what
-	 * is shared opens the Media page, which sends it to the app.
+	 * the system theme. Its scope is the Media page, where the app and its share target are: an app of the same admin on
+	 * another page, such as Library, is installed beside it rather than taken for it. Its share target, where a browser
+	 * has one, puts the app in the share sheet of the system: what is shared opens the Media page, which sends it to the
+	 * app.
 	 *
 	 * @return void
 	 */
@@ -294,7 +296,7 @@ JS;
 			'name'             => __( 'Moodboard', 'moodboard' ),
 			'short_name'       => __( 'Moodboard', 'moodboard' ),
 			'start_url'        => self::get_url(),
-			'scope'            => admin_url(),
+			'scope'            => admin_url( 'upload.php' ),
 			'display'          => 'standalone',
 			'background_color' => '#ffffff',
 			'theme_color'      => '#ffffff',
