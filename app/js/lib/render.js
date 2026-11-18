@@ -140,6 +140,11 @@ export function renderBlock( block, from ) {
 			__( 'Select %s', 'moodboard' ),
 			nameOf( block )
 		),
+		move: sprintf(
+			/* translators: %s: name of a block. */
+			__( 'Move %s', 'moodboard' ),
+			nameOf( block )
+		),
 	} );
 
 	const $image = $item.querySelector( 'img' );

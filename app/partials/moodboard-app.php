@@ -73,6 +73,9 @@ $moodboard_tabs = array(
 						<moodboard-select-toggle data-only="grid">
 							<button class="app-control" type="button" aria-pressed="false" aria-label="<?php esc_attr_e( 'Select blocks', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Select blocks', 'moodboard' ); ?>"><?php Markup::render_icon( 'select' ); ?></button>
 						</moodboard-select-toggle>
+						<moodboard-arrange-toggle data-only="channel">
+							<button class="app-control" type="button" aria-pressed="false" aria-label="<?php esc_attr_e( 'Put the blocks in order', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Put the blocks in order', 'moodboard' ); ?>"><?php Markup::render_icon( 'drag_pan' ); ?></button>
+						</moodboard-arrange-toggle>
 						<moodboard-theme-toggle>
 							<button class="app-control" type="button" aria-label="<?php esc_attr_e( 'Dark theme', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Light or dark theme', 'moodboard' ); ?>">
 								<?php
@@ -110,6 +113,8 @@ $moodboard_tabs = array(
 					</moodboard-channel-header>
 					<moodboard-grid list="channel">
 						<p class="app-status" data-field="status" role="status"></p>
+						<p class="sr-only" id="moodboard-move-help"><?php esc_html_e( 'Space or Enter picks the block up, the arrow keys move it, Space or Enter put it down, Escape puts it back.', 'moodboard' ); ?></p>
+						<p class="sr-only" data-field="moved" aria-live="assertive"></p>
 						<ul class="moodboard-grid" data-list="items"></ul>
 					</moodboard-grid>
 				</moodboard-view>
@@ -190,6 +195,8 @@ $moodboard_tabs = array(
 			<p class="app-text-s app-font-ui app-uppercase" data-field="count" role="status"></p>
 			<p class="moodboard-pills">
 				<button class="app-pill app-pill--small" type="button" commandfor="moodboard-bulk" command="show-modal" data-action="connect"><?php esc_html_e( 'Connect', 'moodboard' ); ?></button>
+				<button class="app-pill app-pill--small" type="button" data-action="first" hidden><?php esc_html_e( 'Move first', 'moodboard' ); ?></button>
+				<button class="app-pill app-pill--small" type="button" data-action="last" hidden><?php esc_html_e( 'Move last', 'moodboard' ); ?></button>
 				<button class="app-pill app-pill--small" type="button" data-action="disconnect" hidden></button>
 				<button class="app-pill app-pill--small" type="button" data-action="delete"><?php esc_html_e( 'Delete', 'moodboard' ); ?></button>
 				<button class="app-pill app-pill--small" type="button" data-action="done"><?php esc_html_e( 'Done', 'moodboard' ); ?></button>
@@ -307,13 +314,13 @@ $moodboard_tabs = array(
 			<li><?php Markup::render_component( 'channel-card' ); ?></li>
 		</template>
 		<template id="moodboard-media-card">
-			<li><?php Markup::render_component( 'media-card' ); ?><?php Markup::render_component( 'select' ); ?></li>
+			<li><?php Markup::render_component( 'media-card' ); ?><?php Markup::render_component( 'select' ); ?><?php Markup::render_component( 'move' ); ?></li>
 		</template>
 		<template id="moodboard-text-card">
-			<li><?php Markup::render_component( 'text-card' ); ?><?php Markup::render_component( 'select' ); ?></li>
+			<li><?php Markup::render_component( 'text-card' ); ?><?php Markup::render_component( 'select' ); ?><?php Markup::render_component( 'move' ); ?></li>
 		</template>
 		<template id="moodboard-link-card">
-			<li><?php Markup::render_component( 'link-card' ); ?><?php Markup::render_component( 'select' ); ?></li>
+			<li><?php Markup::render_component( 'link-card' ); ?><?php Markup::render_component( 'select' ); ?><?php Markup::render_component( 'move' ); ?></li>
 		</template>
 		<template id="moodboard-note">
 			<li><?php Markup::render_component( 'note' ); ?></li>

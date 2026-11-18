@@ -19,7 +19,9 @@ use WP_Term;
 /**
  * Registers the moodboard_channel taxonomy, over the media and the texts, the blocks: the many-to-many relation of
  * WordPress, so a block is in several channels, and a channel has a parent. A term has no author: the curator who adds
- * a channel is kept in a meta of the term, `moodboard_author`, and each curator lists their own channels only.
+ * a channel is kept in a meta of the term, `moodboard_author`, and each curator lists their own channels only. The order
+ * of the blocks of a channel is its own, a block in several channels in a place of each: a meta of the term too,
+ * `moodboard_order`.
  *
  * @since      1.0.0
  * @package    Moodboard
@@ -43,6 +45,13 @@ class Channels {
 	public const string AUTHOR = 'moodboard_author';
 
 	/**
+	 * Meta of a channel holding the IDs of its blocks, in the order its curator gave them.
+	 *
+	 * @var string
+	 */
+	public const string ORDER = 'moodboard_order';
+
+	/**
 	 * Most images a channel shows on its card.
 	 *
 	 * @var int
@@ -56,6 +65,7 @@ class Channels {
 	 */
 	public function hooks(): void {
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
+		add_action( 'init', array( $this, 'register_meta' ) );
 		add_action( 'created_' . self::TAXONOMY, array( $this, 'set_author' ) );
 		add_filter( 'pre_insert_term', array( $this, 'check_new_parent' ), 10, 3 );
 		add_filter( 'wp_update_term_parent', array( $this, 'check_parent' ), 10, 3 );
@@ -168,7 +178,14 @@ class Channels {
 				'update_count_callback' => '_update_generic_term_count',
 			)
 		);
+	}
 
+	/**
+	 * Register the meta of a channel: its curator, and the order of its blocks, which the app reads and writes.
+	 *
+	 * @return void
+	 */
+	public function register_meta(): void {
 		register_term_meta(
 			self::TAXONOMY,
 			self::AUTHOR,
@@ -179,6 +196,40 @@ class Channels {
 				'sanitize_callback' => 'absint',
 			)
 		);
+
+		register_term_meta(
+			self::TAXONOMY,
+			self::ORDER,
+			array(
+				'type'              => 'array',
+				'description'       => __( 'The blocks of the channel, in the order its curator gave them: a block added since comes first.', 'moodboard' ),
+				'single'            => true,
+				'default'           => array(),
+				'sanitize_callback' => array( self::class, 'sanitize_order' ),
+				'show_in_rest'      => array(
+					'schema' => array(
+						'type'  => 'array',
+						'items' => array(
+							'type'    => 'integer',
+							'minimum' => 1,
+						),
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * The order of the blocks of a channel, as kept: IDs, each once. A block that has left the channel since may stay in
+	 * it, which the app skips.
+	 *
+	 * @param mixed $order The order given.
+	 * @return list<int>
+	 */
+	public static function sanitize_order( $order ): array {
+		$block_ids = array_filter( array_map( 'absint', is_array( $order ) ? $order : array() ) );
+
+		return array_values( array_unique( $block_ids ) );
 	}
 
 	/**

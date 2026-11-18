@@ -22,12 +22,13 @@ import {
  * A channel.
  *
  * @typedef {Object} Channel
- * @property {number}  id          Its term ID.
- * @property {string}  name        Its name.
- * @property {string}  description Its description.
- * @property {number}  parent      The channel it is under, 0 for none.
- * @property {number}  count       How many blocks it holds.
- * @property {Cover[]} covers      Its latest images, and those of its sub-channels, for its card.
+ * @property {number}   id          Its term ID.
+ * @property {string}   name        Its name.
+ * @property {string}   description Its description.
+ * @property {number}   parent      The channel it is under, 0 for none.
+ * @property {number}   count       How many blocks it holds.
+ * @property {Cover[]}  covers      Its latest images, and those of its sub-channels, for its card.
+ * @property {number[]} order       Its blocks, in the order its curator gave them, by post ID.
  */
 
 /**
@@ -84,12 +85,13 @@ import {
  * A channel, as the API gives it.
  *
  * @typedef {Object} ApiChannel
- * @property {number}  id               Its term ID.
- * @property {string}  name             Its name, its entities encoded.
- * @property {string}  description      Its description.
- * @property {number}  parent           The channel it is under.
- * @property {number}  count            How many blocks it holds.
- * @property {Cover[]} moodboard_covers Its latest images.
+ * @property {number}                       id               Its term ID.
+ * @property {string}                       name             Its name, its entities encoded.
+ * @property {string}                       description      Its description.
+ * @property {number}                       parent           The channel it is under.
+ * @property {number}                       count            How many blocks it holds.
+ * @property {Cover[]}                      moodboard_covers Its latest images.
+ * @property {{moodboard_order?: number[]}} meta             The order of its blocks.
  */
 
 /**
@@ -177,6 +179,7 @@ function toChannel( item ) {
 		parent: item.parent,
 		count: item.count,
 		covers: item.moodboard_covers ?? [],
+		order: item.meta?.moodboard_order ?? [],
 	};
 }
 
@@ -491,6 +494,41 @@ export async function updateChannel( id, fields ) {
 			method: 'POST',
 			data: fields,
 		} )
+	);
+}
+
+/**
+ * Keeps the order of the blocks of a channel, as its curator gave it.
+ *
+ * @param {number}   id       The channel.
+ * @param {number[]} blockIds Its blocks, in their order, by post ID.
+ * @return {Promise<Channel>} The channel.
+ */
+export async function orderChannel( id, blockIds ) {
+	return toChannel(
+		await apiFetch( {
+			path: addQueryArgs( `/wp/v2/${ channelsBase }/${ id }`, {
+				_fields: channelFields,
+			} ),
+			method: 'POST',
+			data: { meta: { moodboard_order: blockIds } },
+		} )
+	);
+}
+
+/**
+ * The blocks of a channel in its order: those it has not ordered, added since, first, as they come, the latest first;
+ * then the others, in its order.
+ *
+ * @param {Block[]}  blocks The blocks of the channel, the latest first.
+ * @param {number[]} order  Its order, by post ID.
+ * @return {Block[]} The blocks, in its order.
+ */
+export function inOrder( blocks, order ) {
+	const places = new Map( order.map( ( id, place ) => [ id, place ] ) );
+
+	return blocks.toSorted(
+		( a, b ) => ( places.get( a.id ) ?? -1 ) - ( places.get( b.id ) ?? -1 )
 	);
 }
 

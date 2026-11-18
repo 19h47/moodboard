@@ -105,6 +105,43 @@ class Test_Channels extends TestCase {
 	}
 
 	/**
+	 * A channel keeps the order its curator gives its blocks, each ID once, as integers.
+	 *
+	 * @return void
+	 */
+	public function test_a_channel_keeps_the_order_of_its_blocks(): void {
+		$places = $this->add_channel( 'Lieux' );
+		$first  = $this->add_media( array( $places ) );
+		$second = $this->add_media( array( $places ) );
+
+		$response = $this->request( 'POST', "/wp/v2/moodboard-channels/$places", array( 'meta' => array( 'moodboard_order' => array( $second, (string) $first, $second ) ) ) );
+
+		$this->assertSame( 200, $response->get_status(), (string) wp_json_encode( $response->get_data() ) );
+		$this->assertSame( array( $second, $first ), $response->get_data()['meta']['moodboard_order'] );
+
+		$channel = $this->request( 'GET', "/wp/v2/moodboard-channels/$places", array( '_fields' => 'id,meta' ) )->get_data();
+
+		$this->assertSame( array( $second, $first ), $channel['meta']['moodboard_order'] );
+	}
+
+	/**
+	 * A curator orders their own channels only.
+	 *
+	 * @return void
+	 */
+	public function test_a_curator_orders_their_own_channels_only(): void {
+		$places   = $this->add_channel( 'Lieux' );
+		$media_id = $this->add_media( array( $places ) );
+
+		$this->as_user( 'moodboard_curator' );
+
+		$response = $this->request( 'POST', "/wp/v2/moodboard-channels/$places", array( 'meta' => array( 'moodboard_order' => array( $media_id ) ) ) );
+
+		$this->assertContains( $response->get_status(), array( 401, 403 ) );
+		$this->assertSame( array(), get_term_meta( $places, 'moodboard_order', true ) );
+	}
+
+	/**
 	 * A text is private, whatever status it is sent with, and in its channels.
 	 *
 	 * @return void
