@@ -16,7 +16,7 @@ import * as api from 'moodboard-app/api';
  * @typedef {Object} List
  * @property {boolean}  loaded Whether it has loaded.
  * @property {string}   error  Why it could not load, empty otherwise.
- * @property {string[]} keys   The keys of its blocks, the latest first.
+ * @property {string[]} keys   The keys of its blocks: of a channel, in its order; else the latest first.
  */
 
 /**
@@ -35,6 +35,7 @@ import * as api from 'moodboard-app/api';
  * @property {Object<string, {loaded: boolean, error: string, items: Note[]}>} notes       The notes loaded, by the key of their block.
  * @property {boolean}                                                         selecting   Whether the cards of the blocks are selected rather than opened.
  * @property {string[]}                                                        selection   The keys of the blocks selected.
+ * @property {boolean}                                                         arranging   Whether the blocks of the channel shown are put in order rather than opened.
  * @property {number}                                                          density     The size of the cards, a step of the scale from the usual one, -1, 0 or 1, or two a row, 2.
  * @property {'light'|'dark'}                                                  theme       The theme shown.
  * @property {boolean}                                                         themeChosen Whether the theme was chosen over the system one.
@@ -142,6 +143,13 @@ class MoodboardStore extends Store {
 	 */
 	#connecting = Promise.resolve();
 
+	/**
+	 * The orders of the channels being kept, one after the other: the last one sent is the one kept.
+	 *
+	 * @type {Promise<unknown>}
+	 */
+	#ordering = Promise.resolve();
+
 	constructor() {
 		super( {
 			view: '',
@@ -158,6 +166,7 @@ class MoodboardStore extends Store {
 			notes: {},
 			selecting: false,
 			selection: [],
+			arranging: false,
 			...load(),
 			notice: '',
 		} );
@@ -205,13 +214,14 @@ class MoodboardStore extends Store {
 	 * @param {string}                                                               [navigation] How it was reached, as the Navigation API says.
 	 */
 	show( route, navigation = '' ) {
-		// A selection is of the cards of a view: another view ends it.
+		// A selection, or an order being given, is of the cards of a view: another view ends it.
 		this.set( ( state ) => ( {
 			...state,
 			...route,
 			moved: 'traverse' === navigation ? 'back' : 'forward',
 			selecting: false,
 			selection: [],
+			arranging: false,
 		} ) );
 
 		if ( ! this.get().channels.loaded ) {
@@ -293,23 +303,32 @@ class MoodboardStore extends Store {
 				this.#signal( key )
 			);
 
-			this.set( ( state ) => ( {
-				...state,
-				blocks: {
-					...state.blocks,
-					...Object.fromEntries(
-						blocks.map( ( block ) => [ block.key, block ] )
-					),
-				},
-				lists: {
-					...state.lists,
-					[ key ]: {
-						loaded: true,
-						error: '',
-						keys: blocks.map( ( block ) => block.key ),
+			this.set( ( state ) => {
+				const channel = state.channels.items.find(
+					( item ) => item.id === channelId
+				);
+				const ordered = channel
+					? api.inOrder( blocks, channel.order )
+					: blocks;
+
+				return {
+					...state,
+					blocks: {
+						...state.blocks,
+						...Object.fromEntries(
+							blocks.map( ( block ) => [ block.key, block ] )
+						),
 					},
-				},
-			} ) );
+					lists: {
+						...state.lists,
+						[ key ]: {
+							loaded: true,
+							error: '',
+							keys: ordered.map( ( block ) => block.key ),
+						},
+					},
+				};
+			} );
 		} catch ( error ) {
 			if ( 'AbortError' !== error?.name ) {
 				this.#setList( key, {
@@ -422,7 +441,7 @@ class MoodboardStore extends Store {
 
 	/**
 	 * Puts blocks added first in the lists loaded they belong to, as the latest: the index, and the channel they went
-	 * into. A search goes, which may not find them.
+	 * into, whose order they are not in yet. A search goes, which may not find them.
 	 *
 	 * @param {number}  channelId The channel, 0 for the index.
 	 * @param {Block[]} blocks    The blocks added, the latest last.
@@ -646,12 +665,92 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Starts selecting the cards of the blocks, or ends it, the selection with it.
+	 * Starts selecting the cards of the blocks, or ends it, the selection with it; the cards are no longer put in order.
 	 *
 	 * @param {boolean} selecting Whether the cards are being selected.
 	 */
 	setSelecting( selecting ) {
-		this.set( ( state ) => ( { ...state, selecting, selection: [] } ) );
+		this.set( ( state ) => ( {
+			...state,
+			selecting,
+			selection: [],
+			arranging: false,
+		} ) );
+	}
+
+	/**
+	 * Starts putting the blocks of the channel shown in order, or ends it; the cards are no longer selected.
+	 *
+	 * @param {boolean} arranging Whether the blocks are being put in order.
+	 */
+	setArranging( arranging ) {
+		this.set( ( state ) => ( {
+			...state,
+			arranging,
+			selecting: false,
+			selection: [],
+		} ) );
+	}
+
+	/**
+	 * Moves a block of a channel to a place of its list, as it is dragged or moved by the keys, without keeping the order
+	 * yet: saveOrder() keeps it.
+	 *
+	 * @param {number} channelId The channel.
+	 * @param {string} key       The key of the block.
+	 * @param {number} place     Its place among the blocks of the channel, from 0.
+	 */
+	moveBlock( channelId, key, place ) {
+		const list = this.get().lists[ `channel-${ channelId }` ];
+
+		if ( ! list?.keys.includes( key ) ) {
+			return;
+		}
+
+		const keys = list.keys.filter( ( item ) => item !== key );
+
+		keys.splice( Math.max( 0, Math.min( place, keys.length ) ), 0, key );
+		this.#setList( `channel-${ channelId }`, { keys } );
+	}
+
+	/**
+	 * Keeps the order of the blocks of a channel, as its list holds it, after the orders sent before it. One that fails
+	 * says so, and the channel loads again, in the order kept.
+	 *
+	 * @param {number} channelId The channel.
+	 */
+	async saveOrder( channelId ) {
+		const { lists, blocks } = this.get();
+		const blockIds = ( lists[ `channel-${ channelId }` ]?.keys ?? [] )
+			.map( ( key ) => blocks[ key ]?.id )
+			.filter( Boolean );
+		const saved = this.#ordering.then( async () => {
+			const channel = await api.orderChannel( channelId, blockIds );
+
+			this.set( ( state ) => ( {
+				...state,
+				channels: {
+					...state.channels,
+					items: state.channels.items.map( ( item ) =>
+						item.id === channel.id ? channel : item
+					),
+				},
+			} ) );
+		} );
+
+		this.#ordering = saved.catch( () => {} );
+
+		try {
+			await saved;
+		} catch ( error ) {
+			this.notify(
+				api.errorMessage(
+					error,
+					__( 'The order could not be kept.', 'moodboard' )
+				)
+			);
+			await this.#refresh();
+		}
 	}
 
 	/**
@@ -720,6 +819,28 @@ class MoodboardStore extends Store {
 			( block ) => block.channels.filter( ( id ) => id !== channelId ),
 			__( 'Blocks removed from the channel.', 'moodboard' )
 		);
+	}
+
+	/**
+	 * Puts the blocks selected first or last in the channel shown, in the order they have, then keeps it.
+	 *
+	 * @param {'first'|'last'} where Where they go.
+	 */
+	async moveSelection( where ) {
+		const { id, lists, selection } = this.get();
+		const keys = lists[ `channel-${ id }` ]?.keys ?? [];
+		const moved = keys.filter( ( key ) => selection.includes( key ) );
+		const others = keys.filter( ( key ) => ! selection.includes( key ) );
+
+		this.#setList( `channel-${ id }`, {
+			keys:
+				'first' === where
+					? [ ...moved, ...others ]
+					: [ ...others, ...moved ],
+		} );
+		this.setSelecting( false );
+		this.notify( __( 'Blocks moved.', 'moodboard' ) );
+		await this.saveOrder( id );
 	}
 
 	/** Deletes the blocks selected. */

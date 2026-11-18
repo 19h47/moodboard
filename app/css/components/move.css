@@ -1,0 +1,13 @@
+/**
+ * The handle that moves a block, a control at the corner of its card while the blocks of a channel are put in order;
+ * pressed while its block is picked up.
+ */
+
+@layer app.components {
+	.moodboard-move {
+		position: absolute;
+		inset-block-start: var(--app-space-s);
+		inset-inline-end: var(--app-space-s);
+		cursor: grab;
+	}
+}

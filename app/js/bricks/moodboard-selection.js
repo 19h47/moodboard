@@ -5,12 +5,15 @@ import { fill } from 'moodboard-app/dom';
 
 /**
  * The bar of the blocks selected, at the bottom of the screen while they are: how many, and what changes them all, put
- * in channels, taken out of the channel shown, or deleted. Escape ends the selection.
+ * in channels, first or last in the channel shown, taken out of it, or deleted. Escape ends the selection.
  */
 class MoodboardSelectionElement extends Brick {
 	connect( signal ) {
 		/** @type {HTMLButtonElement} */
 		const $disconnect = this.querySelector( '[data-action="disconnect"]' );
+		const $moves = this.querySelectorAll(
+			'[data-action="first"], [data-action="last"]'
+		);
 
 		this.addEventListener(
 			'click',
@@ -68,6 +71,12 @@ class MoodboardSelectionElement extends Brick {
 					).forEach( ( /** @type {HTMLButtonElement} */ $button ) => {
 						$button.disabled = ! selection.length;
 					} );
+					$moves.forEach(
+						( /** @type {HTMLButtonElement} */ $move ) => {
+							$move.hidden = ! channel;
+							$move.disabled = ! selection.length;
+						}
+					);
 					$disconnect.hidden = ! channel;
 					$disconnect.disabled = ! selection.length;
 					$disconnect.textContent = channel
@@ -85,12 +94,16 @@ class MoodboardSelectionElement extends Brick {
 	/**
 	 * Does what a button of the bar says.
 	 *
-	 * @param {string} action The action: disconnect, delete or done; connect opens its dialog by itself.
+	 * @param {string} action The action: first, last, disconnect, delete or done; connect opens its dialog by itself.
 	 */
 	async #act( action ) {
 		const { selection, id } = store.get();
 
 		try {
+			if ( 'first' === action || 'last' === action ) {
+				await store.moveSelection( action );
+			}
+
 			if ( 'disconnect' === action ) {
 				await store.disconnectSelection( id );
 			}

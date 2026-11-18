@@ -26,6 +26,7 @@
 	}
 
 	moodboard-header:not([data-view="index"]) [data-only="index"],
+	moodboard-header:not([data-view="channel"]) [data-only="channel"],
 	moodboard-header:not([data-view="index"], [data-view="channel"]) [data-only="grid"] {
 		display: none;
 	}

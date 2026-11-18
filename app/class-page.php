@@ -50,7 +50,7 @@ class Page {
 	 *
 	 * @var string
 	 */
-	public const string CHANNEL_FIELDS = 'id,name,description,parent,count,moodboard_covers';
+	public const string CHANNEL_FIELDS = 'id,name,description,parent,count,moodboard_covers,meta';
 
 	/**
 	 * Fields of a media the app reads, in the context of its edition, which gives its title, caption and description as

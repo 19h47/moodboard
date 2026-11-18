@@ -34,14 +34,26 @@
 		contain-intrinsic-size: auto calc(var(--moodboard-card-min) * var(--moodboard-density));
 	}
 
-	/* While the blocks are selected, the cards of the channels wait, and a card selected is lined */
-	.moodboard-grid[data-selecting] > li:not(:has([data-part="select"])) {
+	/*
+	 * While the blocks are selected, or put in order, the cards of the channels wait, and a card selected, or picked up,
+	 * is lined
+	 */
+	.moodboard-grid:is([data-selecting], [data-arranging]) > li:not(:has([data-part="select"])) {
 		opacity: calc(1 / var(--app-phi) / var(--app-phi));
 	}
 
 	/* Within its frame: an item skips the paint of what goes out of it */
-	.moodboard-grid > li:has(:checked) .moodboard-card__frame {
+	.moodboard-grid > li:is(:has(:checked), :has([data-part="move"][aria-pressed="true"])) .moodboard-card__frame {
 		outline: 2px solid var(--app-text);
 		outline-offset: -2px;
+	}
+
+	/* While the blocks are put in order, a card is taken anywhere and dragged; the one dragged fades where it goes */
+	.moodboard-grid[data-arranging] > li[draggable="true"] {
+		cursor: grab;
+	}
+
+	.moodboard-grid > li[data-dragging] {
+		opacity: calc(1 / var(--app-phi));
 	}
 }

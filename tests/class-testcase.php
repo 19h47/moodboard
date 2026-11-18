@@ -7,6 +7,7 @@
 
 namespace Moodboard\Tests;
 
+use Moodboard\Channels;
 use Moodboard\Meta;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -28,6 +29,7 @@ abstract class TestCase extends WP_UnitTestCase {
 
 		// The suite unregisters every meta key after each test, those the plugin registers once, on init, among them.
 		new Meta()->register_meta();
+		new Channels()->register_meta();
 
 		$this->as_user( 'moodboard_curator' );
 	}
