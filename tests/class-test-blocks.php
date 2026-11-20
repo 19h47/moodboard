@@ -189,6 +189,34 @@ class Test_Blocks extends TestCase {
 	}
 
 	/**
+	 * A link to Instagram, whose page shows a server its login, takes nothing of it: neither its title nor its logo.
+	 *
+	 * @return void
+	 */
+	public function test_a_link_behind_a_login_takes_nothing_of_its_page(): void {
+		$url  = 'https://www.instagram.com/p/moodboard/';
+		$logo = 'https://static.cdninstagram.com/rsrc.php/logo.png';
+
+		add_filter(
+			'pre_http_request',
+			function ( $response, array $args, string $asked ) use ( $url, $logo ) {
+				if ( $url === $asked ) {
+					return self::answer( 'text/html', '<title>Instagram</title><meta content="' . $logo . '" property="og:image">' );
+				}
+
+				return $logo === $asked ? self::answer_image( $args['filename'] ) : $response;
+			},
+			10,
+			3
+		);
+
+		$link = $this->request( 'POST', '/wp/v2/moodboard-links', array( 'meta' => array( 'moodboard_source' => $url ) ) )->get_data();
+
+		$this->assertSame( $url, $link['title']['raw'] );
+		$this->assertSame( 0, $link['featured_media'] );
+	}
+
+	/**
 	 * An answer of a server, as `pre_http_request` gives it.
 	 *
 	 * @param string      $type     Its type.

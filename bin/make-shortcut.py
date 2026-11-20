@@ -78,9 +78,11 @@ site = output('Texte', ids['site'])
 def add_block(route, form, variable=None):
     """
     The actions that add a block through the REST API, its form as given: WordPress answers the block added, with its
-    ID, kept in `variable` when named; else it says why not, which an alert shows before the shortcut stops.
+    ID, kept in `variable` when named; else it says why not, which an alert shows before the shortcut stops. Its answer
+    is read as a text first: a page of the server, such as an error of the host, is no dictionary, which Shortcuts
+    would fail to read before the alert.
     """
-    response, block_id, if_failed = new_id(), new_id(), new_id()
+    response, has_id, block_id, if_failed = new_id(), new_id(), new_id(), new_id()
     added = [
         action(
             'downloadurl',
@@ -94,14 +96,17 @@ def add_block(route, form, variable=None):
             WFHTTPBodyType='Form',
             WFFormValues=fields(form),
         ),
-        action('getvalueforkey', UUID=block_id, WFDictionaryKey='id', WFInput=attachment(output('Contenu de l’URL', response))),
-        action('conditional', GroupingIdentifier=if_failed, WFControlFlowMode=0, WFCondition=101, WFInput=condition_input(output('Valeur du dictionnaire', block_id))),
+        action('text.match', UUID=has_id, WFMatchTextPattern=text(r'"id"\s*:\s*\d+'), text=text(output('Contenu de l’URL', response))),
+        action('conditional', GroupingIdentifier=if_failed, WFControlFlowMode=0, WFCondition=101, WFInput=condition_input(output('Correspondances', has_id))),
         action('alert', WFAlertActionTitle='Moodboard', WFAlertActionMessage=text('Rien n’a été ajouté : ', output('Contenu de l’URL', response)), WFAlertActionCancelButtonShown=False),
         action('exit'),
         action('conditional', GroupingIdentifier=if_failed, WFControlFlowMode=2, UUID=new_id()),
     ]
     if variable:
-        added.append(action('appendvariable', WFVariableName=variable, WFInput=attachment(output('Valeur du dictionnaire', block_id))))
+        added.extend([
+            action('getvalueforkey', UUID=block_id, WFDictionaryKey='id', WFInput=attachment(output('Contenu de l’URL', response))),
+            action('appendvariable', WFVariableName=variable, WFInput=attachment(output('Valeur du dictionnaire', block_id))),
+        ])
     return added
 
 

@@ -49,6 +49,14 @@ class Links {
 	private const string IMAGE_FILE = '/\.(jpe?g|png|gif|webp|avif)$/i';
 
 	/**
+	 * The hosts whose page shows a server their login instead of what it links to, its title and its image those of the
+	 * site, as the logo of Instagram, whose many sizes the server would make for nothing.
+	 *
+	 * @var string[]
+	 */
+	private const array LOGIN_WALLS = array( 'instagram.com', 'www.instagram.com' );
+
+	/**
 	 * Register hooks.
 	 *
 	 * @return void
@@ -121,7 +129,8 @@ class Links {
 
 		// A provider that gives no image, as Tumblr, which embeds its post, leaves it to the page: what the page says of
 		// itself, beside what the provider says, would only repeat it.
-		$page        = self::get( '/wp-block-editor/v1/url-details', $url );
+		$host        = (string) wp_parse_url( $url, PHP_URL_HOST );
+		$page        = in_array( $host, self::LOGIN_WALLS, true ) ? array() : self::get( '/wp-block-editor/v1/url-details', $url );
 		$description = $embed ? '' : self::to_text( $page['description'] ?? '' );
 		$image       = self::get_largest( (string) ( $page['image'] ?? '' ), $url );
 
