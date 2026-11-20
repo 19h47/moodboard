@@ -1,0 +1,20 @@
+/**
+ * A text whose letters scramble as it comes in: the text itself, kept for assistive technologies, is drawn in no color,
+ * its letters scrambled over it, in its own color, with an alternative text of none, which they do not read. On one
+ * line, as other letters of a font that is not monospace are not as wide.
+ */
+
+@layer app.components {
+	[data-scramble] {
+		position: relative;
+		-webkit-text-fill-color: transparent;
+	}
+
+	[data-scramble]::after {
+		position: absolute;
+		inset: 0;
+		content: attr(data-scramble) / "";
+		white-space: nowrap;
+		-webkit-text-fill-color: currentcolor;
+	}
+}

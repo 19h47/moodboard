@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.2.2
+Stable tag: 0.3.0
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -67,6 +67,12 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.3.0 =
+
+* A presentation ended on another block leaves it under it: opened from the page of a block, the page of the block it ended on, in place, so that Back goes to the channel; opened from a grid, its card, brought into view.
+* The place and the name of the block presented come in scrambled, their letters settling from the first to the last, as assistive technologies read them as they are; nothing moves for whom asks for less motion.
+* Changed: the bar of the presentation is in the monospace of the app.
 
 = 0.2.2 =
 

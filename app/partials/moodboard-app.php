@@ -227,7 +227,7 @@ $moodboard_tabs = array(
 					<p class="moodboard-present__text" data-field="text"></p>
 				</div>
 				<div class="moodboard-present__bar">
-					<p class="app-text-s app-font-ui" aria-live="polite">
+					<p class="app-text-s" aria-live="polite">
 						<span class="app-uppercase" data-field="position"></span>
 						<span data-field="name"></span>
 					</p>

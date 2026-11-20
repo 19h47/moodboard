@@ -3,6 +3,8 @@ import { listKey, store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { fill, fillImage } from 'moodboard-app/dom';
 import { formatKind, nameOf } from 'moodboard-app/render';
+import { urlOf } from 'moodboard-app/router';
+import { scramble } from 'moodboard-app/scramble';
 
 /** @import { Block } from 'moodboard-app/api' */
 
@@ -10,11 +12,14 @@ import { formatKind, nameOf } from 'moodboard-app/render';
 const PLAY_MS = 5000;
 // How far a finger goes across a block for a swipe, rather than a tap.
 const SWIPE_PX = 60;
+// The views of a block, its page.
+const BLOCK_VIEWS = [ 'media', 'text', 'link' ];
 
 /**
  * The blocks of what shows, one at a time, over the whole screen: the blocks of the grid shown from its first, or those
  * of the channel a block shown was opened from, from it. ← and → go from one to the next, as a swipe does, the space
- * plays them on their own, Escape ends it, out of the full screen and its dialog together.
+ * plays them on their own, Escape ends it, out of the full screen and its dialog together. Ended on another block, the
+ * page of a block gives way to the page of that one, a grid shows its card.
  */
 class MoodboardPresentElement extends Brick {
 	/** @type {Block[]} */
@@ -53,14 +58,44 @@ class MoodboardPresentElement extends Brick {
 			{ signal }
 		);
 
+		// While the dialog still covers it, so that the page changes in place, without a view transition.
+		$dialog.addEventListener(
+			'beforetoggle',
+			( /** @type {ToggleEvent} */ event ) => {
+				const state = store.get();
+				const block = this.#blocks[ this.#index ];
+
+				if (
+					'closed' !== event.newState ||
+					! block ||
+					! BLOCK_VIEWS.includes( state.view ) ||
+					block.key === `${ state.view }-${ state.id }`
+				) {
+					return;
+				}
+
+				const url = urlOf( {
+					view: block.kind,
+					id: block.id,
+					from: state.from,
+				} );
+
+				navigation.navigate( url, { history: 'replace' } );
+			},
+			{ signal }
+		);
+
 		$dialog.addEventListener(
 			'close',
 			() => {
 				this.#play( $play, false );
 
-				if ( document.fullscreenElement ) {
-					document.exitFullscreen().catch( () => {} );
-				}
+				const left = document.fullscreenElement
+					? document.exitFullscreen()
+					: Promise.resolve();
+
+				// Once the page has its size back.
+				left.catch( () => {} ).then( () => this.#reveal() );
 			},
 			{ signal }
 		);
@@ -158,7 +193,7 @@ class MoodboardPresentElement extends Brick {
 	/** Takes the blocks of what shows, from the first, or from the block shown. */
 	#open() {
 		const state = store.get();
-		const isBlock = [ 'media', 'text', 'link' ].includes( state.view );
+		const isBlock = BLOCK_VIEWS.includes( state.view );
 		const key = isBlock
 			? listKey( { view: 'channel', id: state.from, query: '' } )
 			: listKey( state );
@@ -191,6 +226,21 @@ class MoodboardPresentElement extends Brick {
 		this.#index =
 			( this.#index + step + this.#blocks.length ) % this.#blocks.length;
 		this.#show();
+	}
+
+	/** Brings the card of the block shown into the grid, when the blocks went past the first. */
+	#reveal() {
+		const block = this.#blocks[ this.#index ];
+
+		if ( ! this.#index || BLOCK_VIEWS.includes( store.get().view ) ) {
+			return;
+		}
+
+		document
+			.querySelector(
+				`moodboard-view:not([hidden]) li[data-id="${ block.key }"]`
+			)
+			?.scrollIntoView( { block: 'nearest' } );
 	}
 
 	/**
@@ -243,6 +293,10 @@ class MoodboardPresentElement extends Brick {
 				: '',
 			name: block?.label ?? '',
 		} );
+
+		this.querySelectorAll(
+			'[data-field="position"], [data-field="name"]'
+		).forEach( scramble );
 	}
 }
 customElements.define( 'moodboard-present', MoodboardPresentElement );
