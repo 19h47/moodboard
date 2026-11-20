@@ -4,6 +4,7 @@ import { Brick } from 'moodboard-app/brick';
 import { fill, fillImage } from 'moodboard-app/dom';
 import { formatKind, nameOf } from 'moodboard-app/render';
 import { urlOf } from 'moodboard-app/router';
+import { scramble } from 'moodboard-app/scramble';
 
 /** @import { Block } from 'moodboard-app/api' */
 
@@ -292,6 +293,10 @@ class MoodboardPresentElement extends Brick {
 				: '',
 			name: block?.label ?? '',
 		} );
+
+		this.querySelectorAll(
+			'[data-field="position"], [data-field="name"]'
+		).forEach( scramble );
 	}
 }
 customElements.define( 'moodboard-present', MoodboardPresentElement );
