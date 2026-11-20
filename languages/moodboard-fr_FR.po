@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-18T10:56:28+00:00\n"
+"POT-Creation-Date: 2026-11-20T10:56:28+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -217,7 +217,9 @@ msgstr "Modifier"
 msgid ""
 "Space or Enter picks the block up, the arrow keys move it, Space or Enter "
 "put it down, Escape puts it back."
-msgstr "Espace ou Entrée prend le bloc, les flèches le déplacent, Espace ou Entrée le pose, Échap le remet en place."
+msgstr ""
+"Espace ou Entrée prend le bloc, les flèches le déplacent, Espace ou Entrée "
+"le pose, Échap le remet en place."
 
 #: app/partials/moodboard-app.php:124
 msgid "Blocks of the channel"
@@ -338,7 +340,9 @@ msgstr "La personne qui cure le canal."
 msgid ""
 "The blocks of the channel, in the order its curator gave them: a block added "
 "since comes first."
-msgstr "Les blocs du canal, dans l’ordre que leur a donné la personne qui le cure : un bloc ajouté depuis vient en premier."
+msgstr ""
+"Les blocs du canal, dans l’ordre que leur a donné la personne qui le cure : "
+"un bloc ajouté depuis vient en premier."
 
 #: includes/class-channels.php:270
 msgid "A channel goes under one of your channels only."
@@ -533,12 +537,12 @@ msgstr ""
 msgid "The note could not be saved."
 msgstr "La note n’a pas pu être enregistrée."
 
-#: app/js/bricks/moodboard-present.js:46
+#: app/js/bricks/moodboard-present.js:51
 msgid "No block to present."
 msgstr "Aucun bloc à présenter."
 
 #. translators: 1: position of the block, 2: number of blocks.
-#: app/js/bricks/moodboard-present.js:239
+#: app/js/bricks/moodboard-present.js:289
 msgid "%1$d of %2$d"
 msgstr "%1$d sur %2$d"
 
