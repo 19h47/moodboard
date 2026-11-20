@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.2.1
+Stable tag: 0.2.2
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -67,6 +67,11 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.2.2 =
+
+* Fixed: a link to Instagram, whose page shows the server its login, takes nothing of it: neither the title "Instagram" nor its logo, whose many sizes timed the host out before WordPress answered.
+* Fixed: the shortcut of the iPhone says what the server answered when it is no answer of WordPress, such as an error of the host, rather than failing to read it.
 
 = 0.2.1 =
 
