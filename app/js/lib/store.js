@@ -297,7 +297,7 @@ class MoodboardStore extends Store {
 		const search = key.startsWith( 'search-' ) ? query : '';
 
 		try {
-			const blocks = await api.fetchBlocks(
+			const { blocks, corrected } = await api.fetchBlocks(
 				channelId,
 				search,
 				this.#signal( key )
@@ -329,6 +329,16 @@ class MoodboardStore extends Store {
 					},
 				};
 			} );
+
+			if ( corrected ) {
+				this.notify(
+					sprintf(
+						/* translators: %s: the search, a word typed wrong taken for the closest word of the blocks. */
+						__( 'Results for “%s”.', 'moodboard' ),
+						corrected
+					)
+				);
+			}
 		} catch ( error ) {
 			if ( 'AbortError' !== error?.name ) {
 				this.#setList( key, {

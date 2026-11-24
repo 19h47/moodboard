@@ -129,16 +129,17 @@ import {
  */
 
 /**
- * Every item of a route, page after page.
+ * Every item of a route, page after page, and the headers of its last page.
  *
  * @template T
  * @param {string}                  path   The route, such as /wp/v2/media.
  * @param {Object<string, unknown>} query  Its arguments.
  * @param {AbortSignal}             signal Stops it.
- * @return {Promise<T[]>} The items.
+ * @return {Promise<{items: T[], headers: Headers}>} The items, and the headers.
  */
 async function fetchAll( path, query, signal ) {
 	const items = [];
+	let headers = new Headers();
 
 	for ( let page = 1, pages = 1; page <= pages; page++ ) {
 		const response = await apiFetch( {
@@ -148,10 +149,11 @@ async function fetchAll( path, query, signal ) {
 		} );
 
 		items.push( ...( await response.json() ) );
-		pages = Number( response.headers.get( 'X-WP-TotalPages' ) ) || 1;
+		headers = response.headers;
+		pages = Number( headers.get( 'X-WP-TotalPages' ) ) || 1;
 	}
 
-	return items;
+	return { items, headers };
 }
 
 /**
@@ -395,7 +397,7 @@ function argsOf( kind ) {
  * @return {Promise<Channel[]>} The channels.
  */
 export async function fetchChannels( signal ) {
-	const items = await fetchAll(
+	const { items } = await fetchAll(
 		`/wp/v2/${ channelsBase }`,
 		{ _fields: channelFields },
 		signal
@@ -406,12 +408,13 @@ export async function fetchChannels( signal ) {
 
 /**
  * The blocks of a channel, or of the index, every block of the curator, in a channel or none; or those a search finds
- * among them; the latest first.
+ * among them; the latest first. A search with a word typed wrong searches the closest word of the blocks instead, which
+ * the server says, encoded as a component of a URL.
  *
  * @param {number}      channelId The channel, 0 for the index.
  * @param {string}      search    The search, empty for every block.
  * @param {AbortSignal} signal    Stops it.
- * @return {Promise<Block[]>} The blocks.
+ * @return {Promise<{blocks: Block[], corrected: string}>} The blocks, and the search as corrected, empty if it was not.
  */
 export async function fetchBlocks( channelId, search, signal ) {
 	const query = {
@@ -421,7 +424,7 @@ export async function fetchBlocks( channelId, search, signal ) {
 	const kinds = /** @type {Block['kind'][]} */ ( Object.keys( KINDS ) );
 	const lists = await Promise.all(
 		kinds.map( async ( kind ) => {
-			const items = await fetchAll(
+			const { items, headers } = await fetchAll(
 				routeOf( kind ),
 				{
 					...argsOf( kind ),
@@ -434,11 +437,21 @@ export async function fetchBlocks( channelId, search, signal ) {
 				signal
 			);
 
-			return items.map( KINDS[ kind ].to );
+			return {
+				blocks: items.map( KINDS[ kind ].to ),
+				corrected: headers.get( 'X-Moodboard-Search' ) ?? '',
+			};
 		} )
 	);
+	const blocks = lists
+		.flatMap( ( list ) => list.blocks )
+		.sort( ( a, b ) => b.date.localeCompare( a.date ) );
+	const corrected = lists.find( ( list ) => list.corrected )?.corrected;
 
-	return lists.flat().sort( ( a, b ) => b.date.localeCompare( a.date ) );
+	return {
+		blocks,
+		corrected: corrected ? decodeURIComponent( corrected ) : '',
+	};
 }
 
 /**
@@ -653,7 +666,7 @@ export async function createLink( url, channelId ) {
  * @return {Promise<Note[]>} Its notes.
  */
 export async function fetchNotes( block, signal ) {
-	const items = await fetchAll(
+	const { items } = await fetchAll(
 		'/wp/v2/comments',
 		{
 			post: block.id,
