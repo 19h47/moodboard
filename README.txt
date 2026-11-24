@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.3.1
+Stable tag: 0.4.0
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -67,6 +67,11 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.4.0 =
+
+* A search finds each of its words in the alternative text of an image too, in any order, a word in the title and another in the alternative text; a word excluded, -tramway, leaves out the images whose alternative text says it.
+* A word typed wrong, in no block, is taken for the closest word of one's blocks, a letter or two apart: betno searches béton, which the notice says. A word a block has, even in part or without its accents, and a word of fewer than four letters stay as typed; the words of the blocks of another curator are never one.
 
 = 0.3.1 =
 
