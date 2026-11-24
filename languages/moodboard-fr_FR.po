@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-20T10:56:28+00:00\n"
+"POT-Creation-Date: 2026-11-24T17:51:23+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -352,15 +352,15 @@ msgstr "Un canal ne va que dans l’un de vos canaux."
 msgid "Limit the result to the blocks of the moodboard of the current user."
 msgstr "Limiter le résultat aux blocs du moodboard de l’utilisateur courant."
 
-#: includes/class-meta.php:90
+#: includes/class-meta.php:73
 msgid "The URL the block comes from."
 msgstr "L’URL d’où vient le bloc."
 
-#: includes/class-meta.php:104
+#: includes/class-meta.php:87
 msgid "Who made the block, such as an artist, a photographer or an account."
 msgstr "Qui a fait le bloc, comme un artiste, un photographe ou un compte."
 
-#: includes/class-meta.php:117
+#: includes/class-meta.php:100
 msgid "Whether the media is a block of the moodboard of its author."
 msgstr "Si le média est un bloc du moodboard de son auteur."
 
@@ -581,52 +581,57 @@ msgstr "Déplacer %s"
 msgid "The channels could not load."
 msgstr "Les canaux n’ont pas pu se charger."
 
-#: app/js/lib/store.js:338
+#. translators: %s: the search, a word typed wrong taken for the closest word of the blocks.
+#: app/js/lib/store.js:337
+msgid "Results for “%s”."
+msgstr "Résultats pour « %s »."
+
+#: app/js/lib/store.js:348
 msgid "The blocks could not load."
 msgstr "Les blocs n’ont pas pu se charger."
 
-#: app/js/lib/store.js:384
+#: app/js/lib/store.js:394
 msgid "The block could not load."
 msgstr "Le bloc n’a pas pu se charger."
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:503
+#: app/js/lib/store.js:513
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] "Ajout de %d bloc…"
 msgstr[1] "Ajout de %d blocs…"
 
-#: app/js/lib/store.js:524
+#: app/js/lib/store.js:534
 msgid "A block could not be added."
 msgstr "Un bloc n’a pas pu être ajouté."
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:535
+#: app/js/lib/store.js:545
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] "%d bloc ajouté."
 msgstr[1] "%d blocs ajoutés."
 
-#: app/js/lib/store.js:749
+#: app/js/lib/store.js:759
 msgid "The order could not be kept."
 msgstr "L’ordre n’a pas pu être enregistré."
 
-#: app/js/lib/store.js:808
+#: app/js/lib/store.js:818
 msgid "Blocks connected."
 msgstr "Blocs connectés."
 
-#: app/js/lib/store.js:820
+#: app/js/lib/store.js:830
 msgid "Blocks removed from the channel."
 msgstr "Blocs retirés du canal."
 
-#: app/js/lib/store.js:842
+#: app/js/lib/store.js:852
 msgid "Blocks moved."
 msgstr "Blocs déplacés."
 
-#: app/js/lib/store.js:853
+#: app/js/lib/store.js:863
 msgid "Blocks deleted."
 msgstr "Blocs supprimés."
 
-#: app/js/lib/store.js:876
+#: app/js/lib/store.js:886
 msgid "The notes could not load."
 msgstr "Les notes n’ont pas pu se charger."
