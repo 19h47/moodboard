@@ -53,6 +53,7 @@ class Plugin {
 		new Links()->hooks();
 		new Channels()->hooks();
 		new Meta()->hooks();
+		new Search()->hooks();
 		new Media()->hooks();
 		new Page()->hooks();
 		new Login()->hooks();

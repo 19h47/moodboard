@@ -11,17 +11,13 @@
 
 namespace Moodboard;
 
-use WP_Query;
-use WP_REST_Request;
-
 /**
  * Registers the source of a block, the URL it comes from, and who made it, `moodboard_by`, such as an artist or a
  * photographer, on the media, the texts and the links, and the mark of a media that is a block of a moodboard,
  * `moodboard_block`: a text is one by its post type, a media of the library is not, such as an image of a post, unless
  * the app added it. Their title, caption, description and alternative text are those of WordPress.
  *
- * Who made an image is the one its file says, as WordPress reads it, its credit, else its copyright; a search finds a
- * block by who made it too.
+ * Who made an image is the one its file says, as WordPress reads it, its credit, else its copyright.
  *
  * @since      1.0.0
  * @package    Moodboard
@@ -52,13 +48,6 @@ class Meta {
 	public const string BY = 'moodboard_by';
 
 	/**
-	 * Argument of WP_Query asking a search to find a block by who made it too.
-	 *
-	 * @var string
-	 */
-	private const string SEARCH_BY = 'moodboard_search_by';
-
-	/**
 	 * Register hooks.
 	 *
 	 * @return void
@@ -66,12 +55,6 @@ class Meta {
 	public function hooks(): void {
 		add_action( 'init', array( $this, 'register_meta' ) );
 		add_filter( 'wp_generate_attachment_metadata', array( $this, 'read_by' ), 10, 3 );
-
-		foreach ( array( 'attachment', Posts::TEXT, Posts::LINK ) as $post_type ) {
-			add_filter( "rest_{$post_type}_query", array( $this, 'ask_search_by' ), 10, 2 );
-		}
-
-		add_filter( 'posts_search', array( $this, 'search_by' ), 10, 2 );
 	}
 
 	/**
@@ -146,43 +129,5 @@ class Meta {
 		}
 
 		return $metadata;
-	}
-
-	/**
-	 * Ask a search of the blocks of the REST API to find a block by who made it too.
-	 *
-	 * @param array<string,mixed> $args    Arguments of WP_Query.
-	 * @param WP_REST_Request     $request Request.
-	 * @return array<string,mixed>
-	 */
-	public function ask_search_by( array $args, WP_REST_Request $request ): array {
-		if ( '' !== (string) $request['search'] ) {
-			$args[ self::SEARCH_BY ] = true;
-		}
-
-		return $args;
-	}
-
-	/**
-	 * Find a block by who made it too, as asked: its title, its text or its description, or who made it, holds the search.
-	 *
-	 * @param string   $search SQL of the search, which starts with AND.
-	 * @param WP_Query $query  Query.
-	 * @return string
-	 */
-	public function search_by( string $search, WP_Query $query ): string {
-		global $wpdb;
-
-		if ( '' === $search || ! $query->get( self::SEARCH_BY ) ) {
-			return $search;
-		}
-
-		$by = $wpdb->prepare(
-			"EXISTS ( SELECT 1 FROM {$wpdb->postmeta} WHERE {$wpdb->postmeta}.post_id = {$wpdb->posts}.ID AND {$wpdb->postmeta}.meta_key = %s AND {$wpdb->postmeta}.meta_value LIKE %s )",
-			self::BY,
-			'%' . $wpdb->esc_like( (string) $query->get( 's' ) ) . '%'
-		);
-
-		return (string) preg_replace( '/^\s*AND\s*\(/', " AND ( $by OR ", $search, 1 );
 	}
 }
