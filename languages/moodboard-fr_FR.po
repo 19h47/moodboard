@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-24T17:51:23+00:00\n"
+"POT-Creation-Date: 2026-11-25T14:26:39+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -314,6 +314,10 @@ msgstr "Connecter à des canaux"
 msgid "Connect the blocks selected"
 msgstr "Connecter les blocs sélectionnés"
 
+#: includes/class-channels-controller.php:48
+msgid "A channel is read by its curator only."
+msgstr "Seul son curateur lit un canal."
+
 #: includes/class-channels.php:91
 msgid ""
 "The latest images of the channel and of its sub-channels, at the size of a "
@@ -332,11 +336,11 @@ msgctxt "moodboard channels singular name"
 msgid "Channel"
 msgstr "Canal"
 
-#: includes/class-channels.php:194
+#: includes/class-channels.php:195
 msgid "The curator of the channel."
 msgstr "La personne qui cure le canal."
 
-#: includes/class-channels.php:205
+#: includes/class-channels.php:206
 msgid ""
 "The blocks of the channel, in the order its curator gave them: a block added "
 "since comes first."
@@ -344,11 +348,15 @@ msgstr ""
 "Les blocs du canal, dans l’ordre que leur a donné la personne qui le cure : "
 "un bloc ajouté depuis vient en premier."
 
-#: includes/class-channels.php:270
+#: includes/class-channels.php:271
 msgid "A channel goes under one of your channels only."
 msgstr "Un canal ne va que dans l’un de vos canaux."
 
-#: includes/class-media.php:50
+#: includes/class-media-controller.php:51
+msgid "A block is read by its curator only."
+msgstr "Seul son curateur lit un bloc."
+
+#: includes/class-media.php:60
 msgid "Limit the result to the blocks of the moodboard of the current user."
 msgstr "Limiter le résultat aux blocs du moodboard de l’utilisateur courant."
 
@@ -425,23 +433,23 @@ msgid "%1$d × %2$d"
 msgstr "%1$d × %2$d"
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-block.js:289 app/js/bricks/moodboard-selection.js:85
+#: app/js/bricks/moodboard-block.js:285 app/js/bricks/moodboard-selection.js:85
 msgid "Remove from %s"
 msgstr "Retirer de %s"
 
-#: app/js/bricks/moodboard-block.js:368
+#: app/js/bricks/moodboard-block.js:364
 msgid "Delete this media and its file?"
 msgstr "Supprimer ce média et son fichier ?"
 
-#: app/js/bricks/moodboard-block.js:369
+#: app/js/bricks/moodboard-block.js:365
 msgid "Delete this text?"
 msgstr "Supprimer ce texte ?"
 
-#: app/js/bricks/moodboard-block.js:370
+#: app/js/bricks/moodboard-block.js:366
 msgid "Delete this link?"
 msgstr "Supprimer ce lien ?"
 
-#: app/js/bricks/moodboard-block.js:385
+#: app/js/bricks/moodboard-block.js:381
 msgid "Block deleted."
 msgstr "Bloc supprimé."
 
@@ -454,7 +462,7 @@ msgstr "Ajouter le canal « %s »"
 msgid "The channel could not be saved."
 msgstr "Le canal n’a pas pu être enregistré."
 
-#: app/js/bricks/moodboard-channel-form.js:187
+#: app/js/bricks/moodboard-channel-form.js:188
 msgid ""
 "Delete this channel? Its sub-channels and the blocks in no other channel go "
 "to its parent."
@@ -462,12 +470,12 @@ msgstr ""
 "Supprimer ce canal ? Ses sous-canaux et les blocs qui ne sont dans aucun "
 "autre canal vont dans son parent."
 
-#: app/js/bricks/moodboard-channel-form.js:191
+#: app/js/bricks/moodboard-channel-form.js:192
 msgid "Delete this channel? Its sub-channels and its blocks stay in the index."
 msgstr ""
 "Supprimer ce canal ? Ses sous-canaux et ses blocs restent dans l’index."
 
-#: app/js/bricks/moodboard-channel-form.js:203
+#: app/js/bricks/moodboard-channel-form.js:210
 msgid "Channel deleted."
 msgstr "Canal supprimé."
 
@@ -537,12 +545,12 @@ msgstr ""
 msgid "The note could not be saved."
 msgstr "La note n’a pas pu être enregistrée."
 
-#: app/js/bricks/moodboard-present.js:51
+#: app/js/bricks/moodboard-present.js:53
 msgid "No block to present."
 msgstr "Aucun bloc à présenter."
 
 #. translators: 1: position of the block, 2: number of blocks.
-#: app/js/bricks/moodboard-present.js:289
+#: app/js/bricks/moodboard-present.js:287
 msgid "%1$d of %2$d"
 msgstr "%1$d sur %2$d"
 
@@ -577,61 +585,61 @@ msgstr "Sélectionner %s"
 msgid "Move %s"
 msgstr "Déplacer %s"
 
-#: app/js/lib/store.js:265
+#: app/js/lib/store.js:309
 msgid "The channels could not load."
 msgstr "Les canaux n’ont pas pu se charger."
 
 #. translators: %s: the search, a word typed wrong taken for the closest word of the blocks.
-#: app/js/lib/store.js:337
+#: app/js/lib/store.js:384
 msgid "Results for “%s”."
 msgstr "Résultats pour « %s »."
 
-#: app/js/lib/store.js:348
+#: app/js/lib/store.js:395
 msgid "The blocks could not load."
 msgstr "Les blocs n’ont pas pu se charger."
 
-#: app/js/lib/store.js:394
+#: app/js/lib/store.js:441
 msgid "The block could not load."
 msgstr "Le bloc n’a pas pu se charger."
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:513
+#: app/js/lib/store.js:563
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] "Ajout de %d bloc…"
 msgstr[1] "Ajout de %d blocs…"
 
-#: app/js/lib/store.js:534
+#: app/js/lib/store.js:584
 msgid "A block could not be added."
 msgstr "Un bloc n’a pas pu être ajouté."
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:545
+#: app/js/lib/store.js:595
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] "%d bloc ajouté."
 msgstr[1] "%d blocs ajoutés."
 
-#: app/js/lib/store.js:759
+#: app/js/lib/store.js:818
 msgid "The order could not be kept."
 msgstr "L’ordre n’a pas pu être enregistré."
 
-#: app/js/lib/store.js:818
+#: app/js/lib/store.js:881
 msgid "Blocks connected."
 msgstr "Blocs connectés."
 
-#: app/js/lib/store.js:830
+#: app/js/lib/store.js:893
 msgid "Blocks removed from the channel."
 msgstr "Blocs retirés du canal."
 
-#: app/js/lib/store.js:852
+#: app/js/lib/store.js:915
 msgid "Blocks moved."
 msgstr "Blocs déplacés."
 
-#: app/js/lib/store.js:863
+#: app/js/lib/store.js:929
 msgid "Blocks deleted."
 msgstr "Blocs supprimés."
 
-#: app/js/lib/store.js:886
+#: app/js/lib/store.js:955
 msgid "The notes could not load."
 msgstr "Les notes n’ont pas pu se charger."

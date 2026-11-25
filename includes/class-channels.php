@@ -168,6 +168,7 @@ class Channels {
 				'public'                => false,
 				'show_in_rest'          => true,
 				'rest_base'             => 'moodboard-channels',
+				'rest_controller_class' => Channels_Controller::class,
 				'capabilities'          => array(
 					'manage_terms' => Roles::CURATE,
 					'edit_terms'   => Roles::CURATE,
