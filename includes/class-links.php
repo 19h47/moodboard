@@ -57,6 +57,21 @@ class Links {
 	private const array LOGIN_WALLS = array( 'instagram.com', 'www.instagram.com' );
 
 	/**
+	 * Seconds a server is waited for, its page or the image of a link: a link is added while the curator waits, rather
+	 * than the five minutes core waits for a download.
+	 *
+	 * @var int
+	 */
+	private const int TIMEOUT = 15;
+
+	/**
+	 * Most bytes of a page read for the sizes of its image: its head and its post, not what loads after.
+	 *
+	 * @var int
+	 */
+	private const int PAGE_SIZE = 2 * MB_IN_BYTES;
+
+	/**
 	 * Register hooks.
 	 *
 	 * @return void
@@ -160,7 +175,15 @@ class Links {
 			return $image;
 		}
 
-		$page    = wp_remote_retrieve_body( wp_safe_remote_get( $url ) );
+		$page    = wp_remote_retrieve_body(
+			wp_safe_remote_get(
+				$url,
+				array(
+					'timeout'             => self::TIMEOUT,
+					'limit_response_size' => self::PAGE_SIZE,
+				)
+			)
+		);
 		$pattern = '#https://\d+\.media\.tumblr\.com/' . preg_quote( $key[1], '#' ) . '/s(\d+)x\d+/[\w.-]+#';
 		$widths  = array();
 
@@ -213,7 +236,7 @@ class Links {
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 
-		$file = download_url( $url );
+		$file = download_url( $url, self::TIMEOUT );
 
 		if ( is_wp_error( $file ) ) {
 			return 0;

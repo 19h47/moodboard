@@ -39,6 +39,13 @@ class Posts {
 	public const string LINK = 'moodboard_link';
 
 	/**
+	 * Post types of the blocks: the media, a block when marked so, the texts and the links.
+	 *
+	 * @var string[]
+	 */
+	public const array BLOCK_TYPES = array( 'attachment', self::TEXT, self::LINK );
+
+	/**
 	 * Post types of the blocks that are posts, by their REST base.
 	 *
 	 * @var array<string,string>
@@ -57,6 +64,7 @@ class Posts {
 		add_action( 'init', array( $this, 'register_post_types' ) );
 		add_action( 'rest_api_init', array( $this, 'take_notes_on_media' ) );
 		add_action( 'rest_api_init', array( $this, 'register_embed' ) );
+		add_action( 'rest_api_init', array( $this, 'register_image' ) );
 		add_filter( 'wp_insert_post_data', array( $this, 'keep_private' ) );
 
 		foreach ( array_keys( self::REST_BASES ) as $post_type ) {
@@ -146,6 +154,100 @@ class Posts {
 	}
 
 	/**
+	 * Give the links of the REST API the image of their page, their featured image, with its sizes as the media of the
+	 * REST API gives them: a field, rather than the media embedded, which core asks for with a request of its own for
+	 * each link, while it reads their featured images in one query.
+	 *
+	 * @return void
+	 */
+	public function register_image(): void {
+		$size = array(
+			'type'       => 'object',
+			'properties' => array(
+				'source_url' => array(
+					'type'   => 'string',
+					'format' => 'uri',
+				),
+				'width'      => array( 'type' => 'integer' ),
+				'height'     => array( 'type' => 'integer' ),
+			),
+		);
+
+		register_rest_field(
+			self::LINK,
+			'moodboard_image',
+			array(
+				'get_callback' => fn( array $link ) => self::get_image( (int) $link['id'] ),
+				'schema'       => array(
+					'description' => __( 'The image of the page of the link, with its sizes, null for none.', 'moodboard' ),
+					'type'        => array( 'object', 'null' ),
+					'context'     => array( 'view', 'edit' ),
+					'readonly'    => true,
+					'properties'  => array(
+						'media_type'    => array( 'type' => 'string' ),
+						'source_url'    => array(
+							'type'   => 'string',
+							'format' => 'uri',
+						),
+						'media_details' => array(
+							'type'       => 'object',
+							'properties' => array(
+								'width'  => array( 'type' => 'integer' ),
+								'height' => array( 'type' => 'integer' ),
+								'sizes'  => array(
+									'type'                 => 'object',
+									'additionalProperties' => $size,
+								),
+							),
+						),
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * The image of the page of a link, its featured image, as the media of the REST API gives it: its URL, its width, its
+	 * height and its sizes; null for none.
+	 *
+	 * @param int $link_id Post ID of the link.
+	 * @return array{media_type:string,source_url:string,media_details:array{width:int,height:int,sizes:array<string,array{source_url:string,width:int,height:int}>}}|null
+	 */
+	public static function get_image( int $link_id ): ?array {
+		$image_id = (int) get_post_thumbnail_id( $link_id );
+		$metadata = $image_id ? wp_get_attachment_metadata( $image_id ) : false;
+		$url      = $image_id ? wp_get_attachment_url( $image_id ) : false;
+
+		if ( ! is_array( $metadata ) || empty( $metadata['width'] ) || ! $url ) {
+			return null;
+		}
+
+		$sizes = array();
+
+		foreach ( array_keys( $metadata['sizes'] ?? array() ) as $size ) {
+			$image = wp_get_attachment_image_src( $image_id, (string) $size );
+
+			if ( $image ) {
+				$sizes[ (string) $size ] = array(
+					'source_url' => $image[0],
+					'width'      => (int) $image[1],
+					'height'     => (int) $image[2],
+				);
+			}
+		}
+
+		return array(
+			'media_type'    => 'image',
+			'source_url'    => $url,
+			'media_details' => array(
+				'width'  => (int) $metadata['width'],
+				'height' => (int) ( $metadata['height'] ?? 0 ),
+				'sizes'  => $sizes,
+			),
+		);
+	}
+
+	/**
 	 * The player of the URL of a link, as core embeds it in a post, empty for a page it does not embed.
 	 *
 	 * @param int $link_id Post ID of the link.
@@ -164,8 +266,11 @@ class Posts {
 		$shown = $post;
 		$post  = get_post( $link_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- The post core caches the embed in, given back below.
 
+		// Nothing for a URL core does not embed, rather than a link to it; the embeds asked after it are as they were.
+		$fails                          = $wp_embed->return_false_on_fail;
 		$wp_embed->return_false_on_fail = true;
 		$embed                          = $wp_embed->shortcode( array(), $url );
+		$wp_embed->return_false_on_fail = $fails;
 
 		$post = $shown; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Given back.
 

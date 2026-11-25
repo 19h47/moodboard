@@ -9,7 +9,6 @@ import {
 	apiFetch,
 	channelFields,
 	channelsBase,
-	linkEmbed,
 	linkFields,
 	linksBase,
 	mediaFields,
@@ -117,15 +116,21 @@ import {
  */
 
 /**
+ * An image as the API gives it: a media, or the image of the page of a link, `moodboard_image`.
+ *
+ * @typedef {Pick<ApiMedia, 'media_type'|'source_url'|'media_details'>} ApiImage
+ */
+
+/**
  * A text, as the API gives it.
  *
  * @typedef {ApiBlock & {content: Raw}} ApiText
  */
 
 /**
- * A link, as the API gives it, the image of its page embedded, and its player for its page.
+ * A link, as the API gives it, the image of its page, and its player for its page.
  *
- * @typedef {ApiBlock & {content: Raw, moodboard_embed?: string, _embedded?: {'wp:featuredmedia'?: Array<ApiMedia & {code?: string}>}}} ApiLink
+ * @typedef {ApiBlock & {content: Raw, moodboard_embed?: string, moodboard_image: ApiImage|null}} ApiLink
  */
 
 /**
@@ -196,7 +201,7 @@ function toChannel( item ) {
 /**
  * The image of a media, its sizes from its own up, none for another file.
  *
- * @param {ApiMedia} item The media.
+ * @param {ApiImage} item The media, or the image of a link.
  * @return {Image|null} Its image.
  */
 function toImage( item ) {
@@ -319,7 +324,7 @@ export function toText( item ) {
  * @return {Block} The block.
  */
 export function toLink( item ) {
-	const image = item._embedded?.[ 'wp:featuredmedia' ]?.[ 0 ];
+	const image = item.moodboard_image;
 
 	return {
 		key: `link-${ item.id }`,
@@ -340,33 +345,30 @@ export function toLink( item ) {
 		channels: item[ channelsBase ] ?? [],
 		url: item.meta?.moodboard_source ?? '',
 		mime: '',
-		image: image && ! image.code ? toImage( image ) : null,
+		image: image ? toImage( image ) : null,
 		embed: item.moodboard_embed ?? null,
 	};
 }
 
 /**
- * The kinds of the blocks: their route, the fields the app reads, what they embed, and what turns them into blocks.
+ * The kinds of the blocks: their route, the fields the app reads, and what turns them into blocks.
  *
- * @type {Record<Block['kind'], {route: string, fields: string, embed: string, to: ( item: ApiMedia & ApiText & ApiLink ) => Block}>}
+ * @type {Record<Block['kind'], {route: string, fields: string, to: ( item: ApiMedia & ApiText & ApiLink ) => Block}>}
  */
 const KINDS = {
 	media: {
 		route: '/wp/v2/media',
 		fields: mediaFields,
-		embed: '',
 		to: toMedia,
 	},
 	text: {
 		route: `/wp/v2/${ textsBase }`,
 		fields: textFields,
-		embed: '',
 		to: toText,
 	},
 	link: {
 		route: `/wp/v2/${ linksBase }`,
 		fields: linkFields,
-		embed: linkEmbed,
 		to: toLink,
 	},
 };
@@ -382,18 +384,14 @@ function routeOf( kind ) {
 }
 
 /**
- * The arguments every request of the blocks of a kind gives: their fields, what they embed, in the context of their
- * edition.
+ * The arguments every request of the blocks of a kind gives: their fields, in the context of their edition.
  *
  * @param {Block['kind']} kind The kind.
  * @return {Object<string, string>} The arguments.
  */
 function argsOf( kind ) {
-	const { fields, embed } = KINDS[ kind ];
-
 	return {
-		_fields: fields,
-		...( embed ? { _embed: embed } : {} ),
+		_fields: KINDS[ kind ].fields,
 		context: 'edit',
 	};
 }

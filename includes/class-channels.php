@@ -110,20 +110,21 @@ class Channels {
 
 	/**
 	 * The latest images of a channel and of its sub-channels, at their medium large size, sharp on a card two a row, up to
-	 * COVERS.
+	 * COVERS. The images come with their meta, which holds their sizes, in a query for them all, rather than one for
+	 * each.
 	 *
 	 * @param int $term_id Term ID of the channel.
 	 * @return list<array{url:string,width:int,height:int}>
 	 */
 	public static function get_covers( int $term_id ): array {
-		$image_ids = get_posts(
+		$images = get_posts(
 			array(
-				'post_type'      => 'attachment',
-				'post_status'    => 'inherit',
-				'post_mime_type' => 'image',
-				'numberposts'    => self::COVERS,
-				'fields'         => 'ids',
-				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- The images of a channel.
+				'post_type'              => 'attachment',
+				'post_status'            => 'inherit',
+				'post_mime_type'         => 'image',
+				'numberposts'            => self::COVERS,
+				'update_post_term_cache' => false,
+				'tax_query'              => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- The images of a channel.
 					array(
 						'taxonomy' => self::TAXONOMY,
 						'terms'    => $term_id,
@@ -131,10 +132,10 @@ class Channels {
 				),
 			)
 		);
-		$covers    = array();
+		$covers = array();
 
-		foreach ( $image_ids as $image_id ) {
-			$image = wp_get_attachment_image_src( (int) $image_id, 'medium_large' );
+		foreach ( $images as $image_post ) {
+			$image = wp_get_attachment_image_src( $image_post->ID, 'medium_large' );
 
 			if ( $image ) {
 				$covers[] = array(
@@ -161,7 +162,7 @@ class Channels {
 
 		register_taxonomy(
 			self::TAXONOMY,
-			array( 'attachment', Posts::TEXT, Posts::LINK ),
+			Posts::BLOCK_TYPES,
 			array(
 				'labels'                => $labels,
 				'hierarchical'          => true,

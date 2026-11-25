@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-25T14:26:39+00:00\n"
+"POT-Creation-Date: 2026-11-25T14:52:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: moodboard\n"
@@ -17,10 +17,10 @@ msgstr ""
 #. Plugin Name of the plugin
 #: moodboard.php:11
 #: app/class-login.php:207
-#: app/class-page.php:162
-#: app/class-page.php:163
-#: app/class-page.php:296
-#: app/class-page.php:297
+#: app/class-page.php:155
+#: app/class-page.php:156
+#: app/class-page.php:286
+#: app/class-page.php:287
 #: app/partials/moodboard-app.php:38
 #: app/partials/moodboard-app.php:56
 msgid "Moodboard"
@@ -332,25 +332,25 @@ msgstr ""
 msgid "The latest images of the channel and of its sub-channels, at the size of a card."
 msgstr ""
 
-#: includes/class-channels.php:158
+#: includes/class-channels.php:159
 msgctxt "moodboard channels general name"
 msgid "Channels"
 msgstr ""
 
-#: includes/class-channels.php:159
+#: includes/class-channels.php:160
 msgctxt "moodboard channels singular name"
 msgid "Channel"
 msgstr ""
 
-#: includes/class-channels.php:195
+#: includes/class-channels.php:196
 msgid "The curator of the channel."
 msgstr ""
 
-#: includes/class-channels.php:206
+#: includes/class-channels.php:207
 msgid "The blocks of the channel, in the order its curator gave them: a block added since comes first."
 msgstr ""
 
-#: includes/class-channels.php:271
+#: includes/class-channels.php:272
 msgid "A channel goes under one of your channels only."
 msgstr ""
 
@@ -374,28 +374,32 @@ msgstr ""
 msgid "Whether the media is a block of the moodboard of its author."
 msgstr ""
 
-#: includes/class-posts.php:76
+#: includes/class-posts.php:84
 msgctxt "moodboard texts general name"
 msgid "Texts"
 msgstr ""
 
-#: includes/class-posts.php:77
+#: includes/class-posts.php:85
 msgctxt "moodboard texts singular name"
 msgid "Text"
 msgstr ""
 
-#: includes/class-posts.php:80
+#: includes/class-posts.php:88
 msgctxt "moodboard links general name"
 msgid "Links"
 msgstr ""
 
-#: includes/class-posts.php:81
+#: includes/class-posts.php:89
 msgctxt "moodboard links singular name"
 msgid "Link"
 msgstr ""
 
-#: includes/class-posts.php:139
+#: includes/class-posts.php:147
 msgid "The player of the URL of the link, as core embeds it, empty for none."
+msgstr ""
+
+#: includes/class-posts.php:182
+msgid "The image of the page of the link, with its sizes, null for none."
 msgstr ""
 
 #: includes/class-roles.php:152
@@ -509,43 +513,43 @@ msgstr ""
 msgid "Drop into the index"
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:142
+#: app/js/bricks/moodboard-grid.js:153
 msgid "Loading…"
 msgstr ""
 
 #. translators: 1: name of a block, 2: its place, 3: number of blocks.
-#: app/js/bricks/moodboard-grid.js:478
+#: app/js/bricks/moodboard-grid.js:489
 #, js-format
 msgid "%1$s picked up, %2$d of %3$d."
 msgstr ""
 
 #. translators: 1: place of a block, 2: number of blocks.
-#: app/js/bricks/moodboard-grid.js:498
+#: app/js/bricks/moodboard-grid.js:509
 #, js-format
 msgid "%1$d of %2$d."
 msgstr ""
 
 #. translators: 1: name of a block, 2: its place, 3: number of blocks.
-#: app/js/bricks/moodboard-grid.js:515
+#: app/js/bricks/moodboard-grid.js:526
 #, js-format
 msgid "%1$s put down, %2$d of %3$d."
 msgstr ""
 
 #. translators: %s: name of a block.
-#: app/js/bricks/moodboard-grid.js:537
+#: app/js/bricks/moodboard-grid.js:548
 #, js-format
 msgid "%s put back."
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:592
+#: app/js/bricks/moodboard-grid.js:603
 msgid "Nothing found."
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:596
+#: app/js/bricks/moodboard-grid.js:607
 msgid "Nothing yet: drop images here, or add some with +."
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:600
+#: app/js/bricks/moodboard-grid.js:611
 msgid "Nothing yet: drop images here, or add a channel with +."
 msgstr ""
 
@@ -599,64 +603,64 @@ msgstr ""
 msgid "Move %s"
 msgstr ""
 
-#: app/js/lib/store.js:309
+#: app/js/lib/store.js:332
 msgid "The channels could not load."
 msgstr ""
 
 #. translators: %s: the search, a word typed wrong taken for the closest word of the blocks.
-#: app/js/lib/store.js:384
+#: app/js/lib/store.js:413
 #, js-format
 msgid "Results for “%s”."
 msgstr ""
 
-#: app/js/lib/store.js:395
+#: app/js/lib/store.js:424
 msgid "The blocks could not load."
 msgstr ""
 
-#: app/js/lib/store.js:441
+#: app/js/lib/store.js:470
 msgid "The block could not load."
 msgstr ""
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:563
+#: app/js/lib/store.js:616
 #, js-format
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/js/lib/store.js:584
+#: app/js/lib/store.js:637
 msgid "A block could not be added."
 msgstr ""
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:595
+#: app/js/lib/store.js:648
 #, js-format
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/js/lib/store.js:818
+#: app/js/lib/store.js:880
 msgid "The order could not be kept."
 msgstr ""
 
-#: app/js/lib/store.js:881
+#: app/js/lib/store.js:943
 msgid "Blocks connected."
 msgstr ""
 
-#: app/js/lib/store.js:893
+#: app/js/lib/store.js:955
 msgid "Blocks removed from the channel."
 msgstr ""
 
-#: app/js/lib/store.js:915
+#: app/js/lib/store.js:977
 msgid "Blocks moved."
 msgstr ""
 
-#: app/js/lib/store.js:929
+#: app/js/lib/store.js:991
 msgid "Blocks deleted."
 msgstr ""
 
-#: app/js/lib/store.js:955
+#: app/js/lib/store.js:1017
 msgid "The notes could not load."
 msgstr ""
