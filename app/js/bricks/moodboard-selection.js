@@ -6,7 +6,8 @@ import { endOnEscape } from 'moodboard-app/behaviors';
 
 /**
  * The bar of the blocks selected, at the bottom of the screen while they are: how many, and what changes them all, put
- * in channels, first or last in the channel shown, taken out of it, or deleted. Escape ends the selection.
+ * in channels, first or last in the channel shown, taken out of it, or deleted. Escape ends the selection; Control or
+ * Command and A select every block, and Shift ticks the blocks between the one ticked last and another.
  */
 class MoodboardSelectionElement extends Brick {
 	connect( signal ) {
@@ -33,6 +34,30 @@ class MoodboardSelectionElement extends Brick {
 			() => store.get().selecting,
 			() => store.setSelecting( false ),
 			signal
+		);
+
+		// Control or Command and A select every block, but in a field, which selects its text.
+		document.addEventListener(
+			'keydown',
+			( event ) => {
+				const $target = /** @type {HTMLElement} */ ( event.target );
+
+				if (
+					'a' === event.key.toLowerCase() &&
+					( event.ctrlKey || event.metaKey ) &&
+					! event.shiftKey &&
+					! event.altKey &&
+					store.get().selecting &&
+					! document.querySelector( 'dialog:modal' ) &&
+					! $target.closest(
+						'input:not([type="checkbox"]), textarea, select, [contenteditable]'
+					)
+				) {
+					event.preventDefault();
+					store.selectAll();
+				}
+			},
+			{ signal }
 		);
 
 		return [

@@ -60,14 +60,38 @@ class MoodboardGridElement extends Brick {
 		this.#moved = this.querySelector( '[data-field="moved"]' );
 		this.#listenToMoves( signal );
 
+		// The block ticked last, from which Shift ticks the blocks up to another; and whether Shift was down as a box was
+		// clicked, or its label, which clicks its box again, without Shift where the browser leaves it out.
+		let anchor = '';
+		let isRange = false;
+
+		$items.addEventListener(
+			'click',
+			( event ) => {
+				if (
+					/** @type {HTMLElement} */ ( event.target ).closest(
+						'[data-part="select"]'
+					)
+				) {
+					isRange ||= event.shiftKey;
+				}
+			},
+			{ signal }
+		);
+
 		$items.addEventListener(
 			'change',
 			( event ) => {
 				const $box = /** @type {HTMLInputElement} */ ( event.target );
 				/** @type {HTMLElement} */
 				const $item = $box.closest( '[data-id]' );
+				const key = $item.dataset.id;
+				const keys =
+					isRange && anchor ? this.#range( anchor, key ) : [];
 
-				store.setSelected( $item.dataset.id, $box.checked );
+				store.setSelected( keys.length ? keys : [ key ], $box.checked );
+				anchor = key;
+				isRange = false;
 			},
 			{ signal }
 		);
@@ -189,6 +213,32 @@ class MoodboardGridElement extends Brick {
 				}
 			}
 		);
+	}
+
+	/**
+	 * The keys of the blocks between two cards, both of them with them, in the order of the grid; none when one is no
+	 * longer in it.
+	 *
+	 * @param {string} from The key of a block.
+	 * @param {string} to   The key of another.
+	 * @return {string[]} The keys.
+	 */
+	#range( from, to ) {
+		const keys = [ ...this.#items.children ]
+			.filter( ( $item ) =>
+				$item.querySelector( '[data-part="select"]' )
+			)
+			.map(
+				( $item ) => /** @type {HTMLElement} */ ( $item ).dataset.id
+			);
+		const start = keys.indexOf( from );
+		const end = keys.indexOf( to );
+
+		if ( -1 === start || -1 === end ) {
+			return [];
+		}
+
+		return keys.slice( Math.min( start, end ), Math.max( start, end ) + 1 );
 	}
 
 	/**

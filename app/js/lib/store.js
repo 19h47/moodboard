@@ -1162,18 +1162,33 @@ class MoodboardStore extends Store {
 		}
 	}
 
+	/** Selects every block of the grid shown: none on the tab of the channels. */
+	selectAll() {
+		this.set( ( state ) => {
+			const isChannelsTab =
+				'index' === state.view && 'channels' === state.tab;
+
+			return {
+				...state,
+				selection: isChannelsTab
+					? []
+					: state.lists[ listKey( state ) ]?.keys ?? [],
+			};
+		} );
+	}
+
 	/**
-	 * Selects a block, or no longer.
+	 * Selects blocks, or no longer.
 	 *
-	 * @param {string}  key        The key of the block.
-	 * @param {boolean} isSelected Whether it is selected.
+	 * @param {string[]} keys       The keys of the blocks.
+	 * @param {boolean}  isSelected Whether they are selected.
 	 */
-	setSelected( key, isSelected ) {
+	setSelected( keys, isSelected ) {
 		this.set( ( state ) => ( {
 			...state,
 			selection: isSelected
-				? [ ...new Set( [ ...state.selection, key ] ) ]
-				: state.selection.filter( ( item ) => item !== key ),
+				? [ ...new Set( [ ...state.selection, ...keys ] ) ]
+				: state.selection.filter( ( item ) => ! keys.includes( item ) ),
 		} ) );
 	}
 
