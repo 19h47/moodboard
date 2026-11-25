@@ -2,7 +2,13 @@ import { __, sprintf } from 'moodboard-app/app';
 import { BLOCK_VIEWS, shownListKey, store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { onSwipe } from 'moodboard-app/behaviors';
-import { fill, fillImage, fillVideo } from 'moodboard-app/dom';
+import {
+	contentWidth,
+	fill,
+	fillImage,
+	fillVideo,
+	preloadImage,
+} from 'moodboard-app/dom';
 import { formatKind, nameOf } from 'moodboard-app/render';
 import { urlOf } from 'moodboard-app/router';
 import { scramble } from 'moodboard-app/scramble';
@@ -231,6 +237,26 @@ class MoodboardPresentElement extends Brick {
 		$play.setAttribute( 'aria-pressed', isPlaying.toString() );
 	}
 
+	/**
+	 * Loads the images of the blocks on each side of the one shown before they show: an image takes the whole stage, the
+	 * screen less its gutters until the dialog is open.
+	 */
+	#preloadNeighbours() {
+		/** @type {HTMLElement} */
+		const $stage = this.querySelector( '[data-part="stage"]' );
+		const place = $stage.clientWidth ? contentWidth( $stage ) : innerWidth;
+		const count = this.#blocks.length;
+
+		[ -1, 1 ].forEach( ( step ) => {
+			const { image } =
+				this.#blocks[ ( this.#index + step + count ) % count ] ?? {};
+
+			if ( image ) {
+				preloadImage( image, place );
+			}
+		} );
+	}
+
 	/** Shows the block of its index: an image, a video, a text, or the name of a file or a page. */
 	#show() {
 		const block = this.#blocks[ this.#index ];
@@ -244,6 +270,7 @@ class MoodboardPresentElement extends Brick {
 		fillImage( $image, block?.image ?? null );
 		$image.alt = block ? block.alt || nameOf( block ) : '';
 		fillVideo( $video, isVideo ? block.url : '' );
+		this.#preloadNeighbours();
 
 		fill( this, {
 			text:

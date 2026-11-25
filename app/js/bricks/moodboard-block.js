@@ -3,7 +3,14 @@ import { shownBlock, shownListKey, store } from 'moodboard-app/store';
 import { back, urlOf } from 'moodboard-app/router';
 import { Brick } from 'moodboard-app/brick';
 import { onSwipe } from 'moodboard-app/behaviors';
-import { clone, fill, fillImage, fillVideo } from 'moodboard-app/dom';
+import {
+	clone,
+	contentWidth,
+	fill,
+	fillImage,
+	fillVideo,
+	preloadImage,
+} from 'moodboard-app/dom';
 import { formatDate, formatKind, hostOf, nameOf } from 'moodboard-app/render';
 
 /** @import { Block } from 'moodboard-app/api' */
@@ -259,11 +266,16 @@ class MoodboardBlockElement extends Brick {
 		this.#fillNeighbours();
 	}
 
-	/** Links the blocks before and after the one shown, in the channel it was opened from, or in the index. */
+	/**
+	 * Links the blocks before and after the one shown, in the channel it was opened from, or in the index, their images
+	 * loaded before they open.
+	 */
 	#fillNeighbours() {
 		const state = store.get();
 		const keys = state.lists[ shownListKey( state ) ]?.keys ?? [];
 		const index = this.#block ? keys.indexOf( this.#block.key ) : -1;
+		/** @type {Block[]} */
+		const neighbours = [];
 
 		[
 			[ 'previous', keys[ index - 1 ] ],
@@ -282,6 +294,27 @@ class MoodboardBlockElement extends Brick {
 					from: state.from,
 				} );
 			}
+
+			if ( block ) {
+				neighbours.push( block );
+			}
+		} );
+
+		// Their images load before they open, by a key or a swipe, at the width they take on the page: their own, as wide
+		// as the place of the media leaves it, measured once the page shows.
+		requestAnimationFrame( () => {
+			const place = contentWidth(
+				this.querySelector( '[data-part="media"]' )
+			);
+
+			neighbours
+				.filter( ( block ) => block.image && place > 0 )
+				.forEach( ( block ) =>
+					preloadImage(
+						block.image,
+						Math.min( block.image.width, place )
+					)
+				);
 		} );
 	}
 
