@@ -1,7 +1,8 @@
 <?php
 /**
- * The search of the index: its channels by name, its blocks by their title, their caption, their description or their
- * text. It searches as it is typed, or sent with Enter: its control is the one of the header that unfolds it.
+ * The search of the index or of the channel shown: its channels by name, its blocks by their title, their description
+ * or their text, who made them or the alternative text of an image. It searches as it is typed, or sent with Enter: its
+ * control is the one of the header that unfolds it, or /.
  *
  * @package Moodboard
  *

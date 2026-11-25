@@ -25,7 +25,7 @@ import * as api from 'moodboard-app/api';
  * @property {number}                                                          id          The channel, the media or the text of its page, 0 for none.
  * @property {number}                                                          from        The channel a block was opened from, 0 for none.
  * @property {string}                                                          tab         What the index shows: all, channels or blocks.
- * @property {string}                                                          query       The search of the index.
+ * @property {string}                                                          query       The search of the index or of the channel shown.
  * @property {string}                                                          moved       How the view was reached: forward, back, or empty at first.
  * @property {{loaded: boolean, error: string, items: Channel[]}}              channels    The channels of the curator.
  * @property {Object<string, List>}                                            lists       The lists of blocks loaded, by key.
@@ -139,6 +139,13 @@ function sameBlock( previous, next ) {
 export const BLOCK_VIEWS = [ 'media', 'text', 'link' ];
 
 /**
+ * The views of a grid of cards, which a search searches: the index and a channel.
+ *
+ * @type {string[]}
+ */
+export const GRID_VIEWS = [ 'index', 'channel' ];
+
+/**
  * The block of the page shown, none on another view or until it has loaded.
  *
  * @param {State} state The state.
@@ -164,18 +171,20 @@ export function shownListKey( state ) {
 }
 
 /**
- * The key of the list of blocks of what shows: a channel, a search, or the index, as a channel 0, where a block opened
- * from the index finds its neighbours.
+ * The key of the list of blocks of what shows: a channel, or the index, as a channel 0, where a block opened from the
+ * index finds its neighbours; or a search in one of them, `search-12-…`, the index being 0.
  *
  * @param {{view: string, id: number, query: string}} route What shows.
  * @return {string} The key.
  */
 export function listKey( { view, id, query } ) {
-	if ( 'channel' === view && id ) {
-		return `channel-${ id }`;
+	const channelId = 'channel' === view ? id : 0;
+
+	if ( query ) {
+		return `search-${ channelId }-${ query }`;
 	}
 
-	return query ? `search-${ query }` : 'index';
+	return channelId ? `channel-${ channelId }` : 'index';
 }
 
 /**
@@ -428,7 +437,12 @@ class MoodboardStore extends Store {
 	 */
 	async loadList( key ) {
 		const { query } = this.get();
-		const channelId = Number( key.match( /^channel-(\d+)$/ )?.[ 1 ] ?? 0 );
+		const channelId = Number(
+			key
+				.match( /^(?:channel-(\d+)$|search-(\d+)-)/ )
+				?.slice( 1 )
+				.find( Boolean ) ?? 0
+		);
 		const search = key.startsWith( 'search-' ) ? query : '';
 
 		try {
@@ -556,7 +570,7 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Searches the index: its blocks and its channels whose name has the search. The lists of the other searches go, one
+	 * Searches the index or the channel shown: its blocks, and its channels or sub-channels whose name has the search. The lists of the other searches go, one
 	 * for each word typed.
 	 *
 	 * @param {string} query The search.
@@ -568,6 +582,8 @@ class MoodboardStore extends Store {
 			return {
 				...state,
 				query,
+				// The blocks found are put in order no more: the order is the one of every block of the channel.
+				arranging: query ? false : state.arranging,
 				lists: Object.fromEntries(
 					Object.entries( state.lists ).filter(
 						( [ key ] ) =>
@@ -999,11 +1015,16 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Starts putting the blocks of the channel shown in order, or ends it; the cards are no longer selected.
+	 * Starts putting the blocks of the channel shown in order, or ends it; the cards are no longer selected, and a search
+	 * ends: the order is the one of every block of the channel.
 	 *
 	 * @param {boolean} arranging Whether the blocks are being put in order.
 	 */
 	setArranging( arranging ) {
+		if ( arranging && this.get().query ) {
+			this.setQuery( '' );
+		}
+
 		this.set( ( state ) => ( {
 			...state,
 			arranging,

@@ -37,8 +37,8 @@ class MoodboardSelectionElement extends Brick {
 
 		return [
 			store.watch(
-				[ 'selecting', 'selection', 'view', 'id', 'channels' ],
-				( { selecting, selection, view, id, channels } ) => {
+				[ 'selecting', 'selection', 'view', 'id', 'query', 'channels' ],
+				( { selecting, selection, view, id, query, channels } ) => {
 					const channel =
 						'channel' === view
 							? channels.items.find( ( item ) => item.id === id )
@@ -66,7 +66,8 @@ class MoodboardSelectionElement extends Brick {
 					} );
 					$moves.forEach(
 						( /** @type {HTMLButtonElement} */ $move ) => {
-							$move.hidden = ! channel;
+							// The order is the one of every block of the channel, not of those a search found.
+							$move.hidden = ! channel || !! query;
 							$move.disabled = ! selection.length;
 						}
 					);

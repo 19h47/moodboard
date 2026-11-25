@@ -558,7 +558,7 @@ class MoodboardGridElement extends Brick {
 
 	/**
 	 * The channels the grid shows: on the index, those without parent, or every one in its tab, or those whose name has
-	 * the search; on a channel, its sub-channels.
+	 * the search; on a channel, its sub-channels, those whose name has the search.
 	 *
 	 * @param {import('moodboard-app/store').State} state The state.
 	 * @return {Channel[]} The channels, by name.
@@ -566,12 +566,15 @@ class MoodboardGridElement extends Brick {
 	#channels( { view, id, tab, query, channels } ) {
 		const search = query.trim().toLocaleLowerCase();
 		const shown = channels.items.filter( ( channel ) => {
+			const isFound =
+				! search || channel.name.toLocaleLowerCase().includes( search );
+
 			if ( 'channel' === view ) {
-				return channel.parent === id;
+				return channel.parent === id && isFound;
 			}
 
 			if ( search ) {
-				return channel.name.toLocaleLowerCase().includes( search );
+				return isFound;
 			}
 
 			return 'channels' === tab || ( 'all' === tab && ! channel.parent );

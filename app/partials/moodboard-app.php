@@ -68,7 +68,7 @@ $moodboard_tabs = array(
 							<label class="sr-only" for="moodboard-density"><?php esc_html_e( 'Size of the cards', 'moodboard' ); ?></label>
 							<input class="moodboard-density__range" id="moodboard-density" type="range" min="-1" max="2" step="1" value="0">
 						</moodboard-density>
-						<button class="app-control" type="button" commandfor="moodboard-search" command="--toggle" aria-controls="moodboard-search" aria-expanded="false" aria-label="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>" title="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>" data-only="index"><?php Markup::render_icon( 'search' ); ?></button>
+						<button class="app-control" type="button" commandfor="moodboard-search" command="--toggle" aria-controls="moodboard-search" aria-expanded="false" aria-keyshortcuts="/" aria-label="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>" title="<?php echo esc_attr_x( 'Search (/)', 'verb', 'moodboard' ); ?>" data-only="grid"><?php Markup::render_icon( 'search' ); ?></button>
 						<button class="app-control" type="button" commandfor="moodboard-present" command="show-modal" aria-label="<?php esc_attr_e( 'Present', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Present', 'moodboard' ); ?>" data-only="grid"><?php Markup::render_icon( 'play_arrow' ); ?></button>
 						<moodboard-select-toggle data-only="grid">
 							<button class="app-control" type="button" aria-pressed="false" aria-label="<?php esc_attr_e( 'Select blocks', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Select blocks', 'moodboard' ); ?>"><?php Markup::render_icon( 'select' ); ?></button>
@@ -88,11 +88,12 @@ $moodboard_tabs = array(
 					</div>
 				</moodboard-header>
 
+				<moodboard-search class="app-search" id="moodboard-search" hidden>
+					<?php Markup::render_component( 'search', array( 'id' => 'moodboard-search-field' ) ); ?>
+				</moodboard-search>
+
 				<moodboard-view name="index" <?php echo 'index' === $view ? '' : 'hidden'; ?>>
 					<h2 class="sr-only" tabindex="-1"><?php esc_html_e( 'Index', 'moodboard' ); ?></h2>
-					<moodboard-search class="app-search" id="moodboard-search" hidden>
-						<?php Markup::render_component( 'search', array( 'id' => 'moodboard-search-field' ) ); ?>
-					</moodboard-search>
 					<moodboard-grid list="index">
 						<p class="app-status" data-field="status" role="status"></p>
 						<ul class="moodboard-grid" data-list="items"></ul>
