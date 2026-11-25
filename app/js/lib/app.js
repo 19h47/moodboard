@@ -16,6 +16,7 @@ export const {
 	linksBase,
 	mediaFields,
 	perPage,
+	searchHeader,
 	shareParams,
 	storageKey,
 	textFields,

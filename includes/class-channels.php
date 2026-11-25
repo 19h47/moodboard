@@ -329,7 +329,8 @@ class Channels {
 
 	/**
 	 * Before a channel is deleted, give its parent the blocks that are in no other channel; core gives it its
-	 * sub-channels already. A channel without parent leaves them in the index, as every block of the curator.
+	 * sub-channels already. A channel without parent leaves them in the index, as every block of the curator. The
+	 * channels of its blocks are read in one query, rather than one for each.
 	 *
 	 * @param int    $term_id  Term ID.
 	 * @param string $taxonomy Taxonomy slug.
@@ -343,12 +344,21 @@ class Channels {
 		}
 
 		$block_ids = get_objects_in_term( $term_id, self::TAXONOMY );
+		$block_ids = array_map( 'intval', is_array( $block_ids ) ? $block_ids : array() );
 
-		foreach ( is_array( $block_ids ) ? $block_ids : array() as $block_id ) {
-			$channel_ids = wp_get_object_terms( (int) $block_id, self::TAXONOMY, array( 'fields' => 'ids' ) );
+		update_object_term_cache( $block_ids, Posts::BLOCK_TYPES );
 
-			if ( array( $term_id ) === array_map( 'intval', is_array( $channel_ids ) ? $channel_ids : array() ) ) {
-				wp_add_object_terms( (int) $block_id, $term->parent, self::TAXONOMY );
+		foreach ( $block_ids as $block_id ) {
+			$channels = get_object_term_cache( $block_id, self::TAXONOMY );
+
+			if ( false === $channels ) {
+				$channels = wp_get_object_terms( $block_id, self::TAXONOMY );
+			}
+
+			$channel_ids = is_array( $channels ) ? array_map( 'intval', wp_list_pluck( $channels, 'term_id' ) ) : array();
+
+			if ( array( $term_id ) === $channel_ids ) {
+				wp_add_object_terms( $block_id, $term->parent, self::TAXONOMY );
 			}
 		}
 	}

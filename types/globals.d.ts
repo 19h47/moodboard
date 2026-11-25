@@ -29,6 +29,7 @@ declare global {
 			linksBase: string;
 			icons: { light: string; dark: string };
 			shareParams: { title: string; text: string; url: string };
+			searchHeader: string;
 		};
 	}
 

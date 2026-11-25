@@ -13,6 +13,7 @@ import {
 	linksBase,
 	mediaFields,
 	perPage,
+	searchHeader,
 	textFields,
 	textsBase,
 } from 'moodboard-app/app';
@@ -461,7 +462,7 @@ export async function fetchBlocks( channelId, search, signal ) {
 
 			return {
 				blocks: items.map( KINDS[ kind ].to ),
-				corrected: headers.get( 'X-Moodboard-Search' ) ?? '',
+				corrected: headers.get( searchHeader ) ?? '',
 			};
 		} )
 	);

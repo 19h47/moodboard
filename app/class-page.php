@@ -16,6 +16,7 @@ use Moodboard\Meta;
 use Moodboard\Plugin;
 use Moodboard\Roles;
 use Moodboard\Posts;
+use Moodboard\Search;
 
 /**
  * Adds the app page under Media and renders it full screen, instead of the admin interface.
@@ -419,6 +420,7 @@ JS;
 				'dark'  => $favicon_dark_url,
 			),
 			'shareParams'   => self::SHARE_PARAMS,
+			'searchHeader'  => Search::HEADER,
 		);
 	}
 }
