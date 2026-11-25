@@ -60,21 +60,57 @@ class MoodboardGridElement extends Brick {
 		this.#moved = this.querySelector( '[data-field="moved"]' );
 		this.#listenToMoves( signal );
 
+		// The block ticked last, from which Shift ticks the blocks up to another; and whether Shift was down as a box was
+		// clicked, or its label, which clicks its box again, without Shift where the browser leaves it out.
+		let anchor = '';
+		let isRange = false;
+
+		$items.addEventListener(
+			'click',
+			( event ) => {
+				if (
+					/** @type {HTMLElement} */ ( event.target ).closest(
+						'[data-part="select"]'
+					)
+				) {
+					isRange ||= event.shiftKey;
+				}
+			},
+			{ signal }
+		);
+
 		$items.addEventListener(
 			'change',
 			( event ) => {
 				const $box = /** @type {HTMLInputElement} */ ( event.target );
 				/** @type {HTMLElement} */
 				const $item = $box.closest( '[data-id]' );
+				const key = $item.dataset.id;
+				const keys =
+					isRange && anchor ? this.#range( anchor, key ) : [];
 
-				store.setSelected( $item.dataset.id, $box.checked );
+				store.setSelected( keys.length ? keys : [ key ], $box.checked );
+				anchor = key;
+				isRange = false;
 			},
 			{ signal }
 		);
 
 		return [
-			store.select(
-				( state ) => state,
+			store.watch(
+				[
+					'view',
+					'id',
+					'tab',
+					'query',
+					'channels',
+					'lists',
+					'blocks',
+					'selecting',
+					'selection',
+					'arranging',
+					'uploads',
+				],
 				( state ) => {
 					const isShown = isIndex
 						? 'index' === state.view
@@ -126,6 +162,11 @@ class MoodboardGridElement extends Brick {
 							  );
 					} );
 
+					// A card no longer drawn is forgotten.
+					[ ...this.#drawn.keys() ]
+						.filter( ( key ) => ! items.has( key ) )
+						.forEach( ( key ) => this.#drawn.delete( key ) );
+
 					if ( ! state.arranging && this.#grabbed ) {
 						this.#drop();
 					}
@@ -172,6 +213,32 @@ class MoodboardGridElement extends Brick {
 				}
 			}
 		);
+	}
+
+	/**
+	 * The keys of the blocks between two cards, both of them with them, in the order of the grid; none when one is no
+	 * longer in it.
+	 *
+	 * @param {string} from The key of a block.
+	 * @param {string} to   The key of another.
+	 * @return {string[]} The keys.
+	 */
+	#range( from, to ) {
+		const keys = [ ...this.#items.children ]
+			.filter( ( $item ) =>
+				$item.querySelector( '[data-part="select"]' )
+			)
+			.map(
+				( $item ) => /** @type {HTMLElement} */ ( $item ).dataset.id
+			);
+		const start = keys.indexOf( from );
+		const end = keys.indexOf( to );
+
+		if ( -1 === start || -1 === end ) {
+			return [];
+		}
+
+		return keys.slice( Math.min( start, end ), Math.max( start, end ) + 1 );
 	}
 
 	/**
@@ -542,7 +609,7 @@ class MoodboardGridElement extends Brick {
 
 	/**
 	 * The channels the grid shows: on the index, those without parent, or every one in its tab, or those whose name has
-	 * the search; on a channel, its sub-channels.
+	 * the search; on a channel, its sub-channels, those whose name has the search.
 	 *
 	 * @param {import('moodboard-app/store').State} state The state.
 	 * @return {Channel[]} The channels, by name.
@@ -550,12 +617,15 @@ class MoodboardGridElement extends Brick {
 	#channels( { view, id, tab, query, channels } ) {
 		const search = query.trim().toLocaleLowerCase();
 		const shown = channels.items.filter( ( channel ) => {
+			const isFound =
+				! search || channel.name.toLocaleLowerCase().includes( search );
+
 			if ( 'channel' === view ) {
-				return channel.parent === id;
+				return channel.parent === id && isFound;
 			}
 
 			if ( search ) {
-				return channel.name.toLocaleLowerCase().includes( search );
+				return isFound;
 			}
 
 			return 'channels' === tab || ( 'all' === tab && ! channel.parent );
@@ -567,18 +637,30 @@ class MoodboardGridElement extends Brick {
 	}
 
 	/**
-	 * The blocks the grid shows, those of its list loaded, but in the tab of the channels.
+	 * The blocks the grid shows, the files being added first, then those of its list loaded, but in the tab of the channels.
 	 *
 	 * @param {import('moodboard-app/store').State} state The state.
 	 * @param {string[]}                            keys  The keys of the list.
 	 * @return {Block[]} The blocks.
 	 */
-	#blocks( { view, tab, blocks }, keys ) {
+	#blocks( { view, id, tab, query, blocks, uploads }, keys ) {
 		if ( 'index' === view && 'channels' === tab ) {
 			return [];
 		}
 
-		return keys.map( ( key ) => blocks[ key ] ).filter( Boolean );
+		// The files being added, first: every one on the index, those going into it on a channel; none in a search, which
+		// may not find them.
+		const uploading = query
+			? []
+			: uploads.filter(
+					( upload ) =>
+						'index' === view || upload.channels.includes( id )
+			  );
+
+		return [
+			...uploading,
+			...keys.map( ( key ) => blocks[ key ] ).filter( Boolean ),
+		];
 	}
 
 	/**

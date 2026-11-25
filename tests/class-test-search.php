@@ -137,4 +137,38 @@ class Test_Search extends TestCase {
 
 		$this->assertNull( $this->corrected( 'zepelin' ) );
 	}
+
+	/**
+	 * The words a search corrects to, kept from one search to the next, follow the blocks as they change: a title, an
+	 * alternative text, a block added or deleted.
+	 *
+	 * @return void
+	 */
+	public function test_the_words_follow_the_blocks(): void {
+		$image = $this->add_image( 'Tour de béton', 'Dans la brume.' );
+
+		$this->assertSame( 'béton', $this->corrected( 'betno' ) );
+
+		wp_update_post(
+			array(
+				'ID'         => $image,
+				'post_title' => 'Mur de brique',
+			)
+		);
+
+		$this->assertNull( $this->corrected( 'betno' ) );
+		$this->assertSame( 'brique', $this->corrected( 'briqeu' ) );
+
+		update_post_meta( $image, '_wp_attachment_image_alt', 'Sous la neige.' );
+
+		$this->assertSame( 'neige', $this->corrected( 'neieg' ) );
+
+		$other = $this->add_image( 'Zeppelin', 'Au-dessus de la ville.' );
+
+		$this->assertSame( 'zeppelin', $this->corrected( 'zepelin' ) );
+
+		wp_delete_attachment( $other, true );
+
+		$this->assertNull( $this->corrected( 'zepelin' ) );
+	}
 }

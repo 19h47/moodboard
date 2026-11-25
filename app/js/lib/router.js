@@ -8,7 +8,7 @@
  */
 
 import { appUrl, shareParams } from 'moodboard-app/app';
-import { store } from 'moodboard-app/store';
+import { GRID_VIEWS, store } from 'moodboard-app/store';
 
 /**
  * What a URL of the app shows.
@@ -18,7 +18,7 @@ import { store } from 'moodboard-app/store';
  * @property {number} id    The channel, the media or the text of its page, 0 for the index.
  * @property {number} from  The channel a media or a text was opened from, 0 for none.
  * @property {string} tab   What the index shows: all, channels or blocks.
- * @property {string} query The search of the index.
+ * @property {string} query The search of the index or of the channel.
  */
 
 // The pages, with their ID in the argument of the same name: ?view=channel&channel=12.
@@ -74,7 +74,7 @@ function idOf( searchParams, name ) {
  * @param {string} url A URL of the app.
  * @return {Route} What it shows.
  */
-export function routeOf( url ) {
+function routeOf( url ) {
 	const { searchParams } = new URL( url );
 	const name = searchParams.get( 'view' );
 	const id = PAGE_VIEWS.includes( name ) ? idOf( searchParams, name ) : 0;
@@ -86,7 +86,7 @@ export function routeOf( url ) {
 		id,
 		from: 'channel' === view ? 0 : idOf( searchParams, 'channel' ),
 		tab: 'index' === view && TABS.includes( tab ) ? tab : 'all',
-		query: 'index' === view ? searchParams.get( 'q' ) ?? '' : '',
+		query: GRID_VIEWS.includes( view ) ? searchParams.get( 'q' ) ?? '' : '',
 	};
 }
 
@@ -118,7 +118,7 @@ export function urlOf( {
 		url.searchParams.set( 'tab', tab );
 	}
 
-	if ( 'index' === view && query ) {
+	if ( GRID_VIEWS.includes( view ) && query ) {
 		url.searchParams.set( 'q', query );
 	}
 
@@ -288,14 +288,14 @@ if ( shared ) {
 	store.setShared( shared );
 }
 
-// The search typed goes to the URL of the index, in place, as a link to what it finds has it.
+// The search typed goes to the URL of the index or of the channel, in place, as a link to what it finds has it.
 store.select(
 	( state ) => state.query.trim(),
 	( query ) => {
 		const route = routeOf( location.href );
 		const url = urlOf( { ...route, query } );
 
-		if ( 'index' === route.view && url !== location.href ) {
+		if ( GRID_VIEWS.includes( route.view ) && url !== location.href ) {
 			replaceUrl( url );
 		}
 	}

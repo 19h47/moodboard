@@ -1,6 +1,6 @@
 /**
- * A card of the grid, the base of the cards of a channel, a media, a text and of the card that adds: a square framed, whose
- * content each card sets, then its title under it, as a link to its page.
+ * A card of the grid, the base of the cards of a channel, a media, a text and a link: a square framed, whose content
+ * each card sets, an image whole in it for a media and a link, then its title under it, as a link to its page.
  */
 
 @layer app.components {
@@ -14,6 +14,7 @@
 
 	/* Its content in one cell, as high as the square, never higher */
 	.moodboard-card__frame {
+		position: relative;
 		aspect-ratio: 1;
 		display: grid;
 		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
@@ -26,6 +27,11 @@
 
 	.moodboard-card__frame > * {
 		grid-area: 1 / 1;
+	}
+
+	/* An image whole on the page itself, its frame showing as the card is pointed at or focused, as said below */
+	.moodboard-card__frame:has(> :where(.moodboard-card__image:not([hidden]))) {
+		border-color: transparent;
 	}
 
 	.moodboard-card:is(:hover, :focus-visible) .moodboard-card__frame {
@@ -42,5 +48,17 @@
 		font-family: var(--app-font-ui);
 		font-size: var(--app-text-s);
 		overflow-wrap: anywhere;
+	}
+
+	/*
+	 * The image of a media or of a link, whole within the square, a gap from its edges: placed in it rather than sized by
+	 * a percentage of its height, which a square of an aspect ratio does not always resolve
+	 */
+	.moodboard-card__image {
+		position: absolute;
+		inset: var(--app-space-s);
+		inline-size: calc(100% - 2 * var(--app-space-s)); /* Exception, a part placed in its square: the square less its gap */
+		block-size: calc(100% - 2 * var(--app-space-s));
+		object-fit: contain;
 	}
 }

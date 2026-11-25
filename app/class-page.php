@@ -16,6 +16,7 @@ use Moodboard\Meta;
 use Moodboard\Plugin;
 use Moodboard\Roles;
 use Moodboard\Posts;
+use Moodboard\Search;
 
 /**
  * Adds the app page under Media and renders it full screen, instead of the admin interface.
@@ -53,12 +54,12 @@ class Page {
 	public const string CHANNEL_FIELDS = 'id,name,description,parent,count,moodboard_covers,meta';
 
 	/**
-	 * Fields of a media the app reads, in the context of its edition, which gives its title, caption and description as
-	 * they are written.
+	 * Fields of a media the app reads, in the context of its edition, which gives its title and description as they are
+	 * written.
 	 *
 	 * @var string
 	 */
-	public const string MEDIA_FIELDS = 'id,date,title,caption,description,alt_text,media_type,mime_type,source_url,media_details,moodboard-channels,meta';
+	public const string MEDIA_FIELDS = 'id,date,title,description,alt_text,media_type,mime_type,source_url,media_details,moodboard-channels,meta';
 
 	/**
 	 * Fields of a text the app reads, in the context of its edition.
@@ -68,19 +69,12 @@ class Page {
 	public const string TEXT_FIELDS = 'id,date,title,content,moodboard-channels,meta';
 
 	/**
-	 * Fields of a link the app reads, in the context of its edition, its image embedded: the image of its page. Its page
-	 * reads its player besides, `moodboard_embed`, which a list leaves out, as core may ask the provider of each URL.
+	 * Fields of a link the app reads, in the context of its edition, with the image of its page, `moodboard_image`. Its
+	 * page reads its player besides, `moodboard_embed`, which a list leaves out, as core may ask the provider of each URL.
 	 *
 	 * @var string
 	 */
-	public const string LINK_FIELDS = 'id,date,title,content,moodboard-channels,meta,featured_media,_links,_embedded';
-
-	/**
-	 * The image of a link, embedded in its response.
-	 *
-	 * @var string
-	 */
-	public const string LINK_EMBED = 'wp:featuredmedia';
+	public const string LINK_FIELDS = 'id,date,title,content,moodboard-channels,meta,moodboard_image';
 
 	/**
 	 * Most items a page of the REST API gives: the app asks for them all, page after page.
@@ -185,12 +179,13 @@ class Page {
 
 		$view = sanitize_key( wp_unslash( $_GET['view'] ?? '' ) );
 		$id   = absint( $_GET[ $view ] ?? 0 );
+		$from = absint( $_GET['channel'] ?? 0 );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$view = in_array( $view, self::PAGE_VIEWS, true ) && $id ? $view : 'index';
 
 		$this->register_assets();
-		$this->preload( $view, $id );
+		$this->preload( $view, $id, 'channel' === $view ? 0 : $from );
 
 		$manifest_url       = add_query_arg( 'manifest', '1', self::get_url() );
 		[ $favicon_url ]    = Plugin::get_asset( 'app/favicon.svg' );
@@ -202,14 +197,16 @@ class Page {
 
 	/**
 	 * Give the app the data it asks for first, in the page itself, as the editor of WordPress does: the channels of the
-	 * curator, and the blocks of the view shown, the first page of each. wp.apiFetch answers them from the page, without
-	 * network, until it has loaded; their paths are the ones the store asks for, in any order.
+	 * curator, and the blocks of the view shown, the first page of each: those of the index, of the channel shown, or of
+	 * the channel a block shown was opened from, its neighbours. wp.apiFetch answers them from the page, without network,
+	 * until it has loaded; their paths are the ones the store asks for, in any order.
 	 *
 	 * @param string $view View shown.
 	 * @param int    $id   ID of the channel, the media or the text shown.
+	 * @param int    $from ID of the channel a block shown was opened from, 0 for the index.
 	 * @return void
 	 */
-	private function preload( string $view, int $id ): void {
+	private function preload( string $view, int $id, int $from ): void {
 		$path   = fn( string $route, array $args ) => "/wp/v2/$route?" . http_build_query( $args, '', '&', PHP_QUERY_RFC3986 );
 		$page   = array(
 			'per_page' => self::PER_PAGE,
@@ -227,10 +224,7 @@ class Page {
 			),
 			'link'  => array(
 				'route' => 'moodboard-links',
-				'args'  => array(
-					'_fields' => self::LINK_FIELDS,
-					'_embed'  => self::LINK_EMBED,
-				),
+				'args'  => array( '_fields' => self::LINK_FIELDS ),
 			),
 		);
 		$blocks = fn( array $args ) => array_map(
@@ -238,15 +232,15 @@ class Page {
 			array_keys( $kinds )
 		);
 
-		// The index, the blocks of the curator, in a channel or none: their media marked as blocks, their texts and links.
-		if ( 'index' === $view ) {
-			$paths = array( ...$paths, ...$blocks( array( 'media' => array( Meta::BLOCK => 1 ) ) ) );
-		}
+		$channel_id = 'channel' === $view ? $id : $from;
 
-		if ( 'channel' === $view ) {
-			$channel = array( 'moodboard-channels' => $id );
-			$paths   = array( ...$paths, ...$blocks( array_fill_keys( array_keys( $kinds ), $channel ) ) );
-		}
+		// The index, the blocks of the curator, in a channel or none: their media marked as blocks, their texts and links.
+		$paths = array(
+			...$paths,
+			...( $channel_id
+				? $blocks( array_fill_keys( array_keys( $kinds ), array( 'moodboard-channels' => $channel_id ) ) )
+				: $blocks( array( 'media' => array( Meta::BLOCK => 1 ) ) ) ),
+		);
 
 		// A block shown, its player besides for a link.
 		if ( isset( $kinds[ $view ] ) ) {
@@ -417,7 +411,6 @@ JS;
 			'mediaFields'   => self::MEDIA_FIELDS,
 			'textFields'    => self::TEXT_FIELDS,
 			'linkFields'    => self::LINK_FIELDS,
-			'linkEmbed'     => self::LINK_EMBED,
 			'perPage'       => self::PER_PAGE,
 			'channelsBase'  => (string) get_taxonomy( Channels::TAXONOMY )->rest_base,
 			'textsBase'     => (string) get_post_type_object( Posts::TEXT )?->rest_base,
@@ -427,6 +420,7 @@ JS;
 				'dark'  => $favicon_dark_url,
 			),
 			'shareParams'   => self::SHARE_PARAMS,
+			'searchHeader'  => Search::HEADER,
 		);
 	}
 }

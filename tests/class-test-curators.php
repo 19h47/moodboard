@@ -83,6 +83,51 @@ class Test_Curators extends TestCase {
 	}
 
 	/**
+	 * A curator reads their own channel, by its ID; neither another curator nor a visitor reads it.
+	 *
+	 * @return void
+	 */
+	public function test_a_channel_is_read_by_its_curator_only(): void {
+		$channel_id = $this->add_channel( 'Lieux' );
+
+		$this->assertSame( 200, $this->request( 'GET', "/wp/v2/moodboard-channels/$channel_id" )->get_status() );
+
+		$this->as_user( 'moodboard_curator' );
+
+		$this->assertGreaterThanOrEqual( 400, $this->request( 'GET', "/wp/v2/moodboard-channels/$channel_id" )->get_status() );
+
+		wp_set_current_user( 0 );
+
+		$this->assertGreaterThanOrEqual( 400, $this->request( 'GET', "/wp/v2/moodboard-channels/$channel_id" )->get_status() );
+		$this->assertSame( array(), $this->request( 'GET', '/wp/v2/moodboard-channels' )->get_data() );
+	}
+
+	/**
+	 * The blocks of a curator, their media, are theirs in the REST API: neither another curator nor a visitor lists or
+	 * reads them, who list the other media of the library still.
+	 *
+	 * @return void
+	 */
+	public function test_a_block_is_read_by_its_curator_only(): void {
+		$media_id   = $this->add_media();
+		$library_id = $this->add_media( array(), false );
+
+		$this->assertContains( $media_id, $this->list_media( array() ) );
+		$this->assertSame( 200, $this->request( 'GET', "/wp/v2/media/$media_id" )->get_status() );
+
+		$this->as_user( 'moodboard_curator' );
+
+		$this->assertContains( $library_id, $this->list_media( array() ) );
+		$this->assertNotContains( $media_id, $this->list_media( array() ) );
+		$this->assertGreaterThanOrEqual( 400, $this->request( 'GET', "/wp/v2/media/$media_id" )->get_status() );
+
+		wp_set_current_user( 0 );
+
+		$this->assertNotContains( $media_id, $this->list_media( array() ) );
+		$this->assertGreaterThanOrEqual( 400, $this->request( 'GET', "/wp/v2/media/$media_id" )->get_status() );
+	}
+
+	/**
 	 * A curator changes their media, never the media of another.
 	 *
 	 * @return void

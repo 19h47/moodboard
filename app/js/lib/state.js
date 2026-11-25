@@ -98,6 +98,28 @@ export class Store {
 	}
 
 	/**
+	 * Called right away with the state, then only when one of its parts `keys` changes: for a listener that draws from
+	 * several parts, which a change of another part, such as a notice, leaves as it is. Returns the unsubscribe function.
+	 *
+	 * @param {Array<keyof S>}       keys     The parts of the state it reads.
+	 * @param {( state: S ) => void} listener Called with the state.
+	 * @return {() => void} The unsubscribe function.
+	 */
+	watch( keys, listener ) {
+		listener( this.#state );
+
+		return this.subscribe( ( state, previous ) => {
+			if (
+				keys.some(
+					( key ) => ! Object.is( state[ key ], previous[ key ] )
+				)
+			) {
+				listener( state );
+			}
+		} );
+	}
+
+	/**
 	 * Called right away with the selected slice, then only when it
 	 * changes. Returns the unsubscribe function.
 	 *

@@ -54,6 +54,36 @@ class Test_Blocks extends TestCase {
 	}
 
 	/**
+	 * A link whose provider draws its embed by a script, such as a post of Tumblr, has no player: its page shows its
+	 * image, rather than the link core leaves of the embed once it has taken its script out, as here.
+	 *
+	 * @return void
+	 */
+	public function test_a_link_drawn_by_a_script_has_no_player(): void {
+		$url = 'https://www.tumblr.com/moodboard/1';
+
+		add_filter(
+			'pre_oembed_result',
+			fn( $result, string $asked ) => $url === $asked ? '<div class="tumblr-post" data-href="https://embed.tumblr.com/embed/post/1"><a href="' . $url . '">' . $url . '</a></div>' : $result,
+			10,
+			2
+		);
+
+		$response = $this->request(
+			'POST',
+			'/wp/v2/moodboard-links',
+			array(
+				'title' => 'Un post',
+				'meta'  => array( 'moodboard_source' => $url ),
+			)
+		);
+		$link_id  = $response->get_data()['id'];
+		$link     = $this->request( 'GET', "/wp/v2/moodboard-links/$link_id", array( 'context' => 'edit' ) )->get_data();
+
+		$this->assertSame( '', $link['moodboard_embed'] );
+	}
+
+	/**
 	 * A link added by its URL alone takes what its provider gives: its title, and its thumbnail as its featured image, an
 	 * image whose URL has no extension.
 	 *
@@ -107,6 +137,21 @@ class Test_Blocks extends TestCase {
 		$this->assertNotSame( 0, $link['featured_media'] );
 		$this->assertSame( 'image/png', get_post_mime_type( $link['featured_media'] ) );
 		$this->assertFalse( (bool) get_post_meta( $link['featured_media'], 'moodboard_block', true ), 'The image of a link is no block of its own.' );
+
+		// The list of the app reads the image of a link, with its sizes, as the media of the REST API gives it.
+		$listed = $this->request(
+			'GET',
+			'/wp/v2/moodboard-links',
+			array(
+				'context' => 'edit',
+				'_fields' => 'id,moodboard_image',
+			)
+		)->get_data()[0];
+
+		$this->assertSame( 'image', $listed['moodboard_image']['media_type'] );
+		$this->assertSame( wp_get_attachment_url( $link['featured_media'] ), $listed['moodboard_image']['source_url'] );
+		$this->assertGreaterThan( 0, $listed['moodboard_image']['media_details']['width'] );
+		$this->assertIsArray( $listed['moodboard_image']['media_details']['sizes'] );
 	}
 
 	/**
@@ -214,6 +259,7 @@ class Test_Blocks extends TestCase {
 
 		$this->assertSame( $url, $link['title']['raw'] );
 		$this->assertSame( 0, $link['featured_media'] );
+		$this->assertNull( $link['moodboard_image'] );
 	}
 
 	/**

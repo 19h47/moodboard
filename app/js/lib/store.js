@@ -25,7 +25,7 @@ import * as api from 'moodboard-app/api';
  * @property {number}                                                          id          The channel, the media or the text of its page, 0 for none.
  * @property {number}                                                          from        The channel a block was opened from, 0 for none.
  * @property {string}                                                          tab         What the index shows: all, channels or blocks.
- * @property {string}                                                          query       The search of the index.
+ * @property {string}                                                          query       The search of the index or of the channel shown.
  * @property {string}                                                          moved       How the view was reached: forward, back, or empty at first.
  * @property {{loaded: boolean, error: string, items: Channel[]}}              channels    The channels of the curator.
  * @property {Object<string, List>}                                            lists       The lists of blocks loaded, by key.
@@ -40,6 +40,8 @@ import * as api from 'moodboard-app/api';
  * @property {'light'|'dark'}                                                  theme       The theme shown.
  * @property {boolean}                                                         themeChosen Whether the theme was chosen over the system one.
  * @property {string}                                                          notice      What the app says last, such as an error.
+ * @property {string[]}                                                        undo        The keys of the blocks deleted that Undo brings back, until they are deleted on the server.
+ * @property {Block[]}                                                         uploads     The files being added, as blocks of their own until the server has them, the latest first.
  */
 
 /** @type {List} */
@@ -48,6 +50,49 @@ const EMPTY_LIST = { loaded: false, error: '', keys: [] };
 const IMAGE_FILE = /\.(jpe?g|png|gif|webp|avif)$/i;
 // The sizes of the cards, as steps of the scale from the usual one, the last two cards a row.
 const DENSITIES = [ -1, 0, 1, 2 ];
+// How long blocks deleted wait for Undo before they are deleted on the server.
+const UNDO_MS = 8000;
+// The types of the files a browser shows as images, which a card shows as they upload.
+const IMAGE_TYPE = /^image\/(jpeg|png|gif|webp|avif)$/;
+
+// The files uploaded since the page loaded, which number the keys of their blocks.
+let uploadCount = 0;
+
+/**
+ * The block of a file being added, until the server has it: its image, the file itself, for a file the browser shows
+ * as one, else the kind of the file. Its ID, 0, says it uploads; its key is its own, `upload-1`.
+ *
+ * @param {File}   file      The file.
+ * @param {number} channelId The channel it goes into, 0 for the index.
+ * @return {Block} Its block.
+ */
+function uploadOf( file, channelId ) {
+	const url = URL.createObjectURL( file );
+
+	uploadCount++;
+
+	return {
+		key: `upload-${ uploadCount }`,
+		kind: 'media',
+		id: 0,
+		date: new Date().toISOString(),
+		title: file.name,
+		label: '',
+		description: '',
+		text: '',
+		alt: '',
+		source: '',
+		by: '',
+		channels: channelId ? [ channelId ] : [],
+		url,
+		mime: file.type,
+		// Its size is the one of its card, which a file shown as it is has no other.
+		image: IMAGE_TYPE.test( file.type )
+			? { url, srcset: '', width: 0, height: 0 }
+			: null,
+		embed: '',
+	};
+}
 
 const $root = document.documentElement;
 /** @type {HTMLMetaElement} */
@@ -96,18 +141,92 @@ function save( { density, theme, themeChosen } ) {
 }
 
 /**
- * The key of the list of blocks of what shows: a channel, a search, or the index, as a channel 0, where a block opened
- * from the index finds its neighbours.
+ * What was loaded before when nothing of it changed, else what loads: a card changes only if its block or its channel
+ * does, its image not decoded again and the focus left on it.
+ *
+ * @template {Block|Channel} T
+ * @param {T|undefined} previous What was loaded before, none at first.
+ * @param {T}           next     What loads.
+ * @return {T} The one kept.
+ */
+function same( previous, next ) {
+	return JSON.stringify( previous ) === JSON.stringify( next )
+		? previous
+		: next;
+}
+
+/**
+ * A block loaded, kept as it was when nothing of it changed. A list gives a link without its player: it keeps the one
+ * its page loaded, while its URL is the same.
+ *
+ * @param {Block|undefined} previous The block loaded before, none at first.
+ * @param {Block}           next     The block that loads.
+ * @return {Block} The one kept.
+ */
+function sameBlock( previous, next ) {
+	const hasPlayer =
+		null === next.embed &&
+		'string' === typeof previous?.embed &&
+		previous.url === next.url;
+	const block = hasPlayer ? { ...next, embed: previous.embed } : next;
+
+	return same( previous, block );
+}
+
+/**
+ * The views of the page of a block, by its kind.
+ *
+ * @type {string[]}
+ */
+export const BLOCK_VIEWS = [ 'media', 'text', 'link' ];
+
+/**
+ * The views of a grid of cards, which a search searches: the index and a channel.
+ *
+ * @type {string[]}
+ */
+export const GRID_VIEWS = [ 'index', 'channel' ];
+
+/**
+ * The block of the page shown, none on another view or until it has loaded.
+ *
+ * @param {State} state The state.
+ * @return {Block|null} The block.
+ */
+export function shownBlock( { view, id, blocks } ) {
+	return BLOCK_VIEWS.includes( view )
+		? blocks[ `${ view }-${ id }` ] ?? null
+		: null;
+}
+
+/**
+ * The key of the list of blocks of what shows: the index, a channel or a search; on the page of a block, the list it
+ * was opened from, where its neighbours are.
+ *
+ * @param {State} state The state.
+ * @return {string} The key.
+ */
+export function shownListKey( state ) {
+	return BLOCK_VIEWS.includes( state.view )
+		? listKey( { view: 'channel', id: state.from, query: '' } )
+		: listKey( state );
+}
+
+/**
+ * The key of the list of blocks of what shows: a channel, or the index, as a channel 0, where a block opened from the
+ * index finds its neighbours; or a search in one of them, `search-12-…`, the index being 0.
  *
  * @param {{view: string, id: number, query: string}} route What shows.
  * @return {string} The key.
  */
 export function listKey( { view, id, query } ) {
-	if ( 'channel' === view && id ) {
-		return `channel-${ id }`;
+	const channelId = 'channel' === view ? id : 0;
+
+	if ( query ) {
+		return `search-${ channelId }-${ query }`;
 	}
 
-	return query ? `search-${ query }` : 'index';
+	return channelId ? `channel-${ channelId }` : 'index';
 }
 
 /**
@@ -125,6 +244,18 @@ export function targetOf( { view, id, from } ) {
 	return 'index' === view ? 0 : from;
 }
 
+/**
+ * The channel blocks added go into, as targetOf() says; none for the index.
+ *
+ * @param {State} state The state.
+ * @return {Channel|undefined} The channel.
+ */
+export function targetChannel( state ) {
+	const target = targetOf( state );
+
+	return state.channels.items.find( ( item ) => item.id === target );
+}
+
 /** @augments {Store<State>} */
 class MoodboardStore extends Store {
 	/**
@@ -135,9 +266,8 @@ class MoodboardStore extends Store {
 	#controllers = new Map();
 
 	/**
-	 * The channels of blocks being changed, one change after the other, the lists reloaded with it: each starts from the
-	 * channels the one before left, as boxes ticked quickly would otherwise each send the channels of before, the last
-	 * one undoing the others.
+	 * The channels of blocks being changed, one change after the other: each starts from the channels the one before
+	 * left, as boxes ticked quickly would otherwise each send the channels of before, the last one undoing the others.
 	 *
 	 * @type {Promise<unknown>}
 	 */
@@ -149,6 +279,30 @@ class MoodboardStore extends Store {
 	 * @type {Promise<unknown>}
 	 */
 	#ordering = Promise.resolve();
+
+	/**
+	 * The load of what changes touch, in flight, and the one that follows it for the changes made meanwhile.
+	 *
+	 * @type {Promise<void>|null}
+	 */
+	#refreshing = null;
+
+	/** @type {Promise<void>|null} */
+	#nextRefresh = null;
+
+	/**
+	 * The keys of the blocks deleted, until they are deleted on the server: the lists that load leave them out.
+	 *
+	 * @type {Set<string>}
+	 */
+	#hidden = new Set();
+
+	/**
+	 * The moment blocks deleted wait for Undo.
+	 *
+	 * @type {number}
+	 */
+	#deleting = 0;
 
 	constructor() {
 		super( {
@@ -169,7 +323,12 @@ class MoodboardStore extends Store {
 			arranging: false,
 			...load(),
 			notice: '',
+			undo: [],
+			uploads: [],
 		} );
+
+		// A page left deletes the blocks deleted at once, its requests going on after it.
+		addEventListener( 'pagehide', () => this.#commitDelete( true ) );
 
 		// The system theme, until one is chosen.
 		darkQuery.addEventListener( 'change', ( { matches } ) => {
@@ -178,6 +337,20 @@ class MoodboardStore extends Store {
 					? state
 					: { ...state, theme: matches ? 'dark' : 'light' }
 			);
+		} );
+
+		// Back to the app, what was added meanwhile shows, such as a block shared from a phone: the lists loaded wait otherwise.
+		document.addEventListener( 'visibilitychange', () => {
+			const { view, arranging } = this.get();
+
+			// Blocks being put in order keep the order given, until it is kept.
+			if (
+				'visible' === document.visibilityState &&
+				view &&
+				! arranging
+			) {
+				this.#refresh();
+			}
 		} );
 
 		this.subscribe( ( state, previous ) => {
@@ -225,14 +398,14 @@ class MoodboardStore extends Store {
 		} ) );
 
 		if ( ! this.get().channels.loaded ) {
-			this.loadChannels();
+			this.#loadChannels();
 		} else {
 			this.#loadView();
 		}
 	}
 
 	/** Loads the channels of the curator, then the blocks of the view. */
-	async loadChannels() {
+	async #loadChannels() {
 		if ( await this.#fetchChannels() ) {
 			this.#loadView();
 		}
@@ -249,7 +422,18 @@ class MoodboardStore extends Store {
 
 			this.set( ( state ) => ( {
 				...state,
-				channels: { loaded: true, error: '', items },
+				channels: {
+					loaded: true,
+					error: '',
+					items: items.map( ( item ) =>
+						same(
+							state.channels.items.find(
+								( channel ) => channel.id === item.id
+							),
+							item
+						)
+					),
+				},
 			} ) );
 
 			return true;
@@ -272,17 +456,20 @@ class MoodboardStore extends Store {
 		}
 	}
 
-	/** Loads what the view shows: its list of blocks, or its block. */
+	/**
+	 * Loads what the view shows: its block, and its list of blocks, unless loaded. A change loads the lists it touches
+	 * again, refresh(): one loaded is as it is on the server.
+	 */
 	#loadView() {
-		const { view, id, from } = this.get();
+		const { view, id, lists } = this.get();
+		const key = shownListKey( this.get() );
 
-		if ( [ 'media', 'text', 'link' ].includes( view ) ) {
+		if ( BLOCK_VIEWS.includes( view ) ) {
 			this.#loadBlock( /** @type {Block['kind']} */ ( view ), id );
-			this.loadList(
-				listKey( { view: 'channel', id: from, query: '' } )
-			);
-		} else {
-			this.loadList( listKey( this.get() ) );
+		}
+
+		if ( ! lists[ key ]?.loaded || lists[ key ].error ) {
+			this.loadList( key );
 		}
 	}
 
@@ -293,7 +480,12 @@ class MoodboardStore extends Store {
 	 */
 	async loadList( key ) {
 		const { query } = this.get();
-		const channelId = Number( key.match( /^channel-(\d+)$/ )?.[ 1 ] ?? 0 );
+		const channelId = Number(
+			key
+				.match( /^(?:channel-(\d+)$|search-(\d+)-)/ )
+				?.slice( 1 )
+				.find( Boolean ) ?? 0
+		);
 		const search = key.startsWith( 'search-' ) ? query : '';
 
 		try {
@@ -316,7 +508,10 @@ class MoodboardStore extends Store {
 					blocks: {
 						...state.blocks,
 						...Object.fromEntries(
-							blocks.map( ( block ) => [ block.key, block ] )
+							blocks.map( ( block ) => [
+								block.key,
+								sameBlock( state.blocks[ block.key ], block ),
+							] )
 						),
 					},
 					lists: {
@@ -324,7 +519,11 @@ class MoodboardStore extends Store {
 						[ key ]: {
 							loaded: true,
 							error: '',
-							keys: ordered.map( ( block ) => block.key ),
+							keys: ordered
+								.map( ( block ) => block.key )
+								.filter(
+									( item ) => ! this.#hidden.has( item )
+								),
 						},
 					},
 				};
@@ -406,17 +605,36 @@ class MoodboardStore extends Store {
 	#setBlock( block ) {
 		this.set( ( state ) => ( {
 			...state,
-			blocks: { ...state.blocks, [ block.key ]: block },
+			blocks: {
+				...state.blocks,
+				[ block.key ]: sameBlock( state.blocks[ block.key ], block ),
+			},
 		} ) );
 	}
 
 	/**
-	 * Searches the index: its blocks and its channels whose name has the search.
+	 * Searches the index or the channel shown: its blocks, and its channels or sub-channels whose name has the search. The lists of the other searches go, one
+	 * for each word typed.
 	 *
 	 * @param {string} query The search.
 	 */
 	setQuery( query ) {
-		this.set( ( state ) => ( { ...state, query } ) );
+		this.set( ( state ) => {
+			const searched = listKey( { ...state, query } );
+
+			return {
+				...state,
+				query,
+				// The blocks found are put in order no more: the order is the one of every block of the channel.
+				arranging: query ? false : state.arranging,
+				lists: Object.fromEntries(
+					Object.entries( state.lists ).filter(
+						( [ key ] ) =>
+							! key.startsWith( 'search-' ) || key === searched
+					)
+				),
+			};
+		} );
 		this.loadList( listKey( this.get() ) );
 	}
 
@@ -426,19 +644,55 @@ class MoodboardStore extends Store {
 	 * @param {string} notice What to say.
 	 */
 	notify( notice ) {
+		// Another notice ends the moment of Undo, which would show beside it.
+		if ( notice ) {
+			this.#commitDelete();
+		}
+
 		this.set( ( state ) => ( { ...state, notice } ) );
 	}
 
 	/**
-	 * Loads again what a change touches: the channels, whose counts and covers change, and the lists the view shows,
-	 * which show what they hold until they have loaded again, a card changing only if its block does; the other lists
-	 * go, to load again as they show.
+	 * Says what went wrong: what the API says of it, as text, or else `fallback`, such as without network.
+	 *
+	 * @param {unknown} error    The error.
+	 * @param {string}  fallback What went wrong, without a message.
 	 */
-	async #refresh() {
-		const { view, from } = this.get();
-		const shown = [ 'media', 'text', 'link' ].includes( view )
-			? listKey( { view: 'channel', id: from, query: '' } )
-			: listKey( this.get() );
+	notifyError( error, fallback ) {
+		this.notify( api.errorMessage( error, fallback ) );
+	}
+
+	/**
+	 * Loads again what a change touches, once for the changes made meanwhile: a load in flight started before the last
+	 * change, so one more follows it, which every change made meanwhile shares, as boxes of Connect ticked quickly.
+	 *
+	 * @return {Promise<void>} Once what the change touches has loaded.
+	 */
+	#refresh() {
+		if ( ! this.#refreshing ) {
+			this.#refreshing = this.#reload().finally( () => {
+				this.#refreshing = null;
+			} );
+
+			return this.#refreshing;
+		}
+
+		this.#nextRefresh ??= this.#refreshing.then( () => {
+			this.#nextRefresh = null;
+
+			return this.#refresh();
+		} );
+
+		return this.#nextRefresh;
+	}
+
+	/**
+	 * Loads again the channels, whose counts and covers change, and the lists the view shows, which show what they hold
+	 * until they have loaded again, a card changing only if its block does; the other lists go, to load again as they
+	 * show.
+	 */
+	async #reload() {
+		const shown = shownListKey( this.get() );
 
 		this.set( ( state ) => ( {
 			...state,
@@ -476,7 +730,8 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Adds blocks, to a channel or the index: the files dropped, pasted or picked, the image of a URL, or a text.
+	 * Adds blocks, to a channel or the index: the files dropped, pasted or picked, the image of a URL, or a text. A file
+	 * shows at once, as it uploads, first in the grid, and gives way to its block once the server has it.
 	 *
 	 * @param {number}                        channelId The channel, 0 for the index.
 	 * @param {{files: File[], text: string}} added     What is added.
@@ -487,27 +742,36 @@ class MoodboardStore extends Store {
 		const isUrl = /^https?:\/\/\S+$/.test( content );
 		// The URL of an image file, which core downloads; any other is a link, a page or a video.
 		const isImage = isUrl && IMAGE_FILE.test( new URL( content ).pathname );
-		/** @type {Array<() => Promise<Block>>} */
-		const requests = [
-			...files.map( ( file ) => () => api.uploadFile( file, channelId ) ),
-		];
+		const uploads = files.map( ( file ) => uploadOf( file, channelId ) );
+		/** @type {Array<{send: () => Promise<Block>, upload?: Block}>} */
+		const requests = files.map( ( file, index ) => ( {
+			send: () => api.uploadFile( file, channelId ),
+			upload: uploads[ index ],
+		} ) );
 
 		if ( isImage ) {
-			requests.push( () => api.importUrl( content, channelId ) );
+			requests.push( {
+				send: () => api.importUrl( content, channelId ),
+			} );
 		} else if ( isUrl ) {
-			requests.push( () => api.createLink( content, channelId ) );
+			requests.push( {
+				send: () => api.createLink( content, channelId ),
+			} );
 		} else if ( content ) {
-			requests.push( () => api.createText( content, channelId ) );
+			requests.push( {
+				send: () => api.createText( content, channelId ),
+			} );
 		}
 
 		const errors = [];
-		/** @type {Block[]} */
-		const added = [];
 
-		// Said at once, as a file dropped or pasted takes a moment to upload.
+		// Said at once, as a file dropped or pasted takes a moment to upload, which ends the moment of Undo.
+		this.#commitDelete();
 		this.set( ( state ) => ( {
 			...state,
 			adding: true,
+			// The last file first, as its block will be once added.
+			uploads: [ ...uploads.toReversed(), ...state.uploads ],
 			notice: sprintf(
 				/* translators: %d: number of blocks being added. */
 				_n(
@@ -520,13 +784,14 @@ class MoodboardStore extends Store {
 			),
 		} ) );
 
-		// One after the other: a server takes one upload at a time better than many.
-		for ( const request of requests ) {
+		// One after the other: a server takes one upload at a time better than many. The grid takes each block added as it
+		// is, first, without loading again, in place of its file.
+		for ( const { send, upload } of requests ) {
 			try {
-				const block = await request();
+				const block = await send();
 
 				this.#setBlock( block );
-				added.push( block );
+				this.#prepend( channelId, [ block ] );
 			} catch ( error ) {
 				errors.push(
 					api.errorMessage(
@@ -534,6 +799,16 @@ class MoodboardStore extends Store {
 						__( 'A block could not be added.', 'moodboard' )
 					)
 				);
+			} finally {
+				if ( upload ) {
+					URL.revokeObjectURL( upload.url );
+					this.set( ( state ) => ( {
+						...state,
+						uploads: state.uploads.filter(
+							( item ) => item !== upload
+						),
+					} ) );
+				}
 			}
 		}
 
@@ -551,8 +826,7 @@ class MoodboardStore extends Store {
 					requests.length
 				)
 		);
-		// The grid takes the blocks added as they are, without loading again: the channels only change, their counts.
-		this.#prepend( channelId, added );
+		// The channels only change, their counts.
 		await this.#fetchChannels();
 
 		return ! errors.length;
@@ -567,20 +841,22 @@ class MoodboardStore extends Store {
 	async createChannel( fields ) {
 		const channel = await api.createChannel( fields );
 
-		await this.#refresh();
+		// A channel added is empty: the lists of blocks stay as they are.
+		await this.#fetchChannels();
 
 		return channel;
 	}
 
 	/**
-	 * Changes a channel.
+	 * Changes a channel: its name, its description or its parent, which the lists of blocks leave out, a channel listing
+	 * its own blocks, not those of its sub-channels.
 	 *
 	 * @param {number}                                                       id     The channel.
 	 * @param {Partial<{name: string, description: string, parent: number}>} fields What changes.
 	 */
 	async updateChannel( id, fields ) {
 		await api.updateChannel( id, fields );
-		await this.#refresh();
+		await this.#fetchChannels();
 	}
 
 	/**
@@ -618,21 +894,134 @@ class MoodboardStore extends Store {
 				: channels.filter( ( id ) => id !== channelId );
 
 			this.#setBlock( await api.setChannels( block, channelIds ) );
-			await this.#refresh();
 		} );
 
 		// A change that fails leaves the next to start from what is saved.
 		this.#connecting = connected.catch( () => {} );
 		await connected;
+		// Out of the line of the changes: the next one waits for this one, not for what it loads.
+		await this.#refresh();
 	}
 
 	/**
-	 * Deletes a block.
+	 * Deletes blocks, once a moment has gone by without Undo, or the page is left: they leave the lists at once, the
+	 * selection ends, and undoDelete() brings them back. Blocks deleted before go first.
+	 *
+	 * @param {Block[]} blocks The blocks.
+	 */
+	deleteBlocks( blocks ) {
+		const keys = blocks.map( ( block ) => block.key );
+
+		this.#commitDelete();
+		keys.forEach( ( key ) => this.#hidden.add( key ) );
+		this.set( ( state ) => ( {
+			...state,
+			selecting: false,
+			selection: [],
+			lists: Object.fromEntries(
+				Object.entries( state.lists ).map( ( [ key, list ] ) => [
+					key,
+					{
+						...list,
+						keys: list.keys.filter(
+							( item ) => ! this.#hidden.has( item )
+						),
+					},
+				] )
+			),
+			undo: keys,
+			notice:
+				1 === keys.length
+					? __( 'Block deleted.', 'moodboard' )
+					: __( 'Blocks deleted.', 'moodboard' ),
+		} ) );
+		this.#deleting = setTimeout( () => this.#commitDelete(), UNDO_MS );
+	}
+
+	/** Deletes the blocks selected, as deleteBlocks() does. */
+	deleteSelection() {
+		this.deleteBlocks( this.#selected() );
+	}
+
+	/**
+	 * Holds the blocks deleted while what brings them back has the focus, or gives them their moment again.
+	 *
+	 * @param {boolean} isHeld Whether they wait.
+	 */
+	holdDelete( isHeld ) {
+		clearTimeout( this.#deleting );
+
+		if ( ! isHeld && this.get().undo.length ) {
+			this.#deleting = setTimeout( () => this.#commitDelete(), UNDO_MS );
+		}
+	}
+
+	/** Brings the blocks deleted back, as they are still on the server: the lists load them again. */
+	undoDelete() {
+		const { undo } = this.get();
+
+		if ( ! undo.length ) {
+			return;
+		}
+
+		clearTimeout( this.#deleting );
+		undo.forEach( ( key ) => this.#hidden.delete( key ) );
+		this.set( ( state ) => ( {
+			...state,
+			undo: [],
+			notice: __( 'Deletion undone.', 'moodboard' ),
+		} ) );
+		this.#refresh();
+	}
+
+	/**
+	 * Deletes the blocks deleted on the server, together; Undo no longer brings them back. One that fails says so and
+	 * comes back in its lists.
+	 *
+	 * @param {boolean} [keepalive] Whether the requests go on once the page is left.
+	 */
+	async #commitDelete( keepalive = false ) {
+		const { undo, blocks } = this.get();
+
+		clearTimeout( this.#deleting );
+
+		if ( ! undo.length ) {
+			return;
+		}
+
+		this.set( ( state ) => ( { ...state, undo: [] } ) );
+
+		const results = await Promise.allSettled(
+			undo
+				.map( ( key ) => blocks[ key ] )
+				.filter( Boolean )
+				.map( async ( block ) => {
+					await api.deleteBlock( block, keepalive );
+					this.#forget( block );
+				} )
+		);
+		const failed = results.find(
+			( result ) => 'rejected' === result.status
+		);
+
+		undo.forEach( ( key ) => this.#hidden.delete( key ) );
+
+		if ( failed ) {
+			this.notifyError(
+				failed.reason,
+				__( 'The block could not be deleted.', 'moodboard' )
+			);
+		}
+
+		await this.#refresh();
+	}
+
+	/**
+	 * Forgets a block deleted.
 	 *
 	 * @param {Block} block The block.
 	 */
-	async deleteBlock( block ) {
-		await api.deleteBlock( block );
+	#forget( block ) {
 		this.set( ( state ) => {
 			const blocks = { ...state.blocks };
 
@@ -640,7 +1029,6 @@ class MoodboardStore extends Store {
 
 			return { ...state, blocks };
 		} );
-		await this.#refresh();
 	}
 
 	/**
@@ -689,11 +1077,16 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Starts putting the blocks of the channel shown in order, or ends it; the cards are no longer selected.
+	 * Starts putting the blocks of the channel shown in order, or ends it; the cards are no longer selected, and a search
+	 * ends: the order is the one of every block of the channel.
 	 *
 	 * @param {boolean} arranging Whether the blocks are being put in order.
 	 */
 	setArranging( arranging ) {
+		if ( arranging && this.get().query ) {
+			this.setQuery( '' );
+		}
+
 		this.set( ( state ) => ( {
 			...state,
 			arranging,
@@ -718,8 +1111,14 @@ class MoodboardStore extends Store {
 		}
 
 		const keys = list.keys.filter( ( item ) => item !== key );
+		const to = Math.max( 0, Math.min( place, keys.length ) );
 
-		keys.splice( Math.max( 0, Math.min( place, keys.length ) ), 0, key );
+		// A card dragged over its own place, or a key that goes nowhere, moves nothing: the grid is not drawn again.
+		if ( list.keys.indexOf( key ) === to ) {
+			return;
+		}
+
+		keys.splice( to, 0, key );
 		this.#setList( `channel-${ channelId }`, { keys } );
 	}
 
@@ -763,18 +1162,33 @@ class MoodboardStore extends Store {
 		}
 	}
 
+	/** Selects every block of the grid shown: none on the tab of the channels. */
+	selectAll() {
+		this.set( ( state ) => {
+			const isChannelsTab =
+				'index' === state.view && 'channels' === state.tab;
+
+			return {
+				...state,
+				selection: isChannelsTab
+					? []
+					: state.lists[ listKey( state ) ]?.keys ?? [],
+			};
+		} );
+	}
+
 	/**
-	 * Selects a block, or no longer.
+	 * Selects blocks, or no longer.
 	 *
-	 * @param {string}  key        The key of the block.
-	 * @param {boolean} isSelected Whether it is selected.
+	 * @param {string[]} keys       The keys of the blocks.
+	 * @param {boolean}  isSelected Whether they are selected.
 	 */
-	setSelected( key, isSelected ) {
+	setSelected( keys, isSelected ) {
 		this.set( ( state ) => ( {
 			...state,
 			selection: isSelected
-				? [ ...new Set( [ ...state.selection, key ] ) ]
-				: state.selection.filter( ( item ) => item !== key ),
+				? [ ...new Set( [ ...state.selection, ...keys ] ) ]
+				: state.selection.filter( ( item ) => ! keys.includes( item ) ),
 		} ) );
 	}
 
@@ -790,21 +1204,25 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Changes the channels of each block selected, one after the other, then ends the selection.
+	 * Changes the channels of each block selected, one after the other, then ends the selection. One that fails stops
+	 * the others; the grid then shows those changed already.
 	 *
 	 * @param {( block: Block ) => number[]} channelsOf The channels of a block after the change.
 	 * @param {string}                       done       What is said once done.
 	 */
 	async #changeSelection( channelsOf, done ) {
-		for ( const block of this.#selected() ) {
-			this.#setBlock(
-				await api.setChannels( block, channelsOf( block ) )
-			);
-		}
+		try {
+			for ( const block of this.#selected() ) {
+				this.#setBlock(
+					await api.setChannels( block, channelsOf( block ) )
+				);
+			}
 
-		this.setSelecting( false );
-		this.notify( done );
-		await this.#refresh();
+			this.notify( done );
+		} finally {
+			this.setSelecting( false );
+			await this.#refresh();
+		}
 	}
 
 	/**
@@ -851,17 +1269,6 @@ class MoodboardStore extends Store {
 		this.setSelecting( false );
 		this.notify( __( 'Blocks moved.', 'moodboard' ) );
 		await this.saveOrder( id );
-	}
-
-	/** Deletes the blocks selected. */
-	async deleteSelection() {
-		for ( const block of this.#selected() ) {
-			await api.deleteBlock( block );
-		}
-
-		this.setSelecting( false );
-		this.notify( __( 'Blocks deleted.', 'moodboard' ) );
-		await this.#refresh();
 	}
 
 	/**

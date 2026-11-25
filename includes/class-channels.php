@@ -110,20 +110,21 @@ class Channels {
 
 	/**
 	 * The latest images of a channel and of its sub-channels, at their medium large size, sharp on a card two a row, up to
-	 * COVERS.
+	 * COVERS. The images come with their meta, which holds their sizes, in a query for them all, rather than one for
+	 * each.
 	 *
 	 * @param int $term_id Term ID of the channel.
 	 * @return list<array{url:string,width:int,height:int}>
 	 */
 	public static function get_covers( int $term_id ): array {
-		$image_ids = get_posts(
+		$images = get_posts(
 			array(
-				'post_type'      => 'attachment',
-				'post_status'    => 'inherit',
-				'post_mime_type' => 'image',
-				'numberposts'    => self::COVERS,
-				'fields'         => 'ids',
-				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- The images of a channel.
+				'post_type'              => 'attachment',
+				'post_status'            => 'inherit',
+				'post_mime_type'         => 'image',
+				'numberposts'            => self::COVERS,
+				'update_post_term_cache' => false,
+				'tax_query'              => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- The images of a channel.
 					array(
 						'taxonomy' => self::TAXONOMY,
 						'terms'    => $term_id,
@@ -131,10 +132,10 @@ class Channels {
 				),
 			)
 		);
-		$covers    = array();
+		$covers = array();
 
-		foreach ( $image_ids as $image_id ) {
-			$image = wp_get_attachment_image_src( (int) $image_id, 'medium_large' );
+		foreach ( $images as $image_post ) {
+			$image = wp_get_attachment_image_src( $image_post->ID, 'medium_large' );
 
 			if ( $image ) {
 				$covers[] = array(
@@ -161,13 +162,14 @@ class Channels {
 
 		register_taxonomy(
 			self::TAXONOMY,
-			array( 'attachment', Posts::TEXT, Posts::LINK ),
+			Posts::BLOCK_TYPES,
 			array(
 				'labels'                => $labels,
 				'hierarchical'          => true,
 				'public'                => false,
 				'show_in_rest'          => true,
 				'rest_base'             => 'moodboard-channels',
+				'rest_controller_class' => Channels_Controller::class,
 				'capabilities'          => array(
 					'manage_terms' => Roles::CURATE,
 					'edit_terms'   => Roles::CURATE,
@@ -327,7 +329,8 @@ class Channels {
 
 	/**
 	 * Before a channel is deleted, give its parent the blocks that are in no other channel; core gives it its
-	 * sub-channels already. A channel without parent leaves them in the index, as every block of the curator.
+	 * sub-channels already. A channel without parent leaves them in the index, as every block of the curator. The
+	 * channels of its blocks are read in one query, rather than one for each.
 	 *
 	 * @param int    $term_id  Term ID.
 	 * @param string $taxonomy Taxonomy slug.
@@ -341,12 +344,21 @@ class Channels {
 		}
 
 		$block_ids = get_objects_in_term( $term_id, self::TAXONOMY );
+		$block_ids = array_map( 'intval', is_array( $block_ids ) ? $block_ids : array() );
 
-		foreach ( is_array( $block_ids ) ? $block_ids : array() as $block_id ) {
-			$channel_ids = wp_get_object_terms( (int) $block_id, self::TAXONOMY, array( 'fields' => 'ids' ) );
+		update_object_term_cache( $block_ids, Posts::BLOCK_TYPES );
 
-			if ( array( $term_id ) === array_map( 'intval', is_array( $channel_ids ) ? $channel_ids : array() ) ) {
-				wp_add_object_terms( (int) $block_id, $term->parent, self::TAXONOMY );
+		foreach ( $block_ids as $block_id ) {
+			$channels = get_object_term_cache( $block_id, self::TAXONOMY );
+
+			if ( false === $channels ) {
+				$channels = wp_get_object_terms( $block_id, self::TAXONOMY );
+			}
+
+			$channel_ids = is_array( $channels ) ? array_map( 'intval', wp_list_pluck( $channels, 'term_id' ) ) : array();
+
+			if ( array( $term_id ) === $channel_ids ) {
+				wp_add_object_terms( $block_id, $term->parent, self::TAXONOMY );
 			}
 		}
 	}

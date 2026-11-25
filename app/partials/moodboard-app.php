@@ -54,7 +54,7 @@ $moodboard_tabs = array(
 			<div class="app-content">
 				<moodboard-header class="app-header moodboard-header">
 					<h1 class="moodboard-header__title"><a href="<?php echo esc_url( Page::get_url() ); ?>"><?php esc_html_e( 'Moodboard', 'moodboard' ); ?></a></h1>
-					<moodboard-tabs class="moodboard-header__tabs" data-only="index">
+					<moodboard-tabs data-only="index">
 						<nav aria-label="<?php esc_attr_e( 'What the index shows', 'moodboard' ); ?>">
 							<ul class="moodboard-tabs">
 								<?php foreach ( $moodboard_tabs as $moodboard_tab => $moodboard_label ) : ?>
@@ -64,11 +64,11 @@ $moodboard_tabs = array(
 						</nav>
 					</moodboard-tabs>
 					<div class="app-toolbar moodboard-header__tools">
-						<moodboard-density class="moodboard-density" data-only="grid">
+						<moodboard-density data-only="grid">
 							<label class="sr-only" for="moodboard-density"><?php esc_html_e( 'Size of the cards', 'moodboard' ); ?></label>
 							<input class="moodboard-density__range" id="moodboard-density" type="range" min="-1" max="2" step="1" value="0">
 						</moodboard-density>
-						<button class="app-control" type="button" commandfor="moodboard-search" command="--toggle" aria-controls="moodboard-search" aria-expanded="false" aria-label="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>" title="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>" data-only="index"><?php Markup::render_icon( 'search' ); ?></button>
+						<button class="app-control" type="button" commandfor="moodboard-search" command="--toggle" aria-controls="moodboard-search" aria-expanded="false" aria-keyshortcuts="/" aria-label="<?php echo esc_attr_x( 'Search', 'verb', 'moodboard' ); ?>" title="<?php echo esc_attr_x( 'Search (/)', 'verb', 'moodboard' ); ?>" data-only="grid"><?php Markup::render_icon( 'search' ); ?></button>
 						<button class="app-control" type="button" commandfor="moodboard-present" command="show-modal" aria-label="<?php esc_attr_e( 'Present', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Present', 'moodboard' ); ?>" data-only="grid"><?php Markup::render_icon( 'play_arrow' ); ?></button>
 						<moodboard-select-toggle data-only="grid">
 							<button class="app-control" type="button" aria-pressed="false" aria-label="<?php esc_attr_e( 'Select blocks', 'moodboard' ); ?>" title="<?php esc_attr_e( 'Select blocks', 'moodboard' ); ?>"><?php Markup::render_icon( 'select' ); ?></button>
@@ -88,11 +88,12 @@ $moodboard_tabs = array(
 					</div>
 				</moodboard-header>
 
+				<moodboard-search class="app-search" id="moodboard-search" hidden>
+					<?php Markup::render_component( 'search', array( 'id' => 'moodboard-search-field' ) ); ?>
+				</moodboard-search>
+
 				<moodboard-view name="index" <?php echo 'index' === $view ? '' : 'hidden'; ?>>
 					<h2 class="sr-only" tabindex="-1"><?php esc_html_e( 'Index', 'moodboard' ); ?></h2>
-					<moodboard-search class="app-search" id="moodboard-search" hidden>
-						<?php Markup::render_component( 'search', array( 'id' => 'moodboard-search-field' ) ); ?>
-					</moodboard-search>
 					<moodboard-grid list="index">
 						<p class="app-status" data-field="status" role="status"></p>
 						<ul class="moodboard-grid" data-list="items"></ul>
@@ -128,7 +129,7 @@ $moodboard_tabs = array(
 							<a class="app-control" href="" data-part="channel"><?php Markup::render_icon( 'close' ); ?></a>
 						</nav>
 						<div class="moodboard-block__media" data-part="media">
-							<img class="moodboard-block__image" data-field="image" alt="" hidden>
+							<img class="moodboard-block__image" data-field="image" alt="" loading="lazy" hidden>
 							<video class="moodboard-block__image" data-field="video" controls preload="metadata" hidden></video>
 							<div class="moodboard-block__embed" data-field="embed" hidden></div>
 							<a class="app-pill" data-field="file" href="" hidden><?php esc_html_e( 'Open the file', 'moodboard' ); ?> <span data-field="kind"></span></a>
@@ -156,7 +157,7 @@ $moodboard_tabs = array(
 									<dd><a data-field="source" href="" rel="noreferrer" target="_blank"></a></dd>
 								</div>
 							</dl>
-							<p class="moodboard-block__actions">
+							<p class="moodboard-pills">
 								<button class="app-pill" type="button" commandfor="moodboard-connect" command="show-modal"><?php esc_html_e( 'Connect', 'moodboard' ); ?> <?php Markup::render_icon( 'arrow_forward' ); ?></button>
 								<button class="app-pill moodboard-block__more" type="button" commandfor="moodboard-block-actions" command="toggle-popover"><?php esc_html_e( 'Actions', 'moodboard' ); ?> <?php Markup::render_icon( 'expand_more' ); ?></button>
 							</p>
@@ -208,7 +209,10 @@ $moodboard_tabs = array(
 		</moodboard-drop>
 
 		<moodboard-notice class="moodboard-notice" hidden>
-			<p class="app-status" data-field="notice" role="status"></p>
+			<div class="moodboard-notice__bar">
+				<p data-field="notice" role="status"></p>
+				<button class="moodboard-link" type="button" data-action="undo" aria-keyshortcuts="Control+Z Meta+Z" hidden><?php esc_html_e( 'Undo', 'moodboard' ); ?></button>
+			</div>
 		</moodboard-notice>
 
 		<dialog class="moodboard-dialog" id="moodboard-add" aria-labelledby="moodboard-add-title" closedby="any">
@@ -222,7 +226,7 @@ $moodboard_tabs = array(
 		<dialog class="moodboard-present" id="moodboard-present" aria-label="<?php esc_attr_e( 'Presentation', 'moodboard' ); ?>">
 			<moodboard-present class="moodboard-present__frame">
 				<div class="moodboard-present__stage" data-part="stage">
-					<img class="moodboard-present__image" data-field="image" alt="" hidden>
+					<img class="moodboard-present__image" data-field="image" alt="" loading="lazy" hidden>
 					<video class="moodboard-present__image" data-field="video" controls hidden></video>
 					<p class="moodboard-present__text" data-field="text"></p>
 				</div>

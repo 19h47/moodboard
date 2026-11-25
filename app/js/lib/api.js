@@ -9,11 +9,11 @@ import {
 	apiFetch,
 	channelFields,
 	channelsBase,
-	linkEmbed,
 	linkFields,
 	linksBase,
 	mediaFields,
 	perPage,
+	searchHeader,
 	textFields,
 	textsBase,
 } from 'moodboard-app/app';
@@ -56,7 +56,7 @@ import {
  * @typedef {Object} Block
  * @property {string}                key         Its kind and its ID, as the lists hold it: media-12, text-7, link-3.
  * @property {'media'|'text'|'link'} kind        Its kind, the view of its page.
- * @property {number}                id          Its post ID.
+ * @property {number}                id          Its post ID, 0 while its file uploads.
  * @property {string}                date        When it was added, as the API gives it.
  * @property {string}                title       Its title, as WordPress has it: the name of its file unless written.
  * @property {string}                label       Its title written, as the app shows it: none for a media named after its file.
@@ -117,19 +117,26 @@ import {
  */
 
 /**
+ * An image as the API gives it: a media, or the image of the page of a link, `moodboard_image`.
+ *
+ * @typedef {Pick<ApiMedia, 'media_type'|'source_url'|'media_details'>} ApiImage
+ */
+
+/**
  * A text, as the API gives it.
  *
  * @typedef {ApiBlock & {content: Raw}} ApiText
  */
 
 /**
- * A link, as the API gives it, the image of its page embedded, and its player for its page.
+ * A link, as the API gives it, the image of its page, and its player for its page.
  *
- * @typedef {ApiBlock & {content: Raw, moodboard_embed?: string, _embedded?: {'wp:featuredmedia'?: Array<ApiMedia & {code?: string}>}}} ApiLink
+ * @typedef {ApiBlock & {content: Raw, moodboard_embed?: string, moodboard_image: ApiImage|null}} ApiLink
  */
 
 /**
- * Every item of a route, page after page, and the headers of its last page.
+ * Every item of a route, and the headers of its first page: the first page says how many there are, the others are
+ * asked for together, their items in their order.
  *
  * @template T
  * @param {string}                  path   The route, such as /wp/v2/media.
@@ -138,22 +145,29 @@ import {
  * @return {Promise<{items: T[], headers: Headers}>} The items, and the headers.
  */
 async function fetchAll( path, query, signal ) {
-	const items = [];
-	let headers = new Headers();
-
-	for ( let page = 1, pages = 1; page <= pages; page++ ) {
+	/** @param {number} page A page, from 1. */
+	const fetchPage = async ( page ) => {
 		const response = await apiFetch( {
 			path: addQueryArgs( path, { ...query, per_page: perPage, page } ),
 			parse: false,
 			signal,
 		} );
 
-		items.push( ...( await response.json() ) );
-		headers = response.headers;
-		pages = Number( headers.get( 'X-WP-TotalPages' ) ) || 1;
-	}
+		return { response, items: await response.json() };
+	};
+	const first = await fetchPage( 1 );
+	const { headers } = first.response;
+	const pages = Number( headers.get( 'X-WP-TotalPages' ) ) || 1;
+	const others = await Promise.all(
+		Array.from( { length: pages - 1 }, ( _, index ) =>
+			fetchPage( index + 2 )
+		)
+	);
 
-	return { items, headers };
+	return {
+		items: [ first, ...others ].flatMap( ( page ) => page.items ),
+		headers,
+	};
 }
 
 /**
@@ -188,7 +202,7 @@ function toChannel( item ) {
 /**
  * The image of a media, its sizes from its own up, none for another file.
  *
- * @param {ApiMedia} item The media.
+ * @param {ApiImage} item The media, or the image of a link.
  * @return {Image|null} Its image.
  */
 function toImage( item ) {
@@ -256,7 +270,7 @@ function labelOf( item ) {
  * @param {ApiMedia} item The media, in the context of its edition.
  * @return {Block} The block.
  */
-export function toMedia( item ) {
+function toMedia( item ) {
 	return {
 		key: `media-${ item.id }`,
 		kind: 'media',
@@ -283,7 +297,7 @@ export function toMedia( item ) {
  * @param {ApiText} item The text, in the context of its edition.
  * @return {Block} The block.
  */
-export function toText( item ) {
+function toText( item ) {
 	return {
 		key: `text-${ item.id }`,
 		kind: 'text',
@@ -310,8 +324,8 @@ export function toText( item ) {
  * @param {ApiLink} item The link, in the context of its edition.
  * @return {Block} The block.
  */
-export function toLink( item ) {
-	const image = item._embedded?.[ 'wp:featuredmedia' ]?.[ 0 ];
+function toLink( item ) {
+	const image = item.moodboard_image;
 
 	return {
 		key: `link-${ item.id }`,
@@ -332,33 +346,30 @@ export function toLink( item ) {
 		channels: item[ channelsBase ] ?? [],
 		url: item.meta?.moodboard_source ?? '',
 		mime: '',
-		image: image && ! image.code ? toImage( image ) : null,
+		image: image ? toImage( image ) : null,
 		embed: item.moodboard_embed ?? null,
 	};
 }
 
 /**
- * The kinds of the blocks: their route, the fields the app reads, what they embed, and what turns them into blocks.
+ * The kinds of the blocks: their route, the fields the app reads, and what turns them into blocks.
  *
- * @type {Record<Block['kind'], {route: string, fields: string, embed: string, to: ( item: ApiMedia & ApiText & ApiLink ) => Block}>}
+ * @type {Record<Block['kind'], {route: string, fields: string, to: ( item: ApiMedia & ApiText & ApiLink ) => Block}>}
  */
 const KINDS = {
 	media: {
 		route: '/wp/v2/media',
 		fields: mediaFields,
-		embed: '',
 		to: toMedia,
 	},
 	text: {
 		route: `/wp/v2/${ textsBase }`,
 		fields: textFields,
-		embed: '',
 		to: toText,
 	},
 	link: {
 		route: `/wp/v2/${ linksBase }`,
 		fields: linkFields,
-		embed: linkEmbed,
 		to: toLink,
 	},
 };
@@ -374,20 +385,32 @@ function routeOf( kind ) {
 }
 
 /**
- * The arguments every request of the blocks of a kind gives: their fields, what they embed, in the context of their
- * edition.
+ * The arguments every request of the blocks of a kind gives: their fields, in the context of their edition.
  *
  * @param {Block['kind']} kind The kind.
  * @return {Object<string, string>} The arguments.
  */
 function argsOf( kind ) {
-	const { fields, embed } = KINDS[ kind ];
-
 	return {
-		_fields: fields,
-		...( embed ? { _embed: embed } : {} ),
+		_fields: KINDS[ kind ].fields,
 		context: 'edit',
 	};
+}
+
+/**
+ * The arguments of a block for its page: a link with its player, which a list leaves out.
+ *
+ * @param {Block['kind']} kind The kind.
+ * @return {Object<string, string>} The arguments.
+ */
+function pageArgsOf( kind ) {
+	const args = argsOf( kind );
+
+	if ( 'link' === kind ) {
+		args._fields += ',moodboard_embed';
+	}
+
+	return args;
 }
 
 /**
@@ -439,7 +462,7 @@ export async function fetchBlocks( channelId, search, signal ) {
 
 			return {
 				blocks: items.map( KINDS[ kind ].to ),
-				corrected: headers.get( 'X-Moodboard-Search' ) ?? '',
+				corrected: headers.get( searchHeader ) ?? '',
 			};
 		} )
 	);
@@ -463,14 +486,11 @@ export async function fetchBlocks( channelId, search, signal ) {
  * @return {Promise<Block>} The block.
  */
 export async function fetchBlock( kind, id, signal ) {
-	const args = argsOf( kind );
-
-	if ( 'link' === kind ) {
-		args._fields += ',moodboard_embed';
-	}
-
 	const item = await apiFetch( {
-		path: addQueryArgs( `${ routeOf( kind ) }/${ id }`, args ),
+		path: addQueryArgs(
+			`${ routeOf( kind ) }/${ id }`,
+			pageArgsOf( kind )
+		),
 		signal,
 	} );
 
@@ -713,7 +733,8 @@ export async function deleteNote( id ) {
 }
 
 /**
- * Changes a block: its fields, as the API names them, such as title or meta, or its channels.
+ * Changes a block: its fields, as the API names them, such as title or meta, or its channels. A link keeps its player,
+ * its URL changed or not.
  *
  * @param {Block}                   block  The block.
  * @param {Object<string, unknown>} fields What changes.
@@ -723,7 +744,7 @@ export async function updateBlock( block, fields ) {
 	const item = await apiFetch( {
 		path: addQueryArgs(
 			`${ routeOf( block.kind ) }/${ block.id }`,
-			argsOf( block.kind )
+			pageArgsOf( block.kind )
 		),
 		method: 'POST',
 		data: fields,
@@ -746,12 +767,14 @@ export function setChannels( block, channelIds ) {
 /**
  * Deletes a block, its file with a media.
  *
- * @param {Block} block The block.
+ * @param {Block}   block       The block.
+ * @param {boolean} [keepalive] Whether the request goes on once the page is left.
  */
-export async function deleteBlock( block ) {
+export async function deleteBlock( block, keepalive = false ) {
 	await apiFetch( {
 		path: `${ routeOf( block.kind ) }/${ block.id }?force=true`,
 		method: 'DELETE',
+		keepalive,
 	} );
 }
 

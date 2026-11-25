@@ -2,10 +2,12 @@ import { __, _n, sprintf } from 'moodboard-app/app';
 import { store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { fill } from 'moodboard-app/dom';
+import { endOnEscape } from 'moodboard-app/behaviors';
 
 /**
  * The bar of the blocks selected, at the bottom of the screen while they are: how many, and what changes them all, put
- * in channels, first or last in the channel shown, taken out of it, or deleted. Escape ends the selection.
+ * in channels, first or last in the channel shown, taken out of it, or deleted. Escape ends the selection; Control or
+ * Command and A select every block, and Shift ticks the blocks between the one ticked last and another.
  */
 class MoodboardSelectionElement extends Brick {
 	connect( signal ) {
@@ -28,24 +30,40 @@ class MoodboardSelectionElement extends Brick {
 			{ signal }
 		);
 
+		endOnEscape(
+			() => store.get().selecting,
+			() => store.setSelecting( false ),
+			signal
+		);
+
+		// Control or Command and A select every block, but in a field, which selects its text.
 		document.addEventListener(
 			'keydown',
 			( event ) => {
+				const $target = /** @type {HTMLElement} */ ( event.target );
+
 				if (
-					'Escape' === event.key &&
+					'a' === event.key.toLowerCase() &&
+					( event.ctrlKey || event.metaKey ) &&
+					! event.shiftKey &&
+					! event.altKey &&
 					store.get().selecting &&
-					! document.querySelector( 'dialog:modal' )
+					! document.querySelector( 'dialog:modal' ) &&
+					! $target.closest(
+						'input:not([type="checkbox"]), textarea, select, [contenteditable]'
+					)
 				) {
-					store.setSelecting( false );
+					event.preventDefault();
+					store.selectAll();
 				}
 			},
 			{ signal }
 		);
 
 		return [
-			store.select(
-				( state ) => state,
-				( { selecting, selection, view, id, channels } ) => {
+			store.watch(
+				[ 'selecting', 'selection', 'view', 'id', 'query', 'channels' ],
+				( { selecting, selection, view, id, query, channels } ) => {
 					const channel =
 						'channel' === view
 							? channels.items.find( ( item ) => item.id === id )
@@ -73,7 +91,8 @@ class MoodboardSelectionElement extends Brick {
 					} );
 					$moves.forEach(
 						( /** @type {HTMLButtonElement} */ $move ) => {
-							$move.hidden = ! channel;
+							// The order is the one of every block of the channel, not of those a search found.
+							$move.hidden = ! channel || !! query;
 							$move.disabled = ! selection.length;
 						}
 					);
@@ -97,7 +116,7 @@ class MoodboardSelectionElement extends Brick {
 	 * @param {string} action The action: first, last, disconnect, delete or done; connect opens its dialog by itself.
 	 */
 	async #act( action ) {
-		const { selection, id } = store.get();
+		const { id } = store.get();
 
 		try {
 			if ( 'first' === action || 'last' === action ) {
@@ -108,30 +127,19 @@ class MoodboardSelectionElement extends Brick {
 				await store.disconnectSelection( id );
 			}
 
-			if (
-				'delete' === action &&
-				// eslint-disable-next-line no-alert -- A confirmation the browser gives, accessible as it is.
-				confirm(
-					sprintf(
-						/* translators: %d: number of blocks selected. */
-						_n(
-							'Delete %d block, and its file?',
-							'Delete %d blocks, and their files?',
-							selection.length,
-							'moodboard'
-						),
-						selection.length
-					)
-				)
-			) {
-				await store.deleteSelection();
+			// Undo brings them back a moment.
+			if ( 'delete' === action ) {
+				store.deleteSelection();
 			}
 
 			if ( 'done' === action ) {
 				store.setSelecting( false );
 			}
 		} catch ( error ) {
-			store.notify( error?.message ?? '' );
+			store.notifyError(
+				error,
+				__( 'The blocks could not be changed.', 'moodboard' )
+			);
 		}
 	}
 }

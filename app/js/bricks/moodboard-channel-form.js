@@ -97,9 +97,9 @@ class MoodboardChannelFormElement extends Brick {
 						$dialog.close();
 					}
 				} catch ( error ) {
-					store.notify(
-						error?.message ??
-							__( 'The channel could not be saved.', 'moodboard' )
+					store.notifyError(
+						error,
+						__( 'The channel could not be saved.', 'moodboard' )
 					);
 				} finally {
 					showBusy( $form, false );
@@ -171,7 +171,8 @@ class MoodboardChannelFormElement extends Brick {
 	}
 
 	/**
-	 * Deletes the channel shown, once asked, then shows its parent.
+	 * Deletes the channel shown, once asked, its parent shown first, so that the view loads no longer a channel that is
+	 * gone.
 	 *
 	 * @param {HTMLDialogElement} $dialog The dialog.
 	 */
@@ -197,18 +198,21 @@ class MoodboardChannelFormElement extends Brick {
 			return;
 		}
 
+		const parentUrl = channel.parent
+			? urlOf( { view: 'channel', id: channel.parent } )
+			: urlOf( {} );
+
+		$dialog.close();
+		await navigation.navigate( parentUrl, { history: 'replace' } ).finished;
+
 		try {
 			await store.deleteChannel( id );
-			$dialog.close();
 			store.notify( __( 'Channel deleted.', 'moodboard' ) );
-			navigation.navigate(
-				channel.parent
-					? urlOf( { view: 'channel', id: channel.parent } )
-					: urlOf( {} ),
-				{ history: 'replace' }
-			);
 		} catch ( error ) {
-			store.notify( error?.message ?? '' );
+			store.notifyError(
+				error,
+				__( 'The channel could not be deleted.', 'moodboard' )
+			);
 		}
 	}
 }

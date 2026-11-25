@@ -1,6 +1,5 @@
 /**
- * Rows of pills, on as many lines as they need: the tabs of the index, the actions of a channel or of a block, the
- * channels of a block.
+ * Rows of pills, on as many lines as they need: the actions of a block, and of the blocks selected.
  */
 
 @layer app.components {

@@ -64,7 +64,7 @@ class Meta {
 	 * @return void
 	 */
 	public function register_meta(): void {
-		foreach ( array( 'attachment', Posts::TEXT, Posts::LINK ) as $post_type ) {
+		foreach ( Posts::BLOCK_TYPES as $post_type ) {
 			register_post_meta(
 				$post_type,
 				self::SOURCE,

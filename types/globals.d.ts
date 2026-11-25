@@ -26,10 +26,10 @@ declare global {
 			channelsBase: string;
 			textsBase: string;
 			linkFields: string;
-			linkEmbed: string;
 			linksBase: string;
 			icons: { light: string; dark: string };
 			shareParams: { title: string; text: string; url: string };
+			searchHeader: string;
 		};
 	}
 

@@ -22,8 +22,9 @@
 		}
 	}
 
-	/* A grid that loads fades, its cards kept */
-	.moodboard-grid[aria-busy="true"] {
+	/* A grid that loads fades, its cards kept; as does the card of a file being added */
+	.moodboard-grid[aria-busy="true"],
+	.moodboard-grid > li[aria-busy="true"] {
 		opacity: calc(1 / var(--app-phi));
 	}
 

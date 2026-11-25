@@ -23,6 +23,10 @@
 		--moodboard-present-bg: rgb(0, 0, 0);
 		--moodboard-present-text: rgb(255, 255, 255);
 		--moodboard-present-line: rgb(64, 64, 64);
+		/* The colors of a state, on the login only, as those of Library: low in chroma, at least 4.5:1 on the page in both themes */
+		--moodboard-error: light-dark(oklch(52% 0.12 27), oklch(76% 0.1 25));
+		--moodboard-success: light-dark(oklch(52% 0.09 150), oklch(76% 0.08 150));
+		--moodboard-warning: light-dark(oklch(52% 0.09 85), oklch(76% 0.09 88));
 	}
 
 	:root {

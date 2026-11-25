@@ -22,6 +22,12 @@
 		background: var(--app-bg);
 	}
 
+	/* The search, unfolded, over the grid it searches: a block, as an element of its own is inline */
+	.app-content > moodboard-search {
+		display: block;
+		margin-block-end: var(--app-space-l);
+	}
+
 	moodboard-view {
 		display: grid;
 		gap: var(--app-space-l);

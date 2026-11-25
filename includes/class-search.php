@@ -13,6 +13,7 @@ namespace Moodboard;
 
 use WP_Error;
 use WP_HTTP_Response;
+use WP_Post;
 use WP_Query;
 use WP_REST_Request;
 
@@ -65,6 +66,14 @@ class Search {
 	private const int SHORTEST = 4;
 
 	/**
+	 * Transient of the words of the blocks of a curator, their ID after it: kept until one of their blocks changes, as a
+	 * search asks for them at each of its pages and of the kinds of the blocks.
+	 *
+	 * @var string
+	 */
+	private const string WORDS = 'moodboard_words_';
+
+	/**
 	 * The search of the request, as it was corrected, for its response; null when it was not.
 	 *
 	 * @var string|null
@@ -77,12 +86,45 @@ class Search {
 	 * @return void
 	 */
 	public function hooks(): void {
-		foreach ( array( 'attachment', Posts::TEXT, Posts::LINK ) as $post_type ) {
+		foreach ( Posts::BLOCK_TYPES as $post_type ) {
 			add_filter( "rest_{$post_type}_query", array( $this, 'ask' ), 10, 2 );
 		}
 
 		add_filter( 'posts_search', array( $this, 'search_meta' ), 10, 2 );
 		add_filter( 'rest_request_after_callbacks', array( $this, 'say_corrected' ) );
+		add_action( 'clean_post_cache', array( $this, 'forget_words' ), 10, 2 );
+
+		foreach ( array( 'added_post_meta', 'updated_post_meta', 'deleted_post_meta' ) as $action ) {
+			add_action( $action, array( $this, 'forget_words_of_meta' ), 10, 3 );
+		}
+	}
+
+	/**
+	 * Forget the words of the curator of a block added, changed or deleted.
+	 *
+	 * @param int     $post_id Post ID.
+	 * @param WP_Post $post    Post.
+	 * @return void
+	 */
+	public function forget_words( int $post_id, WP_Post $post ): void {
+		if ( in_array( $post->post_type, Posts::BLOCK_TYPES, true ) ) {
+			delete_transient( self::WORDS . $post->post_author );
+		}
+	}
+
+	/**
+	 * Forget the words of the curator of a block whose meta changed: who made it, the alternative text or the file of an
+	 * image, or its mark of a block.
+	 *
+	 * @param int|int[] $meta_ids  ID of the meta, or IDs of those deleted.
+	 * @param int       $object_id Post ID.
+	 * @param string    $meta_key  Meta key.
+	 * @return void
+	 */
+	public function forget_words_of_meta( int|array $meta_ids, int $object_id, string $meta_key ): void {
+		if ( in_array( $meta_key, array( Meta::BY, self::ALT, self::FILE, Meta::BLOCK ), true ) ) {
+			delete_transient( self::WORDS . get_post_field( 'post_author', $object_id ) );
+		}
 	}
 
 	/**
@@ -224,12 +266,19 @@ class Search {
 	/**
 	 * The words of the blocks of the current curator, by their letters without accents, as written the first time, with
 	 * how many times they are: their title, their caption, their text or their description, who made them, the
-	 * alternative text and the file of an image.
+	 * alternative text and the file of an image. Kept until one of their blocks changes.
 	 *
 	 * @return array<string,array{word:string,count:int}>
 	 */
 	private function words(): array {
 		global $wpdb;
+
+		$key   = self::WORDS . get_current_user_id();
+		$words = get_transient( $key );
+
+		if ( is_array( $words ) ) {
+			return $words;
+		}
 
 		$texts = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
@@ -262,6 +311,8 @@ class Search {
 				++$words[ $known ]['count'];
 			}
 		}
+
+		set_transient( $key, $words, DAY_IN_SECONDS );
 
 		return $words;
 	}

@@ -12,6 +12,7 @@
 namespace Moodboard;
 
 use WP_Post;
+use WP_Query;
 use WP_REST_Post_Meta_Fields;
 use WP_REST_Request;
 
@@ -29,13 +30,22 @@ use WP_REST_Request;
 class Media {
 
 	/**
+	 * Argument of a query of the media, the list of the REST API, that leaves the blocks of others out.
+	 *
+	 * @var string
+	 */
+	public const string OTHERS_LEFT_OUT = 'moodboard_others_left_out';
+
+	/**
 	 * Register hooks.
 	 *
 	 * @return void
 	 */
 	public function hooks(): void {
 		add_filter( 'rest_attachment_collection_params', array( $this, 'add_block_param' ) );
+		add_filter( 'register_post_type_args', array( $this, 'set_controller' ), 10, 2 );
 		add_filter( 'rest_attachment_query', array( $this, 'list_blocks' ), 10, 2 );
+		add_filter( 'posts_where', array( $this, 'leave_out_blocks_of_others' ), 10, 2 );
 		add_action( 'rest_after_insert_attachment', array( $this, 'file_imported' ), 10, 3 );
 	}
 
@@ -63,6 +73,8 @@ class Media {
 	 */
 	public function list_blocks( array $args, WP_REST_Request $request ): array {
 		if ( empty( $request[ Meta::BLOCK ] ) ) {
+			$args[ self::OTHERS_LEFT_OUT ] = true;
+
 			return $args;
 		}
 
@@ -76,6 +88,43 @@ class Media {
 		);
 
 		return $args;
+	}
+
+	/**
+	 * Read a media of the REST API through Media_Controller, which reads a block for its curator only.
+	 *
+	 * @param array<string,mixed> $args      Arguments of the post type.
+	 * @param string              $post_type Post type.
+	 * @return array<string,mixed>
+	 */
+	public function set_controller( array $args, string $post_type ): array {
+		if ( 'attachment' === $post_type ) {
+			$args['rest_controller_class'] = Media_Controller::class;
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Leave the blocks of others out of a list of the media of the REST API: those of the curator and any other media of
+	 * the library stay.
+	 *
+	 * @param string   $where The WHERE clause.
+	 * @param WP_Query $query The query.
+	 * @return string
+	 */
+	public function leave_out_blocks_of_others( string $where, WP_Query $query ): string {
+		global $wpdb;
+
+		if ( ! $query->get( self::OTHERS_LEFT_OUT ) ) {
+			return $where;
+		}
+
+		return $where . $wpdb->prepare(
+			" AND ( {$wpdb->posts}.post_author = %d OR NOT EXISTS ( SELECT 1 FROM {$wpdb->postmeta} WHERE {$wpdb->postmeta}.post_id = {$wpdb->posts}.ID AND {$wpdb->postmeta}.meta_key = %s AND {$wpdb->postmeta}.meta_value = '1' ) )",
+			get_current_user_id(),
+			Meta::BLOCK
+		);
 	}
 
 	/**
