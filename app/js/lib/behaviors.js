@@ -1,6 +1,10 @@
 /**
- * What bricks share: a list drawn by keys, the title of a page opened and an element busy while it loads.
+ * What bricks share: a list drawn by keys, the title of a page opened, an element busy while it loads, a swipe, and a
+ * mode Escape ends.
  */
+
+// How far a finger goes across an element for a swipe, rather than a tap.
+const SWIPE_PX = 60;
 
 /**
  * Draws in `$list` an element per key of `keys`, in their order, such as a card per block: an element drawn already for
@@ -92,4 +96,68 @@ export function showBusy( $element, isBusy ) {
 	} else {
 		$element.removeAttribute( 'aria-busy' );
 	}
+}
+
+/**
+ * On a screen of touch, a swipe across `$element` goes to the next, to the left, or to the one before, to the right; a
+ * swipe up or down is the browser's, which scrolls. A mouse drags as it does.
+ *
+ * @param {HTMLElement}            $element The element swiped.
+ * @param {( step: 1|-1 ) => void} go       Goes to the next, 1, or to the one before, -1.
+ * @param {AbortSignal}            signal   Stops listening.
+ */
+export function onSwipe( $element, go, signal ) {
+	/** @type {PointerEvent|null} */
+	let start = null;
+
+	$element.addEventListener(
+		'pointerdown',
+		( event ) => {
+			start = 'mouse' === event.pointerType ? null : event;
+		},
+		{ signal }
+	);
+
+	$element.addEventListener(
+		'pointerup',
+		( event ) => {
+			const dx = start ? event.clientX - start.clientX : 0;
+			const dy = start ? event.clientY - start.clientY : 0;
+
+			start = null;
+
+			if (
+				Math.abs( dx ) > SWIPE_PX &&
+				Math.abs( dx ) > 2 * Math.abs( dy )
+			) {
+				go( dx < 0 ? 1 : -1 );
+			}
+		},
+		{ signal }
+	);
+}
+
+/**
+ * Escape ends a mode of the page, such as the blocks selected, while it is on: unless a dialog is open, which Escape
+ * closes, or what has the focus took the key, such as a block picked up, which it puts back.
+ *
+ * @param {() => boolean} isOn   Whether the mode is on.
+ * @param {() => void}    end    Ends it.
+ * @param {AbortSignal}   signal Stops listening.
+ */
+export function endOnEscape( isOn, end, signal ) {
+	document.addEventListener(
+		'keydown',
+		( event ) => {
+			if (
+				'Escape' === event.key &&
+				! event.defaultPrevented &&
+				isOn() &&
+				! document.querySelector( 'dialog:modal' )
+			) {
+				end();
+			}
+		},
+		{ signal }
+	);
 }

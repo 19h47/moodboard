@@ -1,7 +1,7 @@
-import { __, sprintf } from 'moodboard-app/app';
-import { store } from 'moodboard-app/store';
+import { __ } from 'moodboard-app/app';
+import { shownBlock, store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
-import { isNewName, renderChannelOptions } from 'moodboard-app/render';
+import { fillChannelPicker } from 'moodboard-app/render';
 
 /** @import { Block, Channel } from 'moodboard-app/api' */
 
@@ -19,24 +19,12 @@ class MoodboardConnectElement extends Brick {
 		const $list = this.querySelector( '[data-list="channels"]' );
 		/** @type {HTMLButtonElement} */
 		const $create = this.querySelector( '[data-action="create"]' );
-		const fill = () => {
-			const { items } = store.get().channels;
-
-			$list.replaceChildren(
-				...renderChannelOptions(
-					items,
-					$filter.value,
-					this.#block()?.channels ?? []
-				)
+		const fill = () =>
+			fillChannelPicker(
+				this,
+				store.get().channels.items,
+				this.#block()?.channels ?? []
 			);
-			$create.hidden = ! isNewName( items, $filter.value );
-			$create.value = $filter.value.trim();
-			$create.textContent = sprintf(
-				/* translators: %s: name of a channel. */
-				__( 'Add the channel “%s”', 'moodboard' ),
-				$filter.value.trim()
-			);
-		};
 
 		$dialog.addEventListener(
 			'command',
@@ -66,7 +54,13 @@ class MoodboardConnectElement extends Brick {
 					);
 				} catch ( error ) {
 					$box.checked = ! $box.checked;
-					store.notify( error?.message ?? '' );
+					store.notifyError(
+						error,
+						__(
+							'The channels of the block could not be changed.',
+							'moodboard'
+						)
+					);
 				} finally {
 					$box.disabled = false;
 				}
@@ -86,7 +80,13 @@ class MoodboardConnectElement extends Brick {
 					await store.connect( this.#block(), event.detail.id, true );
 					fill();
 				} catch ( error ) {
-					store.notify( error?.message ?? '' );
+					store.notifyError(
+						error,
+						__(
+							'The channels of the block could not be changed.',
+							'moodboard'
+						)
+					);
 				}
 			},
 			{ signal }
@@ -98,12 +98,10 @@ class MoodboardConnectElement extends Brick {
 	/**
 	 * The block shown.
 	 *
-	 * @return {Block|undefined} The block.
+	 * @return {Block|null} The block.
 	 */
 	#block() {
-		const { view, id, blocks } = store.get();
-
-		return blocks[ `${ view }-${ id }` ];
+		return shownBlock( store.get() );
 	}
 }
 customElements.define( 'moodboard-connect', MoodboardConnectElement );

@@ -1,6 +1,7 @@
 import { __, sprintf } from 'moodboard-app/app';
-import { listKey, store } from 'moodboard-app/store';
+import { BLOCK_VIEWS, shownListKey, store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
+import { onSwipe } from 'moodboard-app/behaviors';
 import { fill, fillImage, fillVideo } from 'moodboard-app/dom';
 import { formatKind, nameOf } from 'moodboard-app/render';
 import { urlOf } from 'moodboard-app/router';
@@ -10,10 +11,6 @@ import { scramble } from 'moodboard-app/scramble';
 
 // How long a block shows while they go by on their own.
 const PLAY_MS = 5000;
-// How far a finger goes across a block for a swipe, rather than a tap.
-const SWIPE_PX = 60;
-// The views of a block, its page.
-const BLOCK_VIEWS = [ 'media', 'text', 'link' ];
 
 /**
  * The blocks of what shows, one at a time, over the whole screen: the blocks of the grid shown from its first, or those
@@ -32,13 +29,8 @@ class MoodboardPresentElement extends Brick {
 		const $dialog = this.closest( 'dialog' );
 		/** @type {HTMLButtonElement} */
 		const $play = this.querySelector( '[data-action="play"]' );
-		/** @type {HTMLElement} */
-		const $stage = this.querySelector( '[data-part="stage"]' );
 		/** @type {HTMLVideoElement} */
 		const $video = this.querySelector( '[data-field="video"]' );
-		/** @type {PointerEvent|null} */
-		let start = null;
-
 		$dialog.addEventListener(
 			'command',
 			( /** @type {CommandEvent} */ event ) => {
@@ -165,30 +157,10 @@ class MoodboardPresentElement extends Brick {
 			{ signal }
 		);
 
-		$stage.addEventListener(
-			'pointerdown',
-			( event ) => {
-				start = 'mouse' === event.pointerType ? null : event;
-			},
-			{ signal }
-		);
-
-		$stage.addEventListener(
-			'pointerup',
-			( event ) => {
-				const dx = start ? event.clientX - start.clientX : 0;
-				const dy = start ? event.clientY - start.clientY : 0;
-
-				start = null;
-
-				if (
-					Math.abs( dx ) > SWIPE_PX &&
-					Math.abs( dx ) > 2 * Math.abs( dy )
-				) {
-					this.#go( dx < 0 ? 1 : -1 );
-				}
-			},
-			{ signal }
+		onSwipe(
+			this.querySelector( '[data-part="stage"]' ),
+			( step ) => this.#go( step ),
+			signal
 		);
 
 		return [];
@@ -198,9 +170,7 @@ class MoodboardPresentElement extends Brick {
 	#open() {
 		const state = store.get();
 		const isBlock = BLOCK_VIEWS.includes( state.view );
-		const key = isBlock
-			? listKey( { view: 'channel', id: state.from, query: '' } )
-			: listKey( state );
+		const key = shownListKey( state );
 
 		this.#blocks = ( state.lists[ key ]?.keys ?? [] )
 			.map( ( item ) => state.blocks[ item ] )

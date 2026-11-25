@@ -166,7 +166,7 @@ export function renderBlock( block, from ) {
  * @param {number[]}  checked  The channels ticked.
  * @return {HTMLElement[]} The items of the boxes.
  */
-export function renderChannelOptions( channels, filter, checked ) {
+function renderChannelOptions( channels, filter, checked ) {
 	const search = filter.trim().toLocaleLowerCase();
 
 	return channels
@@ -194,7 +194,7 @@ export function renderChannelOptions( channels, filter, checked ) {
  * @param {string}    name     The name typed.
  * @return {boolean} Whether it is a new name.
  */
-export function isNewName( channels, name ) {
+function isNewName( channels, name ) {
 	const search = name.trim().toLocaleLowerCase();
 
 	return (
@@ -202,5 +202,34 @@ export function isNewName( channels, name ) {
 		! channels.some(
 			( channel ) => channel.name.toLocaleLowerCase() === search
 		)
+	);
+}
+
+/**
+ * Fills the channels to tick of the component connect, `$root`: the boxes of the channels whose name has its filter,
+ * ticked for those of `checked`, and the button that adds a channel of the name typed, shown while none has it.
+ *
+ * @param {Element}   $root    The component.
+ * @param {Channel[]} channels Every channel.
+ * @param {number[]}  checked  The channels ticked.
+ */
+export function fillChannelPicker( $root, channels, checked ) {
+	/** @type {HTMLInputElement} */
+	const $filter = $root.querySelector( 'input[type="search"]' );
+	/** @type {HTMLButtonElement} */
+	const $create = $root.querySelector( '[data-action="create"]' );
+	const name = $filter.value.trim();
+
+	$root
+		.querySelector( '[data-list="channels"]' )
+		.replaceChildren(
+			...renderChannelOptions( channels, $filter.value, checked )
+		);
+	$create.hidden = ! isNewName( channels, $filter.value );
+	$create.value = name;
+	$create.textContent = sprintf(
+		/* translators: %s: name of a channel. */
+		__( 'Add the channel “%s”', 'moodboard' ),
+		name
 	);
 }

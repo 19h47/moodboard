@@ -1,5 +1,5 @@
 import { __, sprintf } from 'moodboard-app/app';
-import { store, targetOf } from 'moodboard-app/store';
+import { store, targetChannel, targetOf } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { fill } from 'moodboard-app/dom';
 
@@ -67,11 +67,7 @@ class MoodboardAddElement extends Brick {
 
 	/** Says where the blocks go: the channel shown, the one a block shown was opened from, or the index. */
 	#fillTitle() {
-		const state = store.get();
-		const target = targetOf( state );
-		const channel = state.channels.items.find(
-			( item ) => item.id === target
-		);
+		const channel = targetChannel( store.get() );
 
 		fill( this, {
 			title: channel

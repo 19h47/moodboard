@@ -2,6 +2,7 @@ import { __, _n, sprintf } from 'moodboard-app/app';
 import { store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { fill } from 'moodboard-app/dom';
+import { endOnEscape } from 'moodboard-app/behaviors';
 
 /**
  * The bar of the blocks selected, at the bottom of the screen while they are: how many, and what changes them all, put
@@ -28,18 +29,10 @@ class MoodboardSelectionElement extends Brick {
 			{ signal }
 		);
 
-		document.addEventListener(
-			'keydown',
-			( event ) => {
-				if (
-					'Escape' === event.key &&
-					store.get().selecting &&
-					! document.querySelector( 'dialog:modal' )
-				) {
-					store.setSelecting( false );
-				}
-			},
-			{ signal }
+		endOnEscape(
+			() => store.get().selecting,
+			() => store.setSelecting( false ),
+			signal
 		);
 
 		return [
@@ -131,7 +124,10 @@ class MoodboardSelectionElement extends Brick {
 				store.setSelecting( false );
 			}
 		} catch ( error ) {
-			store.notify( error?.message ?? '' );
+			store.notifyError(
+				error,
+				__( 'The blocks could not be changed.', 'moodboard' )
+			);
 		}
 	}
 }

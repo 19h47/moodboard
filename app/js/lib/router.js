@@ -74,7 +74,7 @@ function idOf( searchParams, name ) {
  * @param {string} url A URL of the app.
  * @return {Route} What it shows.
  */
-export function routeOf( url ) {
+function routeOf( url ) {
 	const { searchParams } = new URL( url );
 	const name = searchParams.get( 'view' );
 	const id = PAGE_VIEWS.includes( name ) ? idOf( searchParams, name ) : 0;

@@ -269,7 +269,7 @@ function labelOf( item ) {
  * @param {ApiMedia} item The media, in the context of its edition.
  * @return {Block} The block.
  */
-export function toMedia( item ) {
+function toMedia( item ) {
 	return {
 		key: `media-${ item.id }`,
 		kind: 'media',
@@ -296,7 +296,7 @@ export function toMedia( item ) {
  * @param {ApiText} item The text, in the context of its edition.
  * @return {Block} The block.
  */
-export function toText( item ) {
+function toText( item ) {
 	return {
 		key: `text-${ item.id }`,
 		kind: 'text',
@@ -323,7 +323,7 @@ export function toText( item ) {
  * @param {ApiLink} item The link, in the context of its edition.
  * @return {Block} The block.
  */
-export function toLink( item ) {
+function toLink( item ) {
 	const image = item.moodboard_image;
 
 	return {

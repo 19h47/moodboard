@@ -1,5 +1,5 @@
 import { __ } from 'moodboard-app/app';
-import { store } from 'moodboard-app/store';
+import { shownBlock, store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { clone, fill } from 'moodboard-app/dom';
 import { showBusy } from 'moodboard-app/behaviors';
@@ -38,9 +38,9 @@ class MoodboardNotesElement extends Brick {
 					await store.addNote( this.#block, $content.value.trim() );
 					$form.reset();
 				} catch ( error ) {
-					store.notify(
-						error?.message ??
-							__( 'The note could not be saved.', 'moodboard' )
+					store.notifyError(
+						error,
+						__( 'The note could not be saved.', 'moodboard' )
 					);
 				} finally {
 					showBusy( $form, false );
@@ -67,33 +67,29 @@ class MoodboardNotesElement extends Brick {
 						Number( $delete.dataset.id )
 					);
 				} catch ( error ) {
-					store.notify( error?.message ?? '' );
+					store.notifyError(
+						error,
+						__( 'The note could not be deleted.', 'moodboard' )
+					);
 				}
 			},
 			{ signal }
 		);
 
 		return [
-			store.select(
-				( state ) =>
-					[ 'media', 'text', 'link' ].includes( state.view )
-						? state.blocks[ `${ state.view }-${ state.id }` ] ??
-						  null
-						: null,
-				( block ) => {
-					// Another block shown: its notes load, once; those of a block shown before are there still, as they change here only.
-					if (
-						block &&
-						block.key !== this.#block?.key &&
-						! store.get().notes[ block.key ]
-					) {
-						store.loadNotes( block );
-					}
-
-					this.#block = block;
-					this.#render( $list );
+			store.select( shownBlock, ( block ) => {
+				// Another block shown: its notes load, once; those of a block shown before are there still, as they change here only.
+				if (
+					block &&
+					block.key !== this.#block?.key &&
+					! store.get().notes[ block.key ]
+				) {
+					store.loadNotes( block );
 				}
-			),
+
+				this.#block = block;
+				this.#render( $list );
+			} ),
 			store.select(
 				( state ) => state.notes,
 				() => this.#render( $list )

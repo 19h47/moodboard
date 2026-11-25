@@ -129,6 +129,38 @@ function sameBlock( previous, next ) {
 }
 
 /**
+ * The views of the page of a block, by its kind.
+ *
+ * @type {string[]}
+ */
+export const BLOCK_VIEWS = [ 'media', 'text', 'link' ];
+
+/**
+ * The block of the page shown, none on another view or until it has loaded.
+ *
+ * @param {State} state The state.
+ * @return {Block|null} The block.
+ */
+export function shownBlock( { view, id, blocks } ) {
+	return BLOCK_VIEWS.includes( view )
+		? blocks[ `${ view }-${ id }` ] ?? null
+		: null;
+}
+
+/**
+ * The key of the list of blocks of what shows: the index, a channel or a search; on the page of a block, the list it
+ * was opened from, where its neighbours are.
+ *
+ * @param {State} state The state.
+ * @return {string} The key.
+ */
+export function shownListKey( state ) {
+	return BLOCK_VIEWS.includes( state.view )
+		? listKey( { view: 'channel', id: state.from, query: '' } )
+		: listKey( state );
+}
+
+/**
  * The key of the list of blocks of what shows: a channel, a search, or the index, as a channel 0, where a block opened
  * from the index finds its neighbours.
  *
@@ -156,6 +188,18 @@ export function targetOf( { view, id, from } ) {
 	}
 
 	return 'index' === view ? 0 : from;
+}
+
+/**
+ * The channel blocks added go into, as targetOf() says; none for the index.
+ *
+ * @param {State} state The state.
+ * @return {Channel|undefined} The channel.
+ */
+export function targetChannel( state ) {
+	const target = targetOf( state );
+
+	return state.channels.items.find( ( item ) => item.id === target );
 }
 
 /** @augments {Store<State>} */
@@ -281,14 +325,14 @@ class MoodboardStore extends Store {
 		} ) );
 
 		if ( ! this.get().channels.loaded ) {
-			this.loadChannels();
+			this.#loadChannels();
 		} else {
 			this.#loadView();
 		}
 	}
 
 	/** Loads the channels of the curator, then the blocks of the view. */
-	async loadChannels() {
+	async #loadChannels() {
 		if ( await this.#fetchChannels() ) {
 			this.#loadView();
 		}
@@ -344,13 +388,10 @@ class MoodboardStore extends Store {
 	 * again, refresh(): one loaded is as it is on the server.
 	 */
 	#loadView() {
-		const { view, id, from, lists } = this.get();
-		const isBlock = [ 'media', 'text', 'link' ].includes( view );
-		const key = isBlock
-			? listKey( { view: 'channel', id: from, query: '' } )
-			: listKey( this.get() );
+		const { view, id, lists } = this.get();
+		const key = shownListKey( this.get() );
 
-		if ( isBlock ) {
+		if ( BLOCK_VIEWS.includes( view ) ) {
 			this.#loadBlock( /** @type {Block['kind']} */ ( view ), id );
 		}
 
@@ -490,12 +531,26 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Searches the index: its blocks and its channels whose name has the search.
+	 * Searches the index: its blocks and its channels whose name has the search. The lists of the other searches go, one
+	 * for each word typed.
 	 *
 	 * @param {string} query The search.
 	 */
 	setQuery( query ) {
-		this.set( ( state ) => ( { ...state, query } ) );
+		this.set( ( state ) => {
+			const searched = listKey( { ...state, query } );
+
+			return {
+				...state,
+				query,
+				lists: Object.fromEntries(
+					Object.entries( state.lists ).filter(
+						( [ key ] ) =>
+							! key.startsWith( 'search-' ) || key === searched
+					)
+				),
+			};
+		} );
 		this.loadList( listKey( this.get() ) );
 	}
 
@@ -506,6 +561,16 @@ class MoodboardStore extends Store {
 	 */
 	notify( notice ) {
 		this.set( ( state ) => ( { ...state, notice } ) );
+	}
+
+	/**
+	 * Says what went wrong: what the API says of it, as text, or else `fallback`, such as without network.
+	 *
+	 * @param {unknown} error    The error.
+	 * @param {string}  fallback What went wrong, without a message.
+	 */
+	notifyError( error, fallback ) {
+		this.notify( api.errorMessage( error, fallback ) );
 	}
 
 	/**
@@ -538,10 +603,7 @@ class MoodboardStore extends Store {
 	 * show.
 	 */
 	async #reload() {
-		const { view, from } = this.get();
-		const shown = [ 'media', 'text', 'link' ].includes( view )
-			? listKey( { view: 'channel', id: from, query: '' } )
-			: listKey( this.get() );
+		const shown = shownListKey( this.get() );
 
 		this.set( ( state ) => ( {
 			...state,

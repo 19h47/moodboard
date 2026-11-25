@@ -1,5 +1,6 @@
 import { store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
+import { endOnEscape } from 'moodboard-app/behaviors';
 
 /**
  * The control that starts putting the blocks of the channel shown in order, or ends it: pressed while they are. Escape
@@ -15,19 +16,10 @@ class MoodboardArrangeToggleElement extends Brick {
 			{ signal }
 		);
 
-		document.addEventListener(
-			'keydown',
-			( event ) => {
-				if (
-					'Escape' === event.key &&
-					! event.defaultPrevented &&
-					store.get().arranging &&
-					! document.querySelector( 'dialog:modal' )
-				) {
-					store.setArranging( false );
-				}
-			},
-			{ signal }
+		endOnEscape(
+			() => store.get().arranging,
+			() => store.setArranging( false ),
+			signal
 		);
 
 		return [

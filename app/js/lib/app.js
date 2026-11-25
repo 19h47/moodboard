@@ -5,7 +5,7 @@
  */
 
 export const { apiFetch } = window.wp;
-export const { __, _n, _x, sprintf } = window.wp.i18n;
+export const { __, _n, sprintf } = window.wp.i18n;
 export const { addQueryArgs } = window.wp.url;
 export const {
 	appUrl,

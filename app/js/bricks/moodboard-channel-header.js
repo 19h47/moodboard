@@ -1,4 +1,4 @@
-import { __, appUrl } from 'moodboard-app/app';
+import { __ } from 'moodboard-app/app';
 import { store } from 'moodboard-app/store';
 import { urlOf } from 'moodboard-app/router';
 import { Brick } from 'moodboard-app/brick';
@@ -56,7 +56,7 @@ class MoodboardChannelHeaderElement extends Brick {
 		}
 
 		return [
-			{ name: __( 'Index', 'moodboard' ), url: appUrl },
+			{ name: __( 'Index', 'moodboard' ), url: urlOf( {} ) },
 			...ancestors.map( ( ancestor ) => ( {
 				name: ancestor.name,
 				url: urlOf( { view: 'channel', id: ancestor.id } ),

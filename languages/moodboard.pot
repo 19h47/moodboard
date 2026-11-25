@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-25T14:52:50+00:00\n"
+"POT-Creation-Date: 2026-11-25T15:00:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: moodboard\n"
@@ -19,8 +19,8 @@ msgstr ""
 #: app/class-login.php:207
 #: app/class-page.php:155
 #: app/class-page.php:156
-#: app/class-page.php:286
-#: app/class-page.php:287
+#: app/class-page.php:289
+#: app/class-page.php:290
 #: app/partials/moodboard-app.php:38
 #: app/partials/moodboard-app.php:56
 msgid "Moodboard"
@@ -193,7 +193,7 @@ msgid "Present"
 msgstr ""
 
 #: app/partials/moodboard-app.php:74
-#: app/js/bricks/moodboard-selection.js:67
+#: app/js/bricks/moodboard-selection.js:60
 msgid "Select blocks"
 msgstr ""
 
@@ -412,63 +412,68 @@ msgid "Could not rename the update folder."
 msgstr ""
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-add.js:80
+#: app/js/bricks/moodboard-add.js:76
 #, js-format
 msgid "Add to %s"
 msgstr ""
 
-#: app/js/bricks/moodboard-add.js:83
+#: app/js/bricks/moodboard-add.js:79
 msgid "Add to the index"
 msgstr ""
 
-#: app/js/bricks/moodboard-block-form.js:86
+#: app/js/bricks/moodboard-block-form.js:82
 msgid "The block could not be saved."
 msgstr ""
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-block.js:206
+#: app/js/bricks/moodboard-block.js:166
 #, js-format
 msgid "Back to %s"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:209
+#: app/js/bricks/moodboard-block.js:169
 msgid "Back to the index"
 msgstr ""
 
 #. translators: 1: width of an image, 2: its height, in pixels.
-#: app/js/bricks/moodboard-block.js:227
+#: app/js/bricks/moodboard-block.js:187
 #, js-format
 msgid "%1$d × %2$d"
 msgstr ""
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-block.js:285
-#: app/js/bricks/moodboard-selection.js:85
+#: app/js/bricks/moodboard-block.js:236
+#: app/js/bricks/moodboard-selection.js:78
 #, js-format
 msgid "Remove from %s"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:364
+#: app/js/bricks/moodboard-block.js:298
+msgid "The block could not be removed from the channel."
+msgstr ""
+
+#: app/js/bricks/moodboard-block.js:318
 msgid "Delete this media and its file?"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:365
+#: app/js/bricks/moodboard-block.js:319
 msgid "Delete this text?"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:366
+#: app/js/bricks/moodboard-block.js:320
 msgid "Delete this link?"
 msgstr ""
 
-#: app/js/bricks/moodboard-block.js:381
+#: app/js/bricks/moodboard-block.js:335
 msgid "Block deleted."
 msgstr ""
 
-#. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-bulk.js:37
-#: app/js/bricks/moodboard-connect.js:36
-#, js-format
-msgid "Add the channel “%s”"
+#: app/js/bricks/moodboard-block.js:339
+msgid "The block could not be deleted."
+msgstr ""
+
+#: app/js/bricks/moodboard-bulk.js:90
+msgid "The blocks could not be connected."
 msgstr ""
 
 #: app/js/bricks/moodboard-channel-form.js:102
@@ -485,6 +490,15 @@ msgstr ""
 
 #: app/js/bricks/moodboard-channel-form.js:210
 msgid "Channel deleted."
+msgstr ""
+
+#: app/js/bricks/moodboard-channel-form.js:214
+msgid "The channel could not be deleted."
+msgstr ""
+
+#: app/js/bricks/moodboard-connect.js:59
+#: app/js/bricks/moodboard-connect.js:85
+msgid "The channels of the block could not be changed."
 msgstr ""
 
 #: app/js/bricks/moodboard-density.js:29
@@ -504,52 +518,52 @@ msgid "Two a row"
 msgstr ""
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-drop.js:175
+#: app/js/bricks/moodboard-drop.js:171
 #, js-format
 msgid "Drop into %s"
 msgstr ""
 
-#: app/js/bricks/moodboard-drop.js:178
+#: app/js/bricks/moodboard-drop.js:174
 msgid "Drop into the index"
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:153
+#: app/js/bricks/moodboard-grid.js:158
 msgid "Loading…"
 msgstr ""
 
 #. translators: 1: name of a block, 2: its place, 3: number of blocks.
-#: app/js/bricks/moodboard-grid.js:489
+#: app/js/bricks/moodboard-grid.js:494
 #, js-format
 msgid "%1$s picked up, %2$d of %3$d."
 msgstr ""
 
 #. translators: 1: place of a block, 2: number of blocks.
-#: app/js/bricks/moodboard-grid.js:509
+#: app/js/bricks/moodboard-grid.js:514
 #, js-format
 msgid "%1$d of %2$d."
 msgstr ""
 
 #. translators: 1: name of a block, 2: its place, 3: number of blocks.
-#: app/js/bricks/moodboard-grid.js:526
+#: app/js/bricks/moodboard-grid.js:531
 #, js-format
 msgid "%1$s put down, %2$d of %3$d."
 msgstr ""
 
 #. translators: %s: name of a block.
-#: app/js/bricks/moodboard-grid.js:548
+#: app/js/bricks/moodboard-grid.js:553
 #, js-format
 msgid "%s put back."
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:603
+#: app/js/bricks/moodboard-grid.js:608
 msgid "Nothing found."
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:607
+#: app/js/bricks/moodboard-grid.js:612
 msgid "Nothing yet: drop images here, or add some with +."
 msgstr ""
 
-#: app/js/bricks/moodboard-grid.js:611
+#: app/js/bricks/moodboard-grid.js:616
 msgid "Nothing yet: drop images here, or add a channel with +."
 msgstr ""
 
@@ -557,18 +571,22 @@ msgstr ""
 msgid "The note could not be saved."
 msgstr ""
 
-#: app/js/bricks/moodboard-present.js:53
+#: app/js/bricks/moodboard-notes.js:72
+msgid "The note could not be deleted."
+msgstr ""
+
+#: app/js/bricks/moodboard-present.js:45
 msgid "No block to present."
 msgstr ""
 
 #. translators: 1: position of the block, 2: number of blocks.
-#: app/js/bricks/moodboard-present.js:287
+#: app/js/bricks/moodboard-present.js:257
 #, js-format
 msgid "%1$d of %2$d"
 msgstr ""
 
 #. translators: %d: number of blocks selected.
-#: app/js/bricks/moodboard-selection.js:59
+#: app/js/bricks/moodboard-selection.js:52
 #, js-format
 msgid "%d block selected"
 msgid_plural "%d blocks selected"
@@ -576,12 +594,16 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of blocks selected.
-#: app/js/bricks/moodboard-selection.js:117
+#: app/js/bricks/moodboard-selection.js:110
 #, js-format
 msgid "Delete %d block, and its file?"
 msgid_plural "Delete %d blocks, and their files?"
 msgstr[0] ""
 msgstr[1] ""
+
+#: app/js/bricks/moodboard-selection.js:129
+msgid "The blocks could not be changed."
+msgstr ""
 
 #. translators: %d: number of blocks.
 #: app/js/lib/render.js:21
@@ -603,64 +625,70 @@ msgstr ""
 msgid "Move %s"
 msgstr ""
 
-#: app/js/lib/store.js:332
+#. translators: %s: name of a channel.
+#: app/js/lib/render.js:232
+#, js-format
+msgid "Add the channel “%s”"
+msgstr ""
+
+#: app/js/lib/store.js:376
 msgid "The channels could not load."
 msgstr ""
 
 #. translators: %s: the search, a word typed wrong taken for the closest word of the blocks.
-#: app/js/lib/store.js:413
+#: app/js/lib/store.js:454
 #, js-format
 msgid "Results for “%s”."
 msgstr ""
 
-#: app/js/lib/store.js:424
+#: app/js/lib/store.js:465
 msgid "The blocks could not load."
 msgstr ""
 
-#: app/js/lib/store.js:470
+#: app/js/lib/store.js:511
 msgid "The block could not load."
 msgstr ""
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:616
+#: app/js/lib/store.js:678
 #, js-format
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/js/lib/store.js:637
+#: app/js/lib/store.js:699
 msgid "A block could not be added."
 msgstr ""
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:648
+#: app/js/lib/store.js:710
 #, js-format
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/js/lib/store.js:880
+#: app/js/lib/store.js:942
 msgid "The order could not be kept."
 msgstr ""
 
-#: app/js/lib/store.js:943
+#: app/js/lib/store.js:1005
 msgid "Blocks connected."
 msgstr ""
 
-#: app/js/lib/store.js:955
+#: app/js/lib/store.js:1017
 msgid "Blocks removed from the channel."
 msgstr ""
 
-#: app/js/lib/store.js:977
+#: app/js/lib/store.js:1039
 msgid "Blocks moved."
 msgstr ""
 
-#: app/js/lib/store.js:991
+#: app/js/lib/store.js:1053
 msgid "Blocks deleted."
 msgstr ""
 
-#: app/js/lib/store.js:1017
+#: app/js/lib/store.js:1079
 msgid "The notes could not load."
 msgstr ""

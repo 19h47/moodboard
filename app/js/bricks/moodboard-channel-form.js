@@ -97,9 +97,9 @@ class MoodboardChannelFormElement extends Brick {
 						$dialog.close();
 					}
 				} catch ( error ) {
-					store.notify(
-						error?.message ??
-							__( 'The channel could not be saved.', 'moodboard' )
+					store.notifyError(
+						error,
+						__( 'The channel could not be saved.', 'moodboard' )
 					);
 				} finally {
 					showBusy( $form, false );
@@ -209,7 +209,10 @@ class MoodboardChannelFormElement extends Brick {
 			await store.deleteChannel( id );
 			store.notify( __( 'Channel deleted.', 'moodboard' ) );
 		} catch ( error ) {
-			store.notify( error?.message ?? '' );
+			store.notifyError(
+				error,
+				__( 'The channel could not be deleted.', 'moodboard' )
+			);
 		}
 	}
 }

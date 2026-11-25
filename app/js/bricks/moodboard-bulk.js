@@ -1,8 +1,8 @@
-import { __, sprintf } from 'moodboard-app/app';
+import { __ } from 'moodboard-app/app';
 import { store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { showBusy } from 'moodboard-app/behaviors';
-import { isNewName, renderChannelOptions } from 'moodboard-app/render';
+import { fillChannelPicker } from 'moodboard-app/render';
 
 /** @import { Channel } from 'moodboard-app/api' */
 
@@ -24,20 +24,10 @@ class MoodboardBulkElement extends Brick {
 		const $create = this.querySelector( '[data-action="create"]' );
 		// The channels ticked, kept as the filter hides some of them.
 		const checked = new Set();
-		const fill = () => {
-			const { items } = store.get().channels;
-
-			$list.replaceChildren(
-				...renderChannelOptions( items, $filter.value, [ ...checked ] )
-			);
-			$create.hidden = ! isNewName( items, $filter.value );
-			$create.value = $filter.value.trim();
-			$create.textContent = sprintf(
-				/* translators: %s: name of a channel. */
-				__( 'Add the channel “%s”', 'moodboard' ),
-				$filter.value.trim()
-			);
-		};
+		const fill = () =>
+			fillChannelPicker( this, store.get().channels.items, [
+				...checked,
+			] );
 
 		$dialog.addEventListener(
 			'command',
@@ -95,7 +85,10 @@ class MoodboardBulkElement extends Brick {
 					await store.connectSelection( [ ...checked ] );
 					$dialog.close();
 				} catch ( error ) {
-					store.notify( error?.message ?? '' );
+					store.notifyError(
+						error,
+						__( 'The blocks could not be connected.', 'moodboard' )
+					);
 				} finally {
 					showBusy( $form, false );
 				}

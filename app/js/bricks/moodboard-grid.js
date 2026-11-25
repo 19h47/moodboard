@@ -137,6 +137,11 @@ class MoodboardGridElement extends Brick {
 							  );
 					} );
 
+					// A card no longer drawn is forgotten.
+					[ ...this.#drawn.keys() ]
+						.filter( ( key ) => ! items.has( key ) )
+						.forEach( ( key ) => this.#drawn.delete( key ) );
+
 					if ( ! state.arranging && this.#grabbed ) {
 						this.#drop();
 					}

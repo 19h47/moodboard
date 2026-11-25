@@ -1,5 +1,5 @@
 import { __ } from 'moodboard-app/app';
-import { store } from 'moodboard-app/store';
+import { shownBlock, store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
 import { showBusy } from 'moodboard-app/behaviors';
 
@@ -17,11 +17,7 @@ class MoodboardBlockFormElement extends Brick {
 			/** @type {HTMLInputElement} */ (
 				$form.elements.namedItem( name )
 			);
-		const block = () => {
-			const { view, id, blocks } = store.get();
-
-			return blocks[ `${ view }-${ id }` ] ?? null;
-		};
+		const block = () => shownBlock( store.get() );
 
 		$dialog.addEventListener(
 			'command',
@@ -81,9 +77,9 @@ class MoodboardBlockFormElement extends Brick {
 					} );
 					$dialog.close();
 				} catch ( error ) {
-					store.notify(
-						error?.message ??
-							__( 'The block could not be saved.', 'moodboard' )
+					store.notifyError(
+						error,
+						__( 'The block could not be saved.', 'moodboard' )
 					);
 				} finally {
 					showBusy( $form, false );
