@@ -168,9 +168,8 @@ class MoodboardStore extends Store {
 	#controllers = new Map();
 
 	/**
-	 * The channels of blocks being changed, one change after the other, the lists reloaded with it: each starts from the
-	 * channels the one before left, as boxes ticked quickly would otherwise each send the channels of before, the last
-	 * one undoing the others.
+	 * The channels of blocks being changed, one change after the other: each starts from the channels the one before
+	 * left, as boxes ticked quickly would otherwise each send the channels of before, the last one undoing the others.
 	 *
 	 * @type {Promise<unknown>}
 	 */
@@ -182,6 +181,16 @@ class MoodboardStore extends Store {
 	 * @type {Promise<unknown>}
 	 */
 	#ordering = Promise.resolve();
+
+	/**
+	 * The load of what changes touch, in flight, and the one that follows it for the changes made meanwhile.
+	 *
+	 * @type {Promise<void>|null}
+	 */
+	#refreshing = null;
+
+	/** @type {Promise<void>|null} */
+	#nextRefresh = null;
 
 	constructor() {
 		super( {
@@ -211,6 +220,20 @@ class MoodboardStore extends Store {
 					? state
 					: { ...state, theme: matches ? 'dark' : 'light' }
 			);
+		} );
+
+		// Back to the app, what was added meanwhile shows, such as a block shared from a phone: the lists loaded wait otherwise.
+		document.addEventListener( 'visibilitychange', () => {
+			const { view, arranging } = this.get();
+
+			// Blocks being put in order keep the order given, until it is kept.
+			if (
+				'visible' === document.visibilityState &&
+				view &&
+				! arranging
+			) {
+				this.#refresh();
+			}
 		} );
 
 		this.subscribe( ( state, previous ) => {
@@ -316,17 +339,23 @@ class MoodboardStore extends Store {
 		}
 	}
 
-	/** Loads what the view shows: its list of blocks, or its block. */
+	/**
+	 * Loads what the view shows: its block, and its list of blocks, unless loaded. A change loads the lists it touches
+	 * again, refresh(): one loaded is as it is on the server.
+	 */
 	#loadView() {
-		const { view, id, from } = this.get();
+		const { view, id, from, lists } = this.get();
+		const isBlock = [ 'media', 'text', 'link' ].includes( view );
+		const key = isBlock
+			? listKey( { view: 'channel', id: from, query: '' } )
+			: listKey( this.get() );
 
-		if ( [ 'media', 'text', 'link' ].includes( view ) ) {
+		if ( isBlock ) {
 			this.#loadBlock( /** @type {Block['kind']} */ ( view ), id );
-			this.loadList(
-				listKey( { view: 'channel', id: from, query: '' } )
-			);
-		} else {
-			this.loadList( listKey( this.get() ) );
+		}
+
+		if ( ! lists[ key ]?.loaded || lists[ key ].error ) {
+			this.loadList( key );
 		}
 	}
 
@@ -480,11 +509,35 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Loads again what a change touches: the channels, whose counts and covers change, and the lists the view shows,
-	 * which show what they hold until they have loaded again, a card changing only if its block does; the other lists
-	 * go, to load again as they show.
+	 * Loads again what a change touches, once for the changes made meanwhile: a load in flight started before the last
+	 * change, so one more follows it, which every change made meanwhile shares, as boxes of Connect ticked quickly.
+	 *
+	 * @return {Promise<void>} Once what the change touches has loaded.
 	 */
-	async #refresh() {
+	#refresh() {
+		if ( ! this.#refreshing ) {
+			this.#refreshing = this.#reload().finally( () => {
+				this.#refreshing = null;
+			} );
+
+			return this.#refreshing;
+		}
+
+		this.#nextRefresh ??= this.#refreshing.then( () => {
+			this.#nextRefresh = null;
+
+			return this.#refresh();
+		} );
+
+		return this.#nextRefresh;
+	}
+
+	/**
+	 * Loads again the channels, whose counts and covers change, and the lists the view shows, which show what they hold
+	 * until they have loaded again, a card changing only if its block does; the other lists go, to load again as they
+	 * show.
+	 */
+	async #reload() {
 		const { view, from } = this.get();
 		const shown = [ 'media', 'text', 'link' ].includes( view )
 			? listKey( { view: 'channel', id: from, query: '' } )
@@ -617,20 +670,22 @@ class MoodboardStore extends Store {
 	async createChannel( fields ) {
 		const channel = await api.createChannel( fields );
 
-		await this.#refresh();
+		// A channel added is empty: the lists of blocks stay as they are.
+		await this.#fetchChannels();
 
 		return channel;
 	}
 
 	/**
-	 * Changes a channel.
+	 * Changes a channel: its name, its description or its parent, which the lists of blocks leave out, a channel listing
+	 * its own blocks, not those of its sub-channels.
 	 *
 	 * @param {number}                                                       id     The channel.
 	 * @param {Partial<{name: string, description: string, parent: number}>} fields What changes.
 	 */
 	async updateChannel( id, fields ) {
 		await api.updateChannel( id, fields );
-		await this.#refresh();
+		await this.#fetchChannels();
 	}
 
 	/**
@@ -668,12 +723,13 @@ class MoodboardStore extends Store {
 				: channels.filter( ( id ) => id !== channelId );
 
 			this.#setBlock( await api.setChannels( block, channelIds ) );
-			await this.#refresh();
 		} );
 
 		// A change that fails leaves the next to start from what is saved.
 		this.#connecting = connected.catch( () => {} );
 		await connected;
+		// Out of the line of the changes: the next one waits for this one, not for what it loads.
+		await this.#refresh();
 	}
 
 	/**
@@ -777,8 +833,14 @@ class MoodboardStore extends Store {
 		}
 
 		const keys = list.keys.filter( ( item ) => item !== key );
+		const to = Math.max( 0, Math.min( place, keys.length ) );
 
-		keys.splice( Math.max( 0, Math.min( place, keys.length ) ), 0, key );
+		// A card dragged over its own place, or a key that goes nowhere, moves nothing: the grid is not drawn again.
+		if ( list.keys.indexOf( key ) === to ) {
+			return;
+		}
+
+		keys.splice( to, 0, key );
 		this.#setList( `channel-${ channelId }`, { keys } );
 	}
 

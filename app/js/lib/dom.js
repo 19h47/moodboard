@@ -30,7 +30,9 @@ export function fill( $root, fields ) {
 
 /**
  * Shows an image at the width it takes, its sizes before its source, for the browser to take the one it shows at
- * once; its width and height make its place known before it loads. Hidden without one.
+ * once; its width and height make its place known before it loads. The image is lazy, `loading="lazy"`, even on the
+ * screen: the browser takes its size once laid out, `sizes="auto"`, which it ignores for an image loaded at once,
+ * taking it as wide as the screen. Hidden without one.
  *
  * @param {HTMLImageElement} $image The image.
  * @param {Image|null}       image  What it shows, none without.

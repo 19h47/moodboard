@@ -43,8 +43,8 @@ class MoodboardSelectionElement extends Brick {
 		);
 
 		return [
-			store.select(
-				( state ) => state,
+			store.watch(
+				[ 'selecting', 'selection', 'view', 'id', 'channels' ],
 				( { selecting, selection, view, id, channels } ) => {
 					const channel =
 						'channel' === view

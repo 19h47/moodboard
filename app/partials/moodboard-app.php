@@ -128,7 +128,7 @@ $moodboard_tabs = array(
 							<a class="app-control" href="" data-part="channel"><?php Markup::render_icon( 'close' ); ?></a>
 						</nav>
 						<div class="moodboard-block__media" data-part="media">
-							<img class="moodboard-block__image" data-field="image" alt="" hidden>
+							<img class="moodboard-block__image" data-field="image" alt="" loading="lazy" hidden>
 							<video class="moodboard-block__image" data-field="video" controls preload="metadata" hidden></video>
 							<div class="moodboard-block__embed" data-field="embed" hidden></div>
 							<a class="app-pill" data-field="file" href="" hidden><?php esc_html_e( 'Open the file', 'moodboard' ); ?> <span data-field="kind"></span></a>
@@ -222,7 +222,7 @@ $moodboard_tabs = array(
 		<dialog class="moodboard-present" id="moodboard-present" aria-label="<?php esc_attr_e( 'Presentation', 'moodboard' ); ?>">
 			<moodboard-present class="moodboard-present__frame">
 				<div class="moodboard-present__stage" data-part="stage">
-					<img class="moodboard-present__image" data-field="image" alt="" hidden>
+					<img class="moodboard-present__image" data-field="image" alt="" loading="lazy" hidden>
 					<video class="moodboard-present__image" data-field="video" controls hidden></video>
 					<p class="moodboard-present__text" data-field="text"></p>
 				</div>

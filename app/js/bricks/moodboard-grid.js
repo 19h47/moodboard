@@ -73,8 +73,19 @@ class MoodboardGridElement extends Brick {
 		);
 
 		return [
-			store.select(
-				( state ) => state,
+			store.watch(
+				[
+					'view',
+					'id',
+					'tab',
+					'query',
+					'channels',
+					'lists',
+					'blocks',
+					'selecting',
+					'selection',
+					'arranging',
+				],
 				( state ) => {
 					const isShown = isIndex
 						? 'index' === state.view

@@ -129,7 +129,8 @@ import {
  */
 
 /**
- * Every item of a route, page after page, and the headers of its last page.
+ * Every item of a route, and the headers of its first page: the first page says how many there are, the others are
+ * asked for together, their items in their order.
  *
  * @template T
  * @param {string}                  path   The route, such as /wp/v2/media.
@@ -138,22 +139,29 @@ import {
  * @return {Promise<{items: T[], headers: Headers}>} The items, and the headers.
  */
 async function fetchAll( path, query, signal ) {
-	const items = [];
-	let headers = new Headers();
-
-	for ( let page = 1, pages = 1; page <= pages; page++ ) {
+	/** @param {number} page A page, from 1. */
+	const fetchPage = async ( page ) => {
 		const response = await apiFetch( {
 			path: addQueryArgs( path, { ...query, per_page: perPage, page } ),
 			parse: false,
 			signal,
 		} );
 
-		items.push( ...( await response.json() ) );
-		headers = response.headers;
-		pages = Number( headers.get( 'X-WP-TotalPages' ) ) || 1;
-	}
+		return { response, items: await response.json() };
+	};
+	const first = await fetchPage( 1 );
+	const { headers } = first.response;
+	const pages = Number( headers.get( 'X-WP-TotalPages' ) ) || 1;
+	const others = await Promise.all(
+		Array.from( { length: pages - 1 }, ( _, index ) =>
+			fetchPage( index + 2 )
+		)
+	);
 
-	return { items, headers };
+	return {
+		items: [ first, ...others ].flatMap( ( page ) => page.items ),
+		headers,
+	};
 }
 
 /**

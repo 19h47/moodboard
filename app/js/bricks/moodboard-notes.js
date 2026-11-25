@@ -81,8 +81,12 @@ class MoodboardNotesElement extends Brick {
 						  null
 						: null,
 				( block ) => {
-					// Another block shown: its notes load, once.
-					if ( block && block.key !== this.#block?.key ) {
+					// Another block shown: its notes load, once; those of a block shown before are there still, as they change here only.
+					if (
+						block &&
+						block.key !== this.#block?.key &&
+						! store.get().notes[ block.key ]
+					) {
 						store.loadNotes( block );
 					}
 
