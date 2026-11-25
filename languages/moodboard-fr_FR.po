@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moodboard 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/moodboard\n"
-"POT-Creation-Date: 2026-11-25T15:12:00+00:00\n"
+"POT-Creation-Date: 2026-11-25T15:35:48+00:00\n"
 "PO-Revision-Date: 2026-11-16T09:11:30+00:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -189,7 +189,7 @@ msgstr "Rechercher (/)"
 msgid "Present"
 msgstr "Présenter"
 
-#: app/partials/moodboard-app.php:74 app/js/bricks/moodboard-selection.js:60
+#: app/partials/moodboard-app.php:74 app/js/bricks/moodboard-selection.js:85
 msgid "Select blocks"
 msgstr "Sélectionner des blocs"
 
@@ -381,31 +381,31 @@ msgstr "Qui a fait le bloc, comme un artiste, un photographe ou un compte."
 msgid "Whether the media is a block of the moodboard of its author."
 msgstr "Si le média est un bloc du moodboard de son auteur."
 
-#: includes/class-posts.php:84
+#: includes/class-posts.php:86
 msgctxt "moodboard texts general name"
 msgid "Texts"
 msgstr "Textes"
 
-#: includes/class-posts.php:85
+#: includes/class-posts.php:87
 msgctxt "moodboard texts singular name"
 msgid "Text"
 msgstr "Texte"
 
-#: includes/class-posts.php:88
+#: includes/class-posts.php:90
 msgctxt "moodboard links general name"
 msgid "Links"
 msgstr "Liens"
 
-#: includes/class-posts.php:89
+#: includes/class-posts.php:91
 msgctxt "moodboard links singular name"
 msgid "Link"
 msgstr "Lien"
 
-#: includes/class-posts.php:147
+#: includes/class-posts.php:149
 msgid "The player of the URL of the link, as core embeds it, empty for none."
 msgstr "Le lecteur de l’URL du lien, tel que le cœur l’intègre, vide sans."
 
-#: includes/class-posts.php:182
+#: includes/class-posts.php:184
 msgid "The image of the page of the link, with its sizes, null for none."
 msgstr "L’image de la page du lien, avec ses tailles, null sans."
 
@@ -446,7 +446,8 @@ msgid "%1$d × %2$d"
 msgstr "%1$d × %2$d"
 
 #. translators: %s: name of a channel.
-#: app/js/bricks/moodboard-block.js:243 app/js/bricks/moodboard-selection.js:79
+#: app/js/bricks/moodboard-block.js:243
+#: app/js/bricks/moodboard-selection.js:104
 msgid "Remove from %s"
 msgstr "Retirer de %s"
 
@@ -512,39 +513,39 @@ msgstr "Déposer dans « %s »"
 msgid "Drop into the index"
 msgstr "Déposer dans l’index"
 
-#: app/js/bricks/moodboard-grid.js:158
+#: app/js/bricks/moodboard-grid.js:183
 msgid "Loading…"
 msgstr "Chargement…"
 
 #. translators: 1: name of a block, 2: its place, 3: number of blocks.
-#: app/js/bricks/moodboard-grid.js:494
+#: app/js/bricks/moodboard-grid.js:545
 msgid "%1$s picked up, %2$d of %3$d."
 msgstr "%1$s pris, %2$d sur %3$d."
 
 #. translators: 1: place of a block, 2: number of blocks.
-#: app/js/bricks/moodboard-grid.js:514
+#: app/js/bricks/moodboard-grid.js:565
 msgid "%1$d of %2$d."
 msgstr "%1$d sur %2$d."
 
 #. translators: 1: name of a block, 2: its place, 3: number of blocks.
-#: app/js/bricks/moodboard-grid.js:531
+#: app/js/bricks/moodboard-grid.js:582
 msgid "%1$s put down, %2$d of %3$d."
 msgstr "%1$s posé, %2$d sur %3$d."
 
 #. translators: %s: name of a block.
-#: app/js/bricks/moodboard-grid.js:553
+#: app/js/bricks/moodboard-grid.js:604
 msgid "%s put back."
 msgstr "%s remis en place."
 
-#: app/js/bricks/moodboard-grid.js:611
+#: app/js/bricks/moodboard-grid.js:674
 msgid "Nothing found."
 msgstr "Rien trouvé."
 
-#: app/js/bricks/moodboard-grid.js:615
+#: app/js/bricks/moodboard-grid.js:678
 msgid "Nothing yet: drop images here, or add some with +."
 msgstr "Rien pour l’instant : déposez des images ici, ou ajoutez-en avec +."
 
-#: app/js/bricks/moodboard-grid.js:619
+#: app/js/bricks/moodboard-grid.js:682
 msgid "Nothing yet: drop images here, or add a channel with +."
 msgstr ""
 "Rien pour l’instant : déposez des images ici, ou ajoutez un canal avec +."
@@ -567,106 +568,106 @@ msgid "%1$d of %2$d"
 msgstr "%1$d sur %2$d"
 
 #. translators: %d: number of blocks selected.
-#: app/js/bricks/moodboard-selection.js:52
+#: app/js/bricks/moodboard-selection.js:77
 msgid "%d block selected"
 msgid_plural "%d blocks selected"
 msgstr[0] "%d bloc sélectionné"
 msgstr[1] "%d blocs sélectionnés"
 
-#: app/js/bricks/moodboard-selection.js:116
+#: app/js/bricks/moodboard-selection.js:141
 msgid "The blocks could not be changed."
 msgstr "Les blocs n’ont pas pu être modifiés."
 
 #. translators: %d: number of blocks.
-#: app/js/lib/render.js:21
+#: app/js/lib/render.js:22
 msgid "%d block"
 msgid_plural "%d blocks"
 msgstr[0] "%d bloc"
 msgstr[1] "%d blocs"
 
 #. translators: %s: name of a block.
-#: app/js/lib/render.js:140
+#: app/js/lib/render.js:141
 msgid "Select %s"
 msgstr "Sélectionner %s"
 
 #. translators: %s: name of a block.
-#: app/js/lib/render.js:145
+#: app/js/lib/render.js:146
 msgid "Move %s"
 msgstr "Déplacer %s"
 
 #. translators: %s: name of a channel.
-#: app/js/lib/render.js:232
+#: app/js/lib/render.js:241
 msgid "Add the channel “%s”"
 msgstr "Ajouter le canal « %s »"
 
-#: app/js/lib/store.js:406
+#: app/js/lib/store.js:449
 msgid "The channels could not load."
 msgstr "Les canaux n’ont pas pu se charger."
 
 #. translators: %s: the search, a word typed wrong taken for the closest word of the blocks.
-#: app/js/lib/store.js:493
+#: app/js/lib/store.js:536
 msgid "Results for “%s”."
 msgstr "Résultats pour « %s »."
 
-#: app/js/lib/store.js:504
+#: app/js/lib/store.js:547
 msgid "The blocks could not load."
 msgstr "Les blocs n’ont pas pu se charger."
 
-#: app/js/lib/store.js:550
+#: app/js/lib/store.js:593
 msgid "The block could not load."
 msgstr "Le bloc n’a pas pu se charger."
 
 #. translators: %d: number of blocks being added.
-#: app/js/lib/store.js:725
+#: app/js/lib/store.js:777
 msgid "Adding %d block…"
 msgid_plural "Adding %d blocks…"
 msgstr[0] "Ajout de %d bloc…"
 msgstr[1] "Ajout de %d blocs…"
 
-#: app/js/lib/store.js:746
+#: app/js/lib/store.js:799
 msgid "A block could not be added."
 msgstr "Un bloc n’a pas pu être ajouté."
 
 #. translators: %d: number of blocks added.
-#: app/js/lib/store.js:757
+#: app/js/lib/store.js:820
 msgid "%d block added."
 msgid_plural "%d blocks added."
 msgstr[0] "%d bloc ajouté."
 msgstr[1] "%d blocs ajoutés."
 
-#: app/js/lib/store.js:873
+#: app/js/lib/store.js:935
 msgid "Block deleted."
 msgstr "Bloc supprimé."
 
-#: app/js/lib/store.js:874
+#: app/js/lib/store.js:936
 msgid "Blocks deleted."
 msgstr "Blocs supprimés."
 
-#: app/js/lib/store.js:910
+#: app/js/lib/store.js:972
 msgid "Deletion undone."
 msgstr "Suppression annulée."
 
-#: app/js/lib/store.js:950
+#: app/js/lib/store.js:1012
 msgid "The block could not be deleted."
 msgstr "Le bloc n’a pas pu être supprimé."
 
-#: app/js/lib/store.js:1096
+#: app/js/lib/store.js:1158
 msgid "The order could not be kept."
 msgstr "L’ordre n’a pas pu être enregistré."
 
-#: app/js/lib/store.js:1159
+#: app/js/lib/store.js:1236
 msgid "Blocks connected."
 msgstr "Blocs connectés."
 
-#: app/js/lib/store.js:1171
+#: app/js/lib/store.js:1248
 msgid "Blocks removed from the channel."
 msgstr "Blocs retirés du canal."
 
-#: app/js/lib/store.js:1193
+#: app/js/lib/store.js:1270
 msgid "Blocks moved."
 msgstr "Blocs déplacés."
 
-#: app/js/lib/store.js:1216
+#: app/js/lib/store.js:1293
 msgid "The notes could not load."
 msgstr "Les notes n’ont pas pu se charger."
 

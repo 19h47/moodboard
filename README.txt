@@ -5,7 +5,7 @@ Donate link: https://www.19h47.fr
 Tags: moodboard, media, collections, images, curation
 Requires at least: 7.1
 Tested up to: 7.1
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 Requires PHP: 8.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -69,6 +69,24 @@ The application password stays in the shortcut once added, never in its file: re
 Its sub-channels go to its parent, as do the blocks in no other channel. Without a parent, they stay in the index, as every block.
 
 == Changelog ==
+
+= 0.5.0 =
+
+* A block deleted, or the blocks selected, leave at once: Undo, or Control or Command and Z, brings them back a moment before they are deleted, rather than a confirmation asked first.
+* A channel is searched as the index is, its blocks and its sub-channels by name, its search in its URL; / unfolds the search, which Escape folds once empty.
+* A file added shows at once, first in the grid, until its block takes its place.
+* Shift ticks the blocks between the one ticked last and another, Control or Command and A every block of the grid.
+* The images of the blocks before and after the one shown, on its page and in the presentation, load before they open.
+* Fixed: a channel and a block are read by their curator only in the REST API, by their ID or in the list of the media: another user, or a visitor, read them no more.
+* Fixed: a link keeps its player once it is saved, or once the grid loads again.
+* Fixed: a video no longer shown stops, on the page of a block and once the presentation closes.
+* Fixed: the cards of the grid stay as they are while their block does, and the focus comes back to the card a block was opened from.
+* Fixed: a change of the blocks selected that fails leaves the grid as the server has it.
+* Fixed: a link to a post of Tumblr shows the image of its page, rather than a player that was only a link.
+* Fixed: the login says an error, a success and caps lock in their colors.
+* Changed: the app asks the server for less: a list shown again, the changes made together, the pages of a list, the covers of a channel, the image of a link and the words of a search.
+* Changed: an error says what went wrong, rather than nothing.
+* Code only: a link gives the image of its page in the REST field moodboard_image, rather than embedded, and its player, moodboard_embed, is a frame only, empty for an embed a provider draws by a script.
 
 = 0.4.0 =
 
