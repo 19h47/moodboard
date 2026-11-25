@@ -2,7 +2,7 @@ import { __, sprintf } from 'moodboard-app/app';
 import { listKey, store } from 'moodboard-app/store';
 import { back, urlOf } from 'moodboard-app/router';
 import { Brick } from 'moodboard-app/brick';
-import { clone, fill, fillImage } from 'moodboard-app/dom';
+import { clone, fill, fillImage, fillVideo } from 'moodboard-app/dom';
 import { formatDate, formatKind, hostOf, nameOf } from 'moodboard-app/render';
 
 /** @import { Block } from 'moodboard-app/api' */
@@ -253,11 +253,7 @@ class MoodboardBlockElement extends Brick {
 		$open.hidden = 'link' !== block?.kind || !! embed || !! block.image;
 		$open.href = 'link' === block?.kind ? block.url : '';
 
-		$video.hidden = ! isVideo;
-
-		if ( isVideo && $video.src !== block.url ) {
-			$video.src = block.url;
-		}
+		fillVideo( $video, isVideo ? block.url : '' );
 
 		$file.hidden =
 			! block || 'media' !== block.kind || !! block.image || isVideo;

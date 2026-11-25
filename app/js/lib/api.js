@@ -391,6 +391,22 @@ function argsOf( kind ) {
 }
 
 /**
+ * The arguments of a block for its page: a link with its player, which a list leaves out.
+ *
+ * @param {Block['kind']} kind The kind.
+ * @return {Object<string, string>} The arguments.
+ */
+function pageArgsOf( kind ) {
+	const args = argsOf( kind );
+
+	if ( 'link' === kind ) {
+		args._fields += ',moodboard_embed';
+	}
+
+	return args;
+}
+
+/**
  * Every channel of the curator, by name.
  *
  * @param {AbortSignal} signal Stops it.
@@ -463,14 +479,11 @@ export async function fetchBlocks( channelId, search, signal ) {
  * @return {Promise<Block>} The block.
  */
 export async function fetchBlock( kind, id, signal ) {
-	const args = argsOf( kind );
-
-	if ( 'link' === kind ) {
-		args._fields += ',moodboard_embed';
-	}
-
 	const item = await apiFetch( {
-		path: addQueryArgs( `${ routeOf( kind ) }/${ id }`, args ),
+		path: addQueryArgs(
+			`${ routeOf( kind ) }/${ id }`,
+			pageArgsOf( kind )
+		),
 		signal,
 	} );
 
@@ -713,7 +726,8 @@ export async function deleteNote( id ) {
 }
 
 /**
- * Changes a block: its fields, as the API names them, such as title or meta, or its channels.
+ * Changes a block: its fields, as the API names them, such as title or meta, or its channels. A link keeps its player,
+ * its URL changed or not.
  *
  * @param {Block}                   block  The block.
  * @param {Object<string, unknown>} fields What changes.
@@ -723,7 +737,7 @@ export async function updateBlock( block, fields ) {
 	const item = await apiFetch( {
 		path: addQueryArgs(
 			`${ routeOf( block.kind ) }/${ block.id }`,
-			argsOf( block.kind )
+			pageArgsOf( block.kind )
 		),
 		method: 'POST',
 		data: fields,

@@ -1,7 +1,7 @@
 import { __, sprintf } from 'moodboard-app/app';
 import { listKey, store } from 'moodboard-app/store';
 import { Brick } from 'moodboard-app/brick';
-import { fill, fillImage } from 'moodboard-app/dom';
+import { fill, fillImage, fillVideo } from 'moodboard-app/dom';
 import { formatKind, nameOf } from 'moodboard-app/render';
 import { urlOf } from 'moodboard-app/router';
 import { scramble } from 'moodboard-app/scramble';
@@ -34,6 +34,8 @@ class MoodboardPresentElement extends Brick {
 		const $play = this.querySelector( '[data-action="play"]' );
 		/** @type {HTMLElement} */
 		const $stage = this.querySelector( '[data-part="stage"]' );
+		/** @type {HTMLVideoElement} */
+		const $video = this.querySelector( '[data-field="video"]' );
 		/** @type {PointerEvent|null} */
 		let start = null;
 
@@ -89,6 +91,8 @@ class MoodboardPresentElement extends Brick {
 			'close',
 			() => {
 				this.#play( $play, false );
+				// The video of the block it was on stops with it; opened again, it plays from its start.
+				fillVideo( $video, '' );
 
 				const left = document.fullscreenElement
 					? document.exitFullscreen()
@@ -269,13 +273,7 @@ class MoodboardPresentElement extends Brick {
 
 		fillImage( $image, block?.image ?? null );
 		$image.alt = block ? block.alt || nameOf( block ) : '';
-		$video.hidden = ! isVideo;
-
-		if ( isVideo && $video.src !== block.url ) {
-			$video.src = block.url;
-		} else if ( ! isVideo ) {
-			$video.removeAttribute( 'src' );
-		}
+		fillVideo( $video, isVideo ? block.url : '' );
 
 		fill( this, {
 			text:

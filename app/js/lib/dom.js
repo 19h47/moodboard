@@ -1,6 +1,6 @@
 /**
  * Writing in the page, with nothing of the app: the fields of an element filled as text, an image at the width it
- * takes, and the clone of a template of the page. Bricks and components share it: it imports nothing.
+ * takes, a video, and the clone of a template of the page. Bricks and components share it: it imports nothing.
  */
 
 /** @import { Image } from 'moodboard-app/api' */
@@ -49,6 +49,29 @@ export function fillImage( $image, image ) {
 	$image.src = image.url;
 	$image.width = image.width;
 	$image.height = image.height;
+}
+
+/**
+ * Shows a video from its URL. Hidden without one, it stops: a source taken out leaves it playing until it loads again.
+ *
+ * @param {HTMLVideoElement} $video The video.
+ * @param {string}           url    What it plays, empty for none.
+ */
+export function fillVideo( $video, url ) {
+	$video.hidden = ! url;
+
+	if ( ! url ) {
+		if ( $video.hasAttribute( 'src' ) ) {
+			$video.removeAttribute( 'src' );
+			$video.load();
+		}
+
+		return;
+	}
+
+	if ( $video.src !== url ) {
+		$video.src = url;
+	}
 }
 
 /**

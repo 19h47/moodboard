@@ -96,6 +96,39 @@ function save( { density, theme, themeChosen } ) {
 }
 
 /**
+ * What was loaded before when nothing of it changed, else what loads: a card changes only if its block or its channel
+ * does, its image not decoded again and the focus left on it.
+ *
+ * @template {Block|Channel} T
+ * @param {T|undefined} previous What was loaded before, none at first.
+ * @param {T}           next     What loads.
+ * @return {T} The one kept.
+ */
+function same( previous, next ) {
+	return JSON.stringify( previous ) === JSON.stringify( next )
+		? previous
+		: next;
+}
+
+/**
+ * A block loaded, kept as it was when nothing of it changed. A list gives a link without its player: it keeps the one
+ * its page loaded, while its URL is the same.
+ *
+ * @param {Block|undefined} previous The block loaded before, none at first.
+ * @param {Block}           next     The block that loads.
+ * @return {Block} The one kept.
+ */
+function sameBlock( previous, next ) {
+	const hasPlayer =
+		null === next.embed &&
+		'string' === typeof previous?.embed &&
+		previous.url === next.url;
+	const block = hasPlayer ? { ...next, embed: previous.embed } : next;
+
+	return same( previous, block );
+}
+
+/**
  * The key of the list of blocks of what shows: a channel, a search, or the index, as a channel 0, where a block opened
  * from the index finds its neighbours.
  *
@@ -249,7 +282,18 @@ class MoodboardStore extends Store {
 
 			this.set( ( state ) => ( {
 				...state,
-				channels: { loaded: true, error: '', items },
+				channels: {
+					loaded: true,
+					error: '',
+					items: items.map( ( item ) =>
+						same(
+							state.channels.items.find(
+								( channel ) => channel.id === item.id
+							),
+							item
+						)
+					),
+				},
 			} ) );
 
 			return true;
@@ -316,7 +360,10 @@ class MoodboardStore extends Store {
 					blocks: {
 						...state.blocks,
 						...Object.fromEntries(
-							blocks.map( ( block ) => [ block.key, block ] )
+							blocks.map( ( block ) => [
+								block.key,
+								sameBlock( state.blocks[ block.key ], block ),
+							] )
 						),
 					},
 					lists: {
@@ -406,7 +453,10 @@ class MoodboardStore extends Store {
 	#setBlock( block ) {
 		this.set( ( state ) => ( {
 			...state,
-			blocks: { ...state.blocks, [ block.key ]: block },
+			blocks: {
+				...state.blocks,
+				[ block.key ]: sameBlock( state.blocks[ block.key ], block ),
+			},
 		} ) );
 	}
 
@@ -633,6 +683,16 @@ class MoodboardStore extends Store {
 	 */
 	async deleteBlock( block ) {
 		await api.deleteBlock( block );
+		this.#forget( block );
+		await this.#refresh();
+	}
+
+	/**
+	 * Forgets a block deleted.
+	 *
+	 * @param {Block} block The block.
+	 */
+	#forget( block ) {
 		this.set( ( state ) => {
 			const blocks = { ...state.blocks };
 
@@ -640,7 +700,6 @@ class MoodboardStore extends Store {
 
 			return { ...state, blocks };
 		} );
-		await this.#refresh();
 	}
 
 	/**
@@ -790,21 +849,25 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Changes the channels of each block selected, one after the other, then ends the selection.
+	 * Changes the channels of each block selected, one after the other, then ends the selection. One that fails stops
+	 * the others; the grid then shows those changed already.
 	 *
 	 * @param {( block: Block ) => number[]} channelsOf The channels of a block after the change.
 	 * @param {string}                       done       What is said once done.
 	 */
 	async #changeSelection( channelsOf, done ) {
-		for ( const block of this.#selected() ) {
-			this.#setBlock(
-				await api.setChannels( block, channelsOf( block ) )
-			);
-		}
+		try {
+			for ( const block of this.#selected() ) {
+				this.#setBlock(
+					await api.setChannels( block, channelsOf( block ) )
+				);
+			}
 
-		this.setSelecting( false );
-		this.notify( done );
-		await this.#refresh();
+			this.notify( done );
+		} finally {
+			this.setSelecting( false );
+			await this.#refresh();
+		}
 	}
 
 	/**
@@ -853,15 +916,21 @@ class MoodboardStore extends Store {
 		await this.saveOrder( id );
 	}
 
-	/** Deletes the blocks selected. */
+	/**
+	 * Deletes the blocks selected. One that fails stops the others; the grid then shows those left.
+	 */
 	async deleteSelection() {
-		for ( const block of this.#selected() ) {
-			await api.deleteBlock( block );
-		}
+		try {
+			for ( const block of this.#selected() ) {
+				await api.deleteBlock( block );
+				this.#forget( block );
+			}
 
-		this.setSelecting( false );
-		this.notify( __( 'Blocks deleted.', 'moodboard' ) );
-		await this.#refresh();
+			this.notify( __( 'Blocks deleted.', 'moodboard' ) );
+		} finally {
+			this.setSelecting( false );
+			await this.#refresh();
+		}
 	}
 
 	/**
