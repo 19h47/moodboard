@@ -56,7 +56,7 @@ import {
  * @typedef {Object} Block
  * @property {string}                key         Its kind and its ID, as the lists hold it: media-12, text-7, link-3.
  * @property {'media'|'text'|'link'} kind        Its kind, the view of its page.
- * @property {number}                id          Its post ID.
+ * @property {number}                id          Its post ID, 0 while its file uploads.
  * @property {string}                date        When it was added, as the API gives it.
  * @property {string}                title       Its title, as WordPress has it: the name of its file unless written.
  * @property {string}                label       Its title written, as the app shows it: none for a media named after its file.

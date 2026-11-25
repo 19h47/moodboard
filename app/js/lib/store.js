@@ -41,6 +41,7 @@ import * as api from 'moodboard-app/api';
  * @property {boolean}                                                         themeChosen Whether the theme was chosen over the system one.
  * @property {string}                                                          notice      What the app says last, such as an error.
  * @property {string[]}                                                        undo        The keys of the blocks deleted that Undo brings back, until they are deleted on the server.
+ * @property {Block[]}                                                         uploads     The files being added, as blocks of their own until the server has them, the latest first.
  */
 
 /** @type {List} */
@@ -51,6 +52,47 @@ const IMAGE_FILE = /\.(jpe?g|png|gif|webp|avif)$/i;
 const DENSITIES = [ -1, 0, 1, 2 ];
 // How long blocks deleted wait for Undo before they are deleted on the server.
 const UNDO_MS = 8000;
+// The types of the files a browser shows as images, which a card shows as they upload.
+const IMAGE_TYPE = /^image\/(jpeg|png|gif|webp|avif)$/;
+
+// The files uploaded since the page loaded, which number the keys of their blocks.
+let uploadCount = 0;
+
+/**
+ * The block of a file being added, until the server has it: its image, the file itself, for a file the browser shows
+ * as one, else the kind of the file. Its ID, 0, says it uploads; its key is its own, `upload-1`.
+ *
+ * @param {File}   file      The file.
+ * @param {number} channelId The channel it goes into, 0 for the index.
+ * @return {Block} Its block.
+ */
+function uploadOf( file, channelId ) {
+	const url = URL.createObjectURL( file );
+
+	uploadCount++;
+
+	return {
+		key: `upload-${ uploadCount }`,
+		kind: 'media',
+		id: 0,
+		date: new Date().toISOString(),
+		title: file.name,
+		label: '',
+		description: '',
+		text: '',
+		alt: '',
+		source: '',
+		by: '',
+		channels: channelId ? [ channelId ] : [],
+		url,
+		mime: file.type,
+		// Its size is the one of its card, which a file shown as it is has no other.
+		image: IMAGE_TYPE.test( file.type )
+			? { url, srcset: '', width: 0, height: 0 }
+			: null,
+		embed: '',
+	};
+}
 
 const $root = document.documentElement;
 /** @type {HTMLMetaElement} */
@@ -282,6 +324,7 @@ class MoodboardStore extends Store {
 			...load(),
 			notice: '',
 			undo: [],
+			uploads: [],
 		} );
 
 		// A page left deletes the blocks deleted at once, its requests going on after it.
@@ -687,7 +730,8 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Adds blocks, to a channel or the index: the files dropped, pasted or picked, the image of a URL, or a text.
+	 * Adds blocks, to a channel or the index: the files dropped, pasted or picked, the image of a URL, or a text. A file
+	 * shows at once, as it uploads, first in the grid, and gives way to its block once the server has it.
 	 *
 	 * @param {number}                        channelId The channel, 0 for the index.
 	 * @param {{files: File[], text: string}} added     What is added.
@@ -698,28 +742,36 @@ class MoodboardStore extends Store {
 		const isUrl = /^https?:\/\/\S+$/.test( content );
 		// The URL of an image file, which core downloads; any other is a link, a page or a video.
 		const isImage = isUrl && IMAGE_FILE.test( new URL( content ).pathname );
-		/** @type {Array<() => Promise<Block>>} */
-		const requests = [
-			...files.map( ( file ) => () => api.uploadFile( file, channelId ) ),
-		];
+		const uploads = files.map( ( file ) => uploadOf( file, channelId ) );
+		/** @type {Array<{send: () => Promise<Block>, upload?: Block}>} */
+		const requests = files.map( ( file, index ) => ( {
+			send: () => api.uploadFile( file, channelId ),
+			upload: uploads[ index ],
+		} ) );
 
 		if ( isImage ) {
-			requests.push( () => api.importUrl( content, channelId ) );
+			requests.push( {
+				send: () => api.importUrl( content, channelId ),
+			} );
 		} else if ( isUrl ) {
-			requests.push( () => api.createLink( content, channelId ) );
+			requests.push( {
+				send: () => api.createLink( content, channelId ),
+			} );
 		} else if ( content ) {
-			requests.push( () => api.createText( content, channelId ) );
+			requests.push( {
+				send: () => api.createText( content, channelId ),
+			} );
 		}
 
 		const errors = [];
-		/** @type {Block[]} */
-		const added = [];
 
 		// Said at once, as a file dropped or pasted takes a moment to upload, which ends the moment of Undo.
 		this.#commitDelete();
 		this.set( ( state ) => ( {
 			...state,
 			adding: true,
+			// The last file first, as its block will be once added.
+			uploads: [ ...uploads.toReversed(), ...state.uploads ],
 			notice: sprintf(
 				/* translators: %d: number of blocks being added. */
 				_n(
@@ -732,13 +784,14 @@ class MoodboardStore extends Store {
 			),
 		} ) );
 
-		// One after the other: a server takes one upload at a time better than many.
-		for ( const request of requests ) {
+		// One after the other: a server takes one upload at a time better than many. The grid takes each block added as it
+		// is, first, without loading again, in place of its file.
+		for ( const { send, upload } of requests ) {
 			try {
-				const block = await request();
+				const block = await send();
 
 				this.#setBlock( block );
-				added.push( block );
+				this.#prepend( channelId, [ block ] );
 			} catch ( error ) {
 				errors.push(
 					api.errorMessage(
@@ -746,6 +799,16 @@ class MoodboardStore extends Store {
 						__( 'A block could not be added.', 'moodboard' )
 					)
 				);
+			} finally {
+				if ( upload ) {
+					URL.revokeObjectURL( upload.url );
+					this.set( ( state ) => ( {
+						...state,
+						uploads: state.uploads.filter(
+							( item ) => item !== upload
+						),
+					} ) );
+				}
 			}
 		}
 
@@ -763,8 +826,7 @@ class MoodboardStore extends Store {
 					requests.length
 				)
 		);
-		// The grid takes the blocks added as they are, without loading again: the channels only change, their counts.
-		this.#prepend( channelId, added );
+		// The channels only change, their counts.
 		await this.#fetchChannels();
 
 		return ! errors.length;

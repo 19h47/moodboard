@@ -6,6 +6,7 @@
 import { __, _n, sprintf } from 'moodboard-app/app';
 import { urlOf } from 'moodboard-app/router';
 import { clone, fill, fillImage } from 'moodboard-app/dom';
+import { showBusy } from 'moodboard-app/behaviors';
 
 /** @import { Block, Channel } from 'moodboard-app/api' */
 
@@ -152,6 +153,14 @@ export function renderBlock( block, from ) {
 	if ( $image ) {
 		fillImage( $image, block.image );
 		$image.alt = block.alt || ( block.label ? '' : nameOf( block ) );
+	}
+
+	// A file being added: no page yet, a link without its URL, neither selected nor moved, busy until it is added.
+	if ( ! block.id ) {
+		$link.removeAttribute( 'href' );
+		$item.querySelector( '[data-part="select"]' )?.remove();
+		$item.querySelector( '[data-part="move"]' )?.remove();
+		showBusy( $item, true );
 	}
 
 	return $item;

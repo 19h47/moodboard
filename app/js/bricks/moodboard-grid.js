@@ -85,6 +85,7 @@ class MoodboardGridElement extends Brick {
 					'selecting',
 					'selection',
 					'arranging',
+					'uploads',
 				],
 				( state ) => {
 					const isShown = isIndex
@@ -586,18 +587,30 @@ class MoodboardGridElement extends Brick {
 	}
 
 	/**
-	 * The blocks the grid shows, those of its list loaded, but in the tab of the channels.
+	 * The blocks the grid shows, the files being added first, then those of its list loaded, but in the tab of the channels.
 	 *
 	 * @param {import('moodboard-app/store').State} state The state.
 	 * @param {string[]}                            keys  The keys of the list.
 	 * @return {Block[]} The blocks.
 	 */
-	#blocks( { view, tab, blocks }, keys ) {
+	#blocks( { view, id, tab, query, blocks, uploads }, keys ) {
 		if ( 'index' === view && 'channels' === tab ) {
 			return [];
 		}
 
-		return keys.map( ( key ) => blocks[ key ] ).filter( Boolean );
+		// The files being added, first: every one on the index, those going into it on a channel; none in a search, which
+		// may not find them.
+		const uploading = query
+			? []
+			: uploads.filter(
+					( upload ) =>
+						'index' === view || upload.channels.includes( id )
+			  );
+
+		return [
+			...uploading,
+			...keys.map( ( key ) => blocks[ key ] ).filter( Boolean ),
+		];
 	}
 
 	/**
