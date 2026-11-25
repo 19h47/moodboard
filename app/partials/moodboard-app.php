@@ -54,7 +54,7 @@ $moodboard_tabs = array(
 			<div class="app-content">
 				<moodboard-header class="app-header moodboard-header">
 					<h1 class="moodboard-header__title"><a href="<?php echo esc_url( Page::get_url() ); ?>"><?php esc_html_e( 'Moodboard', 'moodboard' ); ?></a></h1>
-					<moodboard-tabs class="moodboard-header__tabs" data-only="index">
+					<moodboard-tabs data-only="index">
 						<nav aria-label="<?php esc_attr_e( 'What the index shows', 'moodboard' ); ?>">
 							<ul class="moodboard-tabs">
 								<?php foreach ( $moodboard_tabs as $moodboard_tab => $moodboard_label ) : ?>
@@ -64,7 +64,7 @@ $moodboard_tabs = array(
 						</nav>
 					</moodboard-tabs>
 					<div class="app-toolbar moodboard-header__tools">
-						<moodboard-density class="moodboard-density" data-only="grid">
+						<moodboard-density data-only="grid">
 							<label class="sr-only" for="moodboard-density"><?php esc_html_e( 'Size of the cards', 'moodboard' ); ?></label>
 							<input class="moodboard-density__range" id="moodboard-density" type="range" min="-1" max="2" step="1" value="0">
 						</moodboard-density>
@@ -156,7 +156,7 @@ $moodboard_tabs = array(
 									<dd><a data-field="source" href="" rel="noreferrer" target="_blank"></a></dd>
 								</div>
 							</dl>
-							<p class="moodboard-block__actions">
+							<p class="moodboard-pills">
 								<button class="app-pill" type="button" commandfor="moodboard-connect" command="show-modal"><?php esc_html_e( 'Connect', 'moodboard' ); ?> <?php Markup::render_icon( 'arrow_forward' ); ?></button>
 								<button class="app-pill moodboard-block__more" type="button" commandfor="moodboard-block-actions" command="toggle-popover"><?php esc_html_e( 'Actions', 'moodboard' ); ?> <?php Markup::render_icon( 'expand_more' ); ?></button>
 							</p>

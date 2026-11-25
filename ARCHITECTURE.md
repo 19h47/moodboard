@@ -36,7 +36,7 @@ The URL says what shows: `?view=channel&channel=12`, `?view=media&media=5&channe
 
 ### Styles
 
-`app/css/app-style.css` is a copy of the [base shared by the author's small apps](https://gist.github.com/19h47/27df983fac74beb8d3e0a30688654498), with its revision in its header. `app/css/moodboard-app.css` declares the order of the layers of the app and its tokens, then a sheet per component in `app/css/components` and per view in `app/css/views`. The sheets of the components come in the order of their names: a card sets its frame with the class of the frame and its own, `.moodboard-card__frame.moodboard-media-card`, to win over the base of the cards.
+`app/css/app-style.css` is a copy of the [base shared by the author's small apps](https://gist.github.com/19h47/27df983fac74beb8d3e0a30688654498), with its revision in its header. `app/css/moodboard-app.css` declares the order of the layers of the app and its tokens, then a sheet per component in `app/css/components` and per view in `app/css/views`. The sheets of the components come in the order of their names: a card sets its frame with the class of the frame and its own, `.moodboard-card__frame.moodboard-link-card`, to win over the base of the cards.
 
 The page of a block is two columns on a wide screen, its media, sticky, then the column of text a step of the scale smaller, φ, beside it: its details, its actions, whose menu is a popover, and `tab-set`, the tabs of its channels and its notes, as the tabs pattern of the APG has them. Under 60rem, they stack.
 

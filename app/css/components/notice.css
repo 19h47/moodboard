@@ -13,6 +13,11 @@
 		pointer-events: none;
 	}
 
+	/* Over the bar of the blocks selected, rather than behind it */
+	body:has(> .moodboard-selection:not([hidden])) .moodboard-notice {
+		inset-block-end: calc(var(--app-space-l) + var(--app-space-xl) + var(--app-control-size) + env(safe-area-inset-bottom));
+	}
+
 	.moodboard-notice > .app-status {
 		padding: var(--app-space-s) var(--app-space-m);
 		border-radius: var(--app-radius-m);

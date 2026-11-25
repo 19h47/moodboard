@@ -124,12 +124,6 @@
 		overflow-wrap: anywhere;
 	}
 
-	.moodboard-block__actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--app-space-s);
-	}
-
 	/* The menu of its actions hangs from its control */
 	.moodboard-block__more {
 		anchor-name: --moodboard-block-actions;
