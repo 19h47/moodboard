@@ -54,6 +54,36 @@ class Test_Blocks extends TestCase {
 	}
 
 	/**
+	 * A link whose provider draws its embed by a script, such as a post of Tumblr, has no player: its page shows its
+	 * image, rather than the link core leaves of the embed once it has taken its script out, as here.
+	 *
+	 * @return void
+	 */
+	public function test_a_link_drawn_by_a_script_has_no_player(): void {
+		$url = 'https://www.tumblr.com/moodboard/1';
+
+		add_filter(
+			'pre_oembed_result',
+			fn( $result, string $asked ) => $url === $asked ? '<div class="tumblr-post" data-href="https://embed.tumblr.com/embed/post/1"><a href="' . $url . '">' . $url . '</a></div>' : $result,
+			10,
+			2
+		);
+
+		$response = $this->request(
+			'POST',
+			'/wp/v2/moodboard-links',
+			array(
+				'title' => 'Un post',
+				'meta'  => array( 'moodboard_source' => $url ),
+			)
+		);
+		$link_id  = $response->get_data()['id'];
+		$link     = $this->request( 'GET', "/wp/v2/moodboard-links/$link_id", array( 'context' => 'edit' ) )->get_data();
+
+		$this->assertSame( '', $link['moodboard_embed'] );
+	}
+
+	/**
 	 * A link added by its URL alone takes what its provider gives: its title, and its thumbnail as its featured image, an
 	 * image whose URL has no extension.
 	 *

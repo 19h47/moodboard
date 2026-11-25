@@ -11,6 +11,8 @@
 
 namespace Moodboard;
 
+use WP_HTML_Tag_Processor;
+
 /**
  * Registers the moodboard_text and moodboard_link post types, the blocks of text and of a link, as a media is a block of
  * an image or a file. They are private, always: WordPress shows a private post to its author only, so each curator
@@ -248,7 +250,9 @@ class Posts {
 	}
 
 	/**
-	 * The player of the URL of a link, as core embeds it in a post, empty for a page it does not embed.
+	 * The player of the URL of a link, as core embeds it in a post, empty for a page it does not embed. A player is a
+	 * frame, such as a video: the embed of a provider that its script draws, such as a post of Tumblr, is only a link
+	 * once core has taken its script out, which the image of its page shows better.
 	 *
 	 * @param int $link_id Post ID of the link.
 	 * @return string
@@ -274,7 +278,13 @@ class Posts {
 
 		$post = $shown; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Given back.
 
-		return is_string( $embed ) ? $embed : '';
+		if ( ! is_string( $embed ) ) {
+			return '';
+		}
+
+		$processor = new WP_HTML_Tag_Processor( $embed );
+
+		return $processor->next_tag( array( 'tag_name' => 'IFRAME' ) ) ? $embed : '';
 	}
 
 	/**
