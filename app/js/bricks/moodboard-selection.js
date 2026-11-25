@@ -90,7 +90,7 @@ class MoodboardSelectionElement extends Brick {
 	 * @param {string} action The action: first, last, disconnect, delete or done; connect opens its dialog by itself.
 	 */
 	async #act( action ) {
-		const { selection, id } = store.get();
+		const { id } = store.get();
 
 		try {
 			if ( 'first' === action || 'last' === action ) {
@@ -101,23 +101,9 @@ class MoodboardSelectionElement extends Brick {
 				await store.disconnectSelection( id );
 			}
 
-			if (
-				'delete' === action &&
-				// eslint-disable-next-line no-alert -- A confirmation the browser gives, accessible as it is.
-				confirm(
-					sprintf(
-						/* translators: %d: number of blocks selected. */
-						_n(
-							'Delete %d block, and its file?',
-							'Delete %d blocks, and their files?',
-							selection.length,
-							'moodboard'
-						),
-						selection.length
-					)
-				)
-			) {
-				await store.deleteSelection();
+			// Undo brings them back a moment.
+			if ( 'delete' === action ) {
+				store.deleteSelection();
 			}
 
 			if ( 'done' === action ) {

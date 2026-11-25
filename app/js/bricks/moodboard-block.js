@@ -304,23 +304,13 @@ class MoodboardBlockElement extends Brick {
 	}
 
 	/**
-	 * Deletes the block, once asked, from where it was opened from: its page left first, so that the view loads no
-	 * longer a block that is gone.
+	 * Deletes the block, which Undo brings back a moment, from where it was opened from: its page left first, so that
+	 * the view loads no longer a block that is gone.
 	 */
 	async #delete() {
 		const block = this.#block;
 
-		if (
-			! block ||
-			// eslint-disable-next-line no-alert -- A confirmation the browser gives, accessible as it is.
-			! confirm(
-				{
-					media: __( 'Delete this media and its file?', 'moodboard' ),
-					text: __( 'Delete this text?', 'moodboard' ),
-					link: __( 'Delete this link?', 'moodboard' ),
-				}[ block.kind ]
-			)
-		) {
+		if ( ! block ) {
 			return;
 		}
 
@@ -329,16 +319,7 @@ class MoodboardBlockElement extends Brick {
 		await back(
 			from ? urlOf( { view: 'channel', id: from } ) : urlOf( {} )
 		);
-
-		try {
-			await store.deleteBlock( block );
-			store.notify( __( 'Block deleted.', 'moodboard' ) );
-		} catch ( error ) {
-			store.notifyError(
-				error,
-				__( 'The block could not be deleted.', 'moodboard' )
-			);
-		}
+		store.deleteBlocks( [ block ] );
 	}
 }
 customElements.define( 'moodboard-block', MoodboardBlockElement );

@@ -767,12 +767,14 @@ export function setChannels( block, channelIds ) {
 /**
  * Deletes a block, its file with a media.
  *
- * @param {Block} block The block.
+ * @param {Block}   block       The block.
+ * @param {boolean} [keepalive] Whether the request goes on once the page is left.
  */
-export async function deleteBlock( block ) {
+export async function deleteBlock( block, keepalive = false ) {
 	await apiFetch( {
 		path: `${ routeOf( block.kind ) }/${ block.id }?force=true`,
 		method: 'DELETE',
+		keepalive,
 	} );
 }
 

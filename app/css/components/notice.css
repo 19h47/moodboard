@@ -1,6 +1,6 @@
 /**
  * What the app says last, such as blocks added: a layer at the bottom of the screen, over the page, its colors those of
- * the page inverted, so that it shows over any image.
+ * the page inverted, so that it shows over any image; beside it, Undo, while blocks deleted may come back.
  */
 
 @layer app.components {
@@ -18,7 +18,12 @@
 		inset-block-end: calc(var(--app-space-l) + var(--app-space-xl) + var(--app-control-size) + env(safe-area-inset-bottom));
 	}
 
-	.moodboard-notice > .app-status {
+	.moodboard-notice__bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: center;
+		gap: var(--app-space-xs) var(--app-space-m);
 		padding: var(--app-space-s) var(--app-space-m);
 		border-radius: var(--app-radius-m);
 		background: var(--app-text);

@@ -40,6 +40,7 @@ import * as api from 'moodboard-app/api';
  * @property {'light'|'dark'}                                                  theme       The theme shown.
  * @property {boolean}                                                         themeChosen Whether the theme was chosen over the system one.
  * @property {string}                                                          notice      What the app says last, such as an error.
+ * @property {string[]}                                                        undo        The keys of the blocks deleted that Undo brings back, until they are deleted on the server.
  */
 
 /** @type {List} */
@@ -48,6 +49,8 @@ const EMPTY_LIST = { loaded: false, error: '', keys: [] };
 const IMAGE_FILE = /\.(jpe?g|png|gif|webp|avif)$/i;
 // The sizes of the cards, as steps of the scale from the usual one, the last two cards a row.
 const DENSITIES = [ -1, 0, 1, 2 ];
+// How long blocks deleted wait for Undo before they are deleted on the server.
+const UNDO_MS = 8000;
 
 const $root = document.documentElement;
 /** @type {HTMLMetaElement} */
@@ -236,6 +239,20 @@ class MoodboardStore extends Store {
 	/** @type {Promise<void>|null} */
 	#nextRefresh = null;
 
+	/**
+	 * The keys of the blocks deleted, until they are deleted on the server: the lists that load leave them out.
+	 *
+	 * @type {Set<string>}
+	 */
+	#hidden = new Set();
+
+	/**
+	 * The moment blocks deleted wait for Undo.
+	 *
+	 * @type {number}
+	 */
+	#deleting = 0;
+
 	constructor() {
 		super( {
 			view: '',
@@ -255,7 +272,11 @@ class MoodboardStore extends Store {
 			arranging: false,
 			...load(),
 			notice: '',
+			undo: [],
 		} );
+
+		// A page left deletes the blocks deleted at once, its requests going on after it.
+		addEventListener( 'pagehide', () => this.#commitDelete( true ) );
 
 		// The system theme, until one is chosen.
 		darkQuery.addEventListener( 'change', ( { matches } ) => {
@@ -441,7 +462,11 @@ class MoodboardStore extends Store {
 						[ key ]: {
 							loaded: true,
 							error: '',
-							keys: ordered.map( ( block ) => block.key ),
+							keys: ordered
+								.map( ( block ) => block.key )
+								.filter(
+									( item ) => ! this.#hidden.has( item )
+								),
 						},
 					},
 				};
@@ -560,6 +585,11 @@ class MoodboardStore extends Store {
 	 * @param {string} notice What to say.
 	 */
 	notify( notice ) {
+		// Another notice ends the moment of Undo, which would show beside it.
+		if ( notice ) {
+			this.#commitDelete();
+		}
+
 		this.set( ( state ) => ( { ...state, notice } ) );
 	}
 
@@ -669,7 +699,8 @@ class MoodboardStore extends Store {
 		/** @type {Block[]} */
 		const added = [];
 
-		// Said at once, as a file dropped or pasted takes a moment to upload.
+		// Said at once, as a file dropped or pasted takes a moment to upload, which ends the moment of Undo.
+		this.#commitDelete();
 		this.set( ( state ) => ( {
 			...state,
 			adding: true,
@@ -795,13 +826,115 @@ class MoodboardStore extends Store {
 	}
 
 	/**
-	 * Deletes a block.
+	 * Deletes blocks, once a moment has gone by without Undo, or the page is left: they leave the lists at once, the
+	 * selection ends, and undoDelete() brings them back. Blocks deleted before go first.
 	 *
-	 * @param {Block} block The block.
+	 * @param {Block[]} blocks The blocks.
 	 */
-	async deleteBlock( block ) {
-		await api.deleteBlock( block );
-		this.#forget( block );
+	deleteBlocks( blocks ) {
+		const keys = blocks.map( ( block ) => block.key );
+
+		this.#commitDelete();
+		keys.forEach( ( key ) => this.#hidden.add( key ) );
+		this.set( ( state ) => ( {
+			...state,
+			selecting: false,
+			selection: [],
+			lists: Object.fromEntries(
+				Object.entries( state.lists ).map( ( [ key, list ] ) => [
+					key,
+					{
+						...list,
+						keys: list.keys.filter(
+							( item ) => ! this.#hidden.has( item )
+						),
+					},
+				] )
+			),
+			undo: keys,
+			notice:
+				1 === keys.length
+					? __( 'Block deleted.', 'moodboard' )
+					: __( 'Blocks deleted.', 'moodboard' ),
+		} ) );
+		this.#deleting = setTimeout( () => this.#commitDelete(), UNDO_MS );
+	}
+
+	/** Deletes the blocks selected, as deleteBlocks() does. */
+	deleteSelection() {
+		this.deleteBlocks( this.#selected() );
+	}
+
+	/**
+	 * Holds the blocks deleted while what brings them back has the focus, or gives them their moment again.
+	 *
+	 * @param {boolean} isHeld Whether they wait.
+	 */
+	holdDelete( isHeld ) {
+		clearTimeout( this.#deleting );
+
+		if ( ! isHeld && this.get().undo.length ) {
+			this.#deleting = setTimeout( () => this.#commitDelete(), UNDO_MS );
+		}
+	}
+
+	/** Brings the blocks deleted back, as they are still on the server: the lists load them again. */
+	undoDelete() {
+		const { undo } = this.get();
+
+		if ( ! undo.length ) {
+			return;
+		}
+
+		clearTimeout( this.#deleting );
+		undo.forEach( ( key ) => this.#hidden.delete( key ) );
+		this.set( ( state ) => ( {
+			...state,
+			undo: [],
+			notice: __( 'Deletion undone.', 'moodboard' ),
+		} ) );
+		this.#refresh();
+	}
+
+	/**
+	 * Deletes the blocks deleted on the server, together; Undo no longer brings them back. One that fails says so and
+	 * comes back in its lists.
+	 *
+	 * @param {boolean} [keepalive] Whether the requests go on once the page is left.
+	 */
+	async #commitDelete( keepalive = false ) {
+		const { undo, blocks } = this.get();
+
+		clearTimeout( this.#deleting );
+
+		if ( ! undo.length ) {
+			return;
+		}
+
+		this.set( ( state ) => ( { ...state, undo: [] } ) );
+
+		const results = await Promise.allSettled(
+			undo
+				.map( ( key ) => blocks[ key ] )
+				.filter( Boolean )
+				.map( async ( block ) => {
+					await api.deleteBlock( block, keepalive );
+					this.#forget( block );
+				} )
+		);
+		const failed = results.find(
+			( result ) => 'rejected' === result.status
+		);
+
+		undo.forEach( ( key ) => this.#hidden.delete( key ) );
+
+		if ( failed ) {
+			this.notifyError(
+				failed.reason,
+				__( 'The block could not be deleted.', 'moodboard' )
+			);
+		}
+
 		await this.#refresh();
 	}
 
@@ -1038,23 +1171,6 @@ class MoodboardStore extends Store {
 		this.setSelecting( false );
 		this.notify( __( 'Blocks moved.', 'moodboard' ) );
 		await this.saveOrder( id );
-	}
-
-	/**
-	 * Deletes the blocks selected. One that fails stops the others; the grid then shows those left.
-	 */
-	async deleteSelection() {
-		try {
-			for ( const block of this.#selected() ) {
-				await api.deleteBlock( block );
-				this.#forget( block );
-			}
-
-			this.notify( __( 'Blocks deleted.', 'moodboard' ) );
-		} finally {
-			this.setSelecting( false );
-			await this.#refresh();
-		}
 	}
 
 	/**

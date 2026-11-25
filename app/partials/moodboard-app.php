@@ -208,7 +208,10 @@ $moodboard_tabs = array(
 		</moodboard-drop>
 
 		<moodboard-notice class="moodboard-notice" hidden>
-			<p class="app-status" data-field="notice" role="status"></p>
+			<div class="moodboard-notice__bar">
+				<p data-field="notice" role="status"></p>
+				<button class="moodboard-link" type="button" data-action="undo" aria-keyshortcuts="Control+Z Meta+Z" hidden><?php esc_html_e( 'Undo', 'moodboard' ); ?></button>
+			</div>
 		</moodboard-notice>
 
 		<dialog class="moodboard-dialog" id="moodboard-add" aria-labelledby="moodboard-add-title" closedby="any">
